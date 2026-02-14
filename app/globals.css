@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.section-surface {
+  @apply rounded-2xl border bg-white shadow-sm;
+}
