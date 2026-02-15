@@ -120,7 +120,7 @@ export default function CommunitiesPage() {
         acc[post.type] = (acc[post.type] || 0) + 1;
         return acc;
       }, {});
-      const mapped = Object.entries(counts)
+      const mapped = (Object.entries(counts) as Array<[string, number]>)
         .map(([label, count]) => ({
           label: label.toLowerCase() === "help" ? "Help" :
             label.toLowerCase() === "resource" ? "Housing" :
@@ -155,14 +155,13 @@ export default function CommunitiesPage() {
           }
           router.replace("/onboarding");
           return;
-          }
         }
-        setCheckedOnboarding(true);
-        fetchPosts();
-        fetchSuggested();
-        fetchPeopleSuggestions();
-        fetchTrendingTopics();
       }
+      setCheckedOnboarding(true);
+      fetchPosts();
+      fetchSuggested();
+      fetchPeopleSuggestions();
+      fetchTrendingTopics();
     };
     run();
   }, [feedMode, status, router]);

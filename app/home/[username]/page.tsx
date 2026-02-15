@@ -67,7 +67,7 @@ export default function HomeFeedPage() {
   const [community, setCommunity] = useState("All communities");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [suggested, setSuggested] = useState<
-    { name: string; slug: string }
+    { name: string; slug: string }[]
   >([]);
   const [peopleSuggestions, setPeopleSuggestions] = useState<
     { id: string; name: string | null; title?: string | null }[]
@@ -142,7 +142,7 @@ export default function HomeFeedPage() {
         },
         {}
       );
-      const mapped = Object.entries(counts)
+      const mapped = (Object.entries(counts) as Array<[string, number]>)
         .map(([label, count]) => ({
           label:
             label.toLowerCase() === "help"

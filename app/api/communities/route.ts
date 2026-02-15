@@ -4,6 +4,7 @@ import { communityQuerySchema, createCommunitySchema } from "@/lib/validators";
 import { getAuthSession } from "@/lib/auth";
 import { sanitizeText } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
+import { CommunityVisibility, Prisma } from "@prisma/client";
 
 const WINDOW_MS = 60_000;
 const LIMIT = 20;
@@ -25,14 +26,14 @@ export async function GET(req: Request) {
   const limit = 20;
   const skip = (page - 1) * limit;
 
-  const visibilityFilter = session?.user?.id
+  const visibilityFilter: Prisma.CommunityWhereInput = session?.user?.id
     ? {
         OR: [
-          { visibility: "PUBLIC" },
+          { visibility: CommunityVisibility.PUBLIC },
           { members: { some: { userId: session.user.id } } },
         ],
       }
-    : { visibility: "PUBLIC" };
+    : { visibility: CommunityVisibility.PUBLIC };
 
   const communities = await prisma.community.findMany({
     where: {

@@ -30,6 +30,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ items: [] });
   }
 
+  const currentProfile = currentUser.profile;
   const alreadyFollowing = new Set(
     currentUser.following.map((f) => f.followingUserId)
   );
@@ -71,22 +72,20 @@ export async function GET(req: Request) {
       const reasons: string[] = [];
 
       if (
-        currentUser.profile.currentCity &&
+        currentProfile.currentCity &&
         profile.currentCity &&
-        currentUser.profile.currentCity.toLowerCase() ===
-          profile.currentCity.toLowerCase()
+        currentProfile.currentCity.toLowerCase() === profile.currentCity.toLowerCase()
       ) {
         score += 50;
         reasons.push("Same city");
       }
 
       if (
-        (currentUser.profile.nativePlaceCity || currentUser.profile.nativePlace) &&
+        (currentProfile.nativePlaceCity || currentProfile.nativePlace) &&
         (profile.nativePlaceCity || profile.nativePlace) &&
-        currentUser.profile.showNativePlace &&
+        currentProfile.showNativePlace &&
         profile.showNativePlace &&
-        (currentUser.profile.nativePlaceCity || currentUser.profile.nativePlace)
-          ?.toLowerCase() ===
+        (currentProfile.nativePlaceCity || currentProfile.nativePlace)?.toLowerCase() ===
           (profile.nativePlaceCity || profile.nativePlace)?.toLowerCase()
       ) {
         score += 30;
@@ -103,7 +102,7 @@ export async function GET(req: Request) {
       }
 
       const interestOverlap = overlapCount(
-        currentUser.profile.interests,
+        currentProfile.interests,
         profile.interests
       );
       if (interestOverlap > 0) {

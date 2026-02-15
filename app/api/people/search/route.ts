@@ -21,8 +21,12 @@ export async function GET(req: Request) {
     where: {
       profile: {
         isNot: null,
-        currentCity: city ? { contains: city, mode: "insensitive" } : undefined,
-        allowFollow: true,
+        is: {
+          allowFollow: true,
+          ...(city
+            ? { currentCity: { contains: city, mode: "insensitive" } }
+            : {}),
+        },
       },
       OR: query
         ? [

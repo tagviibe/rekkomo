@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth";
 import { paginationSchema } from "@/lib/validators";
+import { CommunityVisibility, Prisma } from "@prisma/client";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -17,20 +18,23 @@ export async function GET(req: Request) {
   const { page, limit } = parsed.data;
   const skip = (page - 1) * limit;
 
-  const visibilityFilter = session?.user?.id
+  const visibilityFilter: Prisma.PostWhereInput = session?.user?.id
     ? {
         OR: [
-          { community: { visibility: "PUBLIC" } },
+          { community: { is: { visibility: CommunityVisibility.PUBLIC } } },
           { community: null },
           {
             community: {
-              members: { some: { userId: session.user.id } },
+              is: { members: { some: { userId: session.user.id } } },
             },
           },
         ],
       }
     : {
-        OR: [{ community: { visibility: "PUBLIC" } }, { community: null }],
+        OR: [
+          { community: { is: { visibility: CommunityVisibility.PUBLIC } } },
+          { community: null },
+        ],
       };
 
   const posts = await prisma.post.findMany({
