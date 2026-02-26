@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apna Sheher — UI Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0F1923;
+    --paper: #F7F3EE;
+    --saffron: #E8621A;
+    --saffron-light: #FDF0E8;
+    --saffron-dark: #C44E0E;
+    --blue: #1B4F8A;
+    --blue-light: #EBF2FC;
+    --blue-mid: #2563B0;
+    --green: #1B6B45;
+    --green-light: #E8F5EE;
+    --gold: #C9920A;
+    --gold-light: #FDF4DC;
+    --cream: #FAF7F2;
+    --border: #E2DDD6;
+    --muted: #8A8179;
+    --white: #FFFFFF;
+    --shadow-sm: 0 1px 3px rgba(15,25,35,0.08), 0 1px 2px rgba(15,25,35,0.05);
+    --shadow-md: 0 4px 16px rgba(15,25,35,0.1), 0 2px 6px rgba(15,25,35,0.06);
+    --shadow-lg: 0 16px 48px rgba(15,25,35,0.12), 0 4px 16px rgba(15,25,35,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── SCROLLABLE SECTIONS ── */
+  .screens-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    padding: 0 0 80px 0;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    padding: 0 40px;
+  }
+
+  /* ─────────────── NAVBAR ─────────────── */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(247,243,238,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo-mark {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--saffron) 0%, var(--saffron-dark) 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    box-shadow: 0 2px 8px rgba(232,98,26,0.3);
+  }
+  .nav-logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+  .nav-logo-text span { color: var(--saffron); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+  }
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s ease;
+  }
+  .nav-links a:hover { background: var(--saffron-light); color: var(--saffron); }
+  .nav-links a.active { background: var(--saffron-light); color: var(--saffron); font-weight: 600; }
+  .nav-links a .icon { font-size: 15px; }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lang-toggle {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    gap: 4px;
+  }
+  .lang-toggle span:first-child { color: var(--saffron); }
+
+  .nav-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563B0, #1B4F8A);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+  }
+  .trust-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid var(--saffron);
+    border-top-color: transparent;
+    border-right-color: transparent;
+    transform: rotate(-45deg);
+  }
+
+  /* ─────────────── LANDING PAGE ─────────────── */
+  .hero {
+    padding: 80px 40px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--saffron-light);
+    border: 1px solid rgba(232,98,26,0.2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--saffron);
+    margin-bottom: 24px;
+    letter-spacing: 0.02em;
+  }
+  .eyebrow-dot {
+    width: 6px; height: 6px;
+    background: var(--saffron);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero-h1 {
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -2px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .hero-h1 .hindi {
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--saffron);
+    display: block;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+  .hero-h1 .sub {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: -0.5px;
+    display: block;
+    margin-top: 12px;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 24px 0 36px;
+    max-width: 440px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--saffron) 0%, var(--saffron-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(232,98,26,0.3);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,98,26,0.4); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 24px;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-secondary:hover { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-light); }
+
+  .hero-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-num { font-size: 26px; font-weight: 800; color: var(--ink); letter-spacing: -1px; }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Hero Visual */
+  .hero-visual {
+    position: relative;
+  }
+  .hero-map-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .map-bg {
+    height: 200px;
+    background: linear-gradient(135deg, var(--blue-light) 0%, var(--saffron-light) 100%);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .map-grid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(27,79,138,0.08) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(27,79,138,0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .map-india {
+    font-size: 80px;
+    opacity: 0.15;
+    position: absolute;
+  }
+  .map-dots {
+    position: absolute;
+    inset: 0;
+  }
+  .map-dot {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: var(--saffron);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 4px rgba(232,98,26,0.2);
+    animation: map-pulse 3s ease-in-out infinite;
+  }
+  .map-dot:nth-child(1) { top: 30%; left: 40%; animation-delay: 0s; }
+  .map-dot:nth-child(2) { top: 55%; left: 65%; animation-delay: 0.8s; background: var(--blue-mid); box-shadow: 0 0 0 4px rgba(37,99,176,0.2); }
+  .map-dot:nth-child(3) { top: 25%; left: 55%; animation-delay: 1.6s; background: var(--green); box-shadow: 0 0 0 4px rgba(27,107,69,0.2); }
+  .map-dot:nth-child(4) { top: 70%; left: 30%; animation-delay: 0.4s; }
+  .map-dot:nth-child(5) { top: 45%; left: 20%; animation-delay: 1.2s; background: var(--gold); box-shadow: 0 0 0 4px rgba(201,146,10,0.2); }
+  @keyframes map-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+  }
+
+  .community-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid;
+  }
+  .chip.bihar { background: #FDF4DC; border-color: #C9920A; color: #7A5800; }
+  .chip.up { background: var(--green-light); border-color: var(--green); color: #0F4028; }
+  .chip.odisha { background: var(--blue-light); border-color: var(--blue); color: #0D2E52; }
+  .chip.bengal { background: #FDE8E8; border-color: #C43A3A; color: #6B1414; }
+  .chip.raj { background: #F0E8FD; border-color: #7E3AC4; color: #3D1568; }
+
+  .floating-card {
+    position: absolute;
+    background: white;
+    border-radius: 14px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    animation: float 4s ease-in-out infinite;
+  }
+  .floating-card.card1 { top: -20px; right: -20px; animation-delay: 0s; }
+  .floating-card.card2 { bottom: 60px; left: -30px; animation-delay: 2s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+  .fc-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .fc-icon.green { background: var(--green-light); }
+  .fc-icon.orange { background: var(--saffron-light); }
+
+  /* ─────────────── MAIN APP LAYOUT ─────────────── */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr 300px;
+    gap: 0;
+    min-height: calc(100vh - 64px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    padding: 24px 16px;
+    border-right: 1px solid var(--border);
+    background: var(--cream);
+    min-height: 600px;
+  }
+
+  .sidebar-section { margin-bottom: 28px; }
+  .sidebar-heading {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    position: relative;
+  }
+  .sidebar-link:hover { background: white; color: var(--ink); }
+  .sidebar-link.active {
+    background: linear-gradient(135deg, var(--saffron-light), var(--saffron-light));
+    color: var(--saffron);
+    font-weight: 600;
+  }
+  .sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 20px;
+    background: var(--saffron);
+    border-radius: 0 2px 2px 0;
+  }
+  .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-badge {
+    margin-left: auto;
+    background: var(--saffron);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 100px;
+  }
+
+  .my-circle-card {
+    background: linear-gradient(135deg, var(--blue) 0%, #0F2E5A 100%);
+    border-radius: 14px;
+    padding: 16px;
+    color: white;
+    margin: 0 0 8px;
+  }
+  .mcc-label { font-size: 10px; font-weight: 600; opacity: 0.7; letter-spacing: 0.1em; text-transform: uppercase; }
+  .mcc-name { font-size: 16px; font-weight: 700; margin: 4px 0 2px; }
+  .mcc-city { font-size: 12px; opacity: 0.7; }
+  .mcc-count { font-size: 24px; font-weight: 800; margin-top: 12px; letter-spacing: -1px; }
+  .mcc-members { font-size: 11px; opacity: 0.7; }
+
+  /* Main Content */
+  .main-content {
+    padding: 24px 28px;
+    background: var(--paper);
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* Feed */
+  .feed-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .feed-tab {
+    flex: 1;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .feed-tab.active {
+    background: white;
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Feed Post Card */
+  .feed-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .feed-card:hover { box-shadow: var(--shadow-md); border-color: rgba(232,98,26,0.2); transform: translateY(-1px); }
+
+  .fc-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .fc-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .fc-meta { flex: 1; }
+  .fc-name { font-size: 14px; font-weight: 600; }
+  .fc-info { font-size: 12px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .fc-state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--gold-light);
+    color: var(--gold);
+    border: 1px solid rgba(201,146,10,0.2);
+  }
+  .fc-type-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .fc-type-badge.job { background: var(--blue-light); color: var(--blue); }
+  .fc-type-badge.event { background: var(--green-light); color: var(--green); }
+  .fc-type-badge.service { background: var(--gold-light); color: var(--gold); }
+
+  .fc-body { font-size: 14px; line-height: 1.6; color: #3A3530; margin-bottom: 14px; }
+  .fc-body strong { color: var(--ink); font-weight: 600; }
+
+  .fc-job-details {
+    background: var(--saffron-light);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .fc-job-detail { display: flex; flex-direction: column; gap: 2px; }
+  .fc-jd-label { font-size: 10px; font-weight: 600; color: var(--saffron); text-transform: uppercase; letter-spacing: 0.08em; }
+  .fc-jd-value { font-size: 13px; font-weight: 600; color: var(--ink); }
+
+  .fc-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fc-action {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    font-family: 'Sora', sans-serif;
+  }
+  .fc-action.apply {
+    background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+    color: white;
+    margin-left: auto;
+    box-shadow: 0 2px 8px rgba(232,98,26,0.25);
+  }
+  .fc-action.apply:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(232,98,26,0.35); }
+  .fc-action.ghost {
+    background: var(--cream);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .fc-action.ghost:hover { background: var(--saffron-light); color: var(--saffron); border-color: rgba(232,98,26,0.3); }
+
+  /* Job Card */
+  .job-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .job-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .job-card:hover { box-shadow: var(--shadow-md); transform: translateX(2px); }
+  .job-card:hover::before { background: var(--saffron); }
+  .job-card.community::before { background: var(--saffron); }
+
+  .jc-logo {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: var(--cream);
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .jc-main { flex: 1; }
+  .jc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .jc-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .jc-employer { font-size: 12px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .jc-pay { font-size: 15px; font-weight: 700; color: var(--green); }
+  .jc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .jc-tag {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--cream);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .jc-tag.community { background: var(--saffron-light); color: var(--saffron); border-color: rgba(232,98,26,0.2); font-weight: 600; }
+  .jc-tag.lang { background: var(--blue-light); color: var(--blue); border-color: rgba(27,79,138,0.15); }
+  .trust-verified { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--green); font-weight: 600; }
+
+  /* Profile / Trust Score */
+  .profile-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .profile-banner {
+    height: 90px;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--saffron) 100%);
+    position: relative;
+  }
+  .profile-banner-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.1;
+    background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+                      radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
+                      radial-gradient(circle at 60% 80%, white 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .profile-body { padding: 16px 20px 20px; }
+  .profile-avatar-wrap {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: var(--shadow-sm);
+    margin-top: -36px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--blue-mid), var(--blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    position: relative;
+  }
+  .profile-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .profile-meta { font-size: 12px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+  .profile-sep { width: 3px; height: 3px; background: var(--border); border-radius: 50%; }
+
+  .trust-score-widget {
+    background: var(--cream);
+    border-radius: 14px;
+    padding: 16px;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .trust-ring-svg { width: 64px; height: 64px; }
+  .trust-ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+  .trust-ring-fill { fill: none; stroke: var(--saffron); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 163; stroke-dashoffset: 45; transform: rotate(-90deg); transform-origin: 50% 50%; }
+  .trust-number { font-size: 16px; font-weight: 800; fill: var(--ink); }
+  .trust-info { flex: 1; }
+  .trust-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .trust-value { font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -1px; }
+  .trust-sub { font-size: 11px; color: var(--saffron); font-weight: 600; }
+  .trust-breakdown { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .tb-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .tb-check { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; color: white; flex-shrink: 0; }
+  .tb-check.done { background: var(--green); }
+  .tb-check.pending { background: var(--border); color: var(--muted); }
+  .tb-label { flex: 1; color: var(--muted); }
+  .tb-pts { font-weight: 700; color: var(--ink); }
+
+  /* Right Panel */
+  .right-panel {
+    padding: 24px 20px;
+    border-left: 1px solid var(--border);
+    background: var(--cream);
+  }
+
+  .rp-section { margin-bottom: 24px; }
+  .rp-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .rp-see-all { font-size: 11px; color: var(--saffron); font-weight: 600; cursor: pointer; }
+
+  .event-mini-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .event-mini-card:hover { box-shadow: var(--shadow-sm); border-color: rgba(27,107,69,0.3); }
+  .emc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .emc-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .emc-date {
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--green-light);
+    color: var(--green);
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .emc-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+
+  .member-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .member-mini:last-child { border-bottom: none; }
+  .mm-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .mm-info { flex: 1; }
+  .mm-name { font-size: 13px; font-weight: 600; }
+  .mm-occ { font-size: 11px; color: var(--muted); }
+  .mm-connect {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--saffron);
+    border: 1px solid rgba(232,98,26,0.3);
+    background: var(--saffron-light);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ─── SEARCH BAR ─── */
+  .search-bar-wrap {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .search-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    cursor: text;
+    transition: border-color 0.15s;
+  }
+  .search-bar:hover { border-color: var(--saffron); }
+  .filter-btn {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-light); }
+
+  /* ─── TABS NAVIGATION ─── */
+  .screen-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 40px;
+    padding: 0 40px;
+    overflow-x: auto;
+  }
+  .screen-tab {
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .screen-tab:hover { color: var(--saffron); }
+  .screen-tab.active { color: var(--saffron); border-bottom-color: var(--saffron); }
+
+  /* ─── SCREEN PANELS ─── */
+  .screen-panel { display: none; padding: 0 40px; }
+  .screen-panel.active { display: block; }
+
+  /* ─── ONBOARDING ─── */
+  .onboard-container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 40px 0;
+  }
+  .onboard-card {
+    background: white;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .onboard-progress {
+    height: 4px;
+    background: var(--border);
+  }
+  .onboard-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--saffron), var(--saffron-dark));
+    width: 50%;
+    transition: width 0.4s ease;
+    border-radius: 2px;
+  }
+  .onboard-header {
+    padding: 28px 32px 0;
+  }
+  .onboard-step { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .onboard-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .onboard-desc { font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+  .onboard-body { padding: 24px 32px 32px; }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .state-btn {
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .state-btn .s-emoji { font-size: 18px; }
+  .state-btn:hover { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-light); }
+  .state-btn.selected { border-color: var(--saffron); background: var(--saffron-light); color: var(--saffron); }
+
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .role-btn {
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    font-family: 'Sora', sans-serif;
+  }
+  .role-btn:hover { border-color: var(--saffron); background: var(--saffron-light); }
+  .role-btn.selected { border-color: var(--saffron); background: var(--saffron-light); }
+  .role-emoji { font-size: 24px; margin-bottom: 8px; display: block; }
+  .role-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .role-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ─── EVENT CARDS ─── */
+  .event-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .event-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .event-card-banner {
+    height: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .event-card-banner .ev-emoji { font-size: 36px; position: relative; z-index: 1; }
+  .ev-date-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: white;
+    border-radius: 10px;
+    padding: 6px 10px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .ev-date-day { font-size: 18px; font-weight: 800; color: var(--ink); line-height: 1; }
+  .ev-date-month { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
+  .event-card-body { padding: 14px 16px; }
+  .ev-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .ev-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .ev-rsvp-bar { margin-top: 12px; }
+  .ev-rsvp-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .ev-rsvp-track { height: 4px; background: var(--border); border-radius: 2px; }
+  .ev-rsvp-fill { height: 100%; background: var(--green); border-radius: 2px; }
+
+  /* ─── BOTTOM AREA ─── */
+  .color-palette-section {
+    padding: 60px 40px;
+    background: var(--ink);
+    color: white;
+  }
+  .palette-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .palette-sub { font-size: 14px; opacity: 0.5; margin-bottom: 32px; }
+  .palette-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .swatch { border-radius: 14px; height: 80px; display: flex; align-items: flex-end; padding: 10px 14px; font-size: 12px; font-weight: 600; min-width: 120px; flex: 1; }
+  .swatch span { mix-blend-mode: difference; color: white; opacity: 0.8; }
+
+  /* Typography */
+  .typo-section {
+    padding: 60px 40px;
+    background: white;
+    border-top: 1px solid var(--border);
+  }
+  .typo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 28px; }
+
+  /* Notification toast example */
+  .toast-demo {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--ink);
+    color: white;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-lg);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards, fade-out 0.4s ease 4s forwards;
+    max-width: 320px;
+  }
+  @keyframes slide-in {
+    from { transform: translateY(80px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fade-out {
+    to { opacity: 0; transform: translateY(20px); }
+  }
+  .toast-icon {
+    width: 32px; height: 32px;
+    background: var(--saffron);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .toast-text { flex: 1; }
+  .toast-title { font-weight: 700; font-size: 13px; }
+  .toast-body { font-size: 11px; opacity: 0.7; margin-top: 1px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .app-shell { grid-template-columns: 200px 1fr; }
+    .right-panel { display: none; }
+  }
+  @media (max-width: 800px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+  }
+
+  .divider-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 40px 40px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .divider-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ NAVBAR ══════════════════ -->
+<nav class="navbar">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-mark">AS</div>
+    <span class="nav-logo-text">Apna <span>Sheher</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" class="active"><span class="icon">🏠</span> Feed</a></li>
+    <li><a href="#"><span class="icon">💼</span> Jobs</a></li>
+    <li><a href="#"><span class="icon">🔧</span> Services</a></li>
+    <li><a href="#"><span class="icon">🎉</span> Events</a></li>
+    <li><a href="#"><span class="icon">👥</span> Community</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-toggle"><span>हि</span> / EN</div>
+    <div class="nav-avatar">
+      R
+      <div class="trust-ring"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════ SCREEN TABS ══════════════════ -->
+<div class="screen-tabs" id="screenTabs">
+  <div class="screen-tab active" onclick="showTab('landing')">🏠 Landing Page</div>
+  <div class="screen-tab" onclick="showTab('feed')">📰 Home Feed</div>
+  <div class="screen-tab" onclick="showTab('jobs')">💼 Jobs</div>
+  <div class="screen-tab" onclick="showTab('events')">🎉 Events</div>
+  <div class="screen-tab" onclick="showTab('onboarding')">✨ Onboarding</div>
+  <div class="screen-tab" onclick="showTab('profile')">👤 Profile</div>
+  <div class="screen-tab" onclick="showTab('design')">🎨 Design System</div>
+</div>
+
+<!-- ══════════════════ LANDING PAGE ══════════════════ -->
+<div class="screen-panel active" id="tab-landing">
+  <div style="background: var(--paper); border-bottom: 1px solid var(--border);">
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          <div class="eyebrow-dot"></div>
+          India's Migrant Community Platform
+        </div>
+        <h1 class="hero-h1">
+          <span class="hindi">अपना शहर</span>
+          Find your people.<br>Find your place.
+          <span class="sub">Jobs · Services · Events · Community</span>
+        </h1>
+        <p class="hero-desc">
+          Connect with people from your own state, find trusted jobs and services,
+          and celebrate your culture — wherever you are in India.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary">🚀 Join Your Circle <span>→</span></button>
+          <button class="btn-secondary">🔍 Browse Jobs</button>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num">600M+</span><span class="stat-label">Migrants in India</span></div>
+          <div class="stat"><span class="stat-num">28</span><span class="stat-label">State Circles</span></div>
+          <div class="stat"><span class="stat-num">50+</span><span class="stat-label">Cities Covered</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-card card1">
+          <div class="fc-icon green">✅</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Rajan got hired!</div>
+            <div style="font-size:11px;color:var(--muted);">Construction Worker · Pune</div>
+          </div>
+        </div>
+        <div class="hero-map-card">
+          <div class="map-bg">
+            <div class="map-grid"></div>
+            <div class="map-india">🗺️</div>
+            <div class="map-dots">
+              <div class="map-dot"></div>
+              <div class="map-dot"></div>
+              <div class="map-dot"></div>
+              <div class="map-dot"></div>
+              <div class="map-dot"></div>
+            </div>
+          </div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Active Communities Near You</div>
+          <div class="community-chips">
+            <div class="chip bihar">🌾 Bihar Circle · 4.2K</div>
+            <div class="chip up">🏛️ UP Circle · 6.8K</div>
+            <div class="chip odisha">🌊 Odisha Circle · 2.1K</div>
+            <div class="chip bengal">🐯 Bengal Circle · 3.4K</div>
+            <div class="chip raj">🏜️ Rajasthan · 1.9K</div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);">in Pune, Maharashtra</div>
+        </div>
+        <div class="floating-card card2">
+          <div class="fc-icon orange">📅</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Chhath Puja 2025</div>
+            <div style="font-size:11px;color:var(--muted);">240 RSVPs · Pune</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div style="padding: 60px 40px; max-width:1200px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:40px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--saffron);margin-bottom:10px;">How It Works</div>
+      <div style="font-size:32px;font-weight:800;letter-spacing:-1px;">Three simple steps</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+      <div style="background:white;border-radius:20px;padding:28px;border:1px solid var(--border);text-align:center;">
+        <div style="font-size:44px;margin-bottom:16px;">📍</div>
+        <div style="font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--saffron);margin-bottom:8px;">Step 1</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px;">Join Your Circle</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;">Tell us your native state and current city. Instantly connect with thousands of people from your own community.</div>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--saffron),var(--saffron-dark));border-radius:20px;padding:28px;text-align:center;color:white;transform:translateY(-8px);box-shadow:0 16px 48px rgba(232,98,26,0.25);">
+        <div style="font-size:44px;margin-bottom:16px;">🤝</div>
+        <div style="font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;margin-bottom:8px;">Step 2</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px;">Find Trusted Help</div>
+        <div style="font-size:13px;opacity:0.85;line-height:1.7;">Browse jobs, services, and events from verified community members. Every listing is trusted by your own people.</div>
+      </div>
+      <div style="background:white;border-radius:20px;padding:28px;border:1px solid var(--border);text-align:center;">
+        <div style="font-size:44px;margin-bottom:16px;">🌟</div>
+        <div style="font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;">Step 3</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px;">Grow Together</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;">Build your reputation, vouch for friends, celebrate festivals together. Your community, your strength.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ HOME FEED ══════════════════ -->
+<div class="screen-panel" id="tab-feed">
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="my-circle-card">
+        <div class="mcc-label">My Circle</div>
+        <div class="mcc-name">Bihar Circle</div>
+        <div class="mcc-city">📍 Pune, Maharashtra</div>
+        <div class="mcc-count">4,218</div>
+        <div class="mcc-members">members nearby</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Navigate</div>
+        <nav class="sidebar-nav">
+          <a class="sidebar-link active"><span class="sidebar-icon">📰</span> Community Feed</a>
+          <a class="sidebar-link"><span class="sidebar-icon">💼</span> Jobs <span class="sidebar-badge">12</span></a>
+          <a class="sidebar-link"><span class="sidebar-icon">🔧</span> Services</a>
+          <a class="sidebar-link"><span class="sidebar-icon">🎉</span> Events</a>
+          <a class="sidebar-link"><span class="sidebar-icon">👥</span> My Circle</a>
+          <a class="sidebar-link"><span class="sidebar-icon">💬</span> Messages <span class="sidebar-badge">3</span></a>
+          <a class="sidebar-link"><span class="sidebar-icon">🔔</span> Notifications</a>
+        </nav>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Other Circles</div>
+        <nav class="sidebar-nav">
+          <a class="sidebar-link"><span class="sidebar-icon">🏛️</span> UP Circle · 6.8K</a>
+          <a class="sidebar-link"><span class="sidebar-icon">🌊</span> Odisha Circle · 2.1K</a>
+          <a class="sidebar-link"><span class="sidebar-icon">🐯</span> Bengal Circle · 3.4K</a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Feed -->
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Community Feed</div>
+          <div class="page-subtitle">What's happening in Bihar Circle · Pune</div>
+        </div>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;">✏️ Post Update</button>
+      </div>
+
+      <div class="feed-tabs">
+        <div class="feed-tab active">🔥 All</div>
+        <div class="feed-tab">💼 Jobs</div>
+        <div class="feed-tab">🔧 Services</div>
+        <div class="feed-tab">🎉 Events</div>
+        <div class="feed-tab">📢 News</div>
+      </div>
+
+      <!-- Feed Card 1 — Job -->
+      <div class="feed-card">
+        <div class="fc-header">
+          <div class="fc-avatar" style="background:linear-gradient(135deg,#1B4F8A,#2563B0);">R</div>
+          <div class="fc-meta">
+            <div class="fc-name">Ramesh Kumar <span class="trust-verified">✅ Verified</span></div>
+            <div class="fc-info">
+              <span class="fc-state-badge">🌾 Bihar</span>
+              Construction Contractor · 2 hours ago
+            </div>
+          </div>
+          <span class="fc-type-badge job">💼 Job</span>
+        </div>
+        <div class="fc-body">Looking for <strong>2 experienced Masons</strong> for a 3-month project in Hadapsar. Housing provided. Hindi/Bhojpuri speaking employer. Trustworthy work, on-time payment.</div>
+        <div class="fc-job-details">
+          <div class="fc-job-detail">
+            <span class="fc-jd-label">Pay</span>
+            <span class="fc-jd-value">₹18,000/mo</span>
+          </div>
+          <div class="fc-job-detail">
+            <span class="fc-jd-label">Location</span>
+            <span class="fc-jd-value">Hadapsar, Pune</span>
+          </div>
+          <div class="fc-job-detail">
+            <span class="fc-jd-label">Duration</span>
+            <span class="fc-jd-value">3 Months</span>
+          </div>
+          <div class="fc-job-detail">
+            <span class="fc-jd-label">Language</span>
+            <span class="fc-jd-value">Hindi / Bhojpuri</span>
+          </div>
+        </div>
+        <div class="fc-footer">
+          <button class="fc-action ghost">👍 12</button>
+          <button class="fc-action ghost">💬 4 Comments</button>
+          <button class="fc-action ghost">🔗 Share</button>
+          <button class="fc-action apply">Apply Now →</button>
+        </div>
+      </div>
+
+      <!-- Feed Card 2 — Event -->
+      <div class="feed-card">
+        <div class="fc-header">
+          <div class="fc-avatar" style="background:linear-gradient(135deg,#1B6B45,#27A06A);">S</div>
+          <div class="fc-meta">
+            <div class="fc-name">Santosh Mahto</div>
+            <div class="fc-info"><span class="fc-state-badge">🌾 Bihar</span> Event Organizer · 5 hours ago</div>
+          </div>
+          <span class="fc-type-badge event">🎉 Event</span>
+        </div>
+        <div class="fc-body">Announcing <strong>Chhath Puja 2025</strong> for all Bihar community members in Pune! Join us at Khadakwasla Lake for the grand celebration. Buses arranged from Bibwewadi and Hadapsar.</div>
+        <div class="fc-footer">
+          <button class="fc-action ghost">❤️ 89</button>
+          <button class="fc-action ghost">💬 23 Comments</button>
+          <button class="fc-action apply" style="background:linear-gradient(135deg,var(--green),#0F5035);">RSVP Free →</button>
+        </div>
+      </div>
+
+      <!-- Feed Card 3 — Service -->
+      <div class="feed-card">
+        <div class="fc-header">
+          <div class="fc-avatar" style="background:linear-gradient(135deg,#C9920A,#A67206);">D</div>
+          <div class="fc-meta">
+            <div class="fc-name">Dr. Dinesh Sahu ✅</div>
+            <div class="fc-info"><span class="fc-state-badge" style="background:var(--blue-light);color:var(--blue);border-color:rgba(27,79,138,0.2);">🏛️ UP</span> General Physician · 1 day ago</div>
+          </div>
+          <span class="fc-type-badge service">🔧 Service</span>
+        </div>
+        <div class="fc-body">Now available for home visits in <strong>Kothrud and Karve Nagar</strong>. Hindi-speaking doctor, affordable fees. Specializes in general medicine, diabetes, BP. Community discount for Apna Sheher members.</div>
+        <div class="fc-footer">
+          <button class="fc-action ghost">👍 34</button>
+          <button class="fc-action ghost">💬 8 Comments</button>
+          <button class="fc-action apply" style="background:linear-gradient(135deg,var(--gold),#A67206);">Contact →</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="right-panel">
+      <div class="rp-section">
+        <div class="rp-title">Upcoming Events <span class="rp-see-all">See all →</span></div>
+        <div class="event-mini-card">
+          <div class="emc-top">
+            <div class="emc-title">🪔 Chhath Puja 2025</div>
+            <div class="emc-date">Nov 7</div>
+          </div>
+          <div class="emc-meta">📍 Khadakwasla Lake · 240 going</div>
+        </div>
+        <div class="event-mini-card">
+          <div class="emc-top">
+            <div class="emc-title">🥘 Bihar Food Festival</div>
+            <div class="emc-date">Nov 15</div>
+          </div>
+          <div class="emc-meta">📍 FC Road · 89 going</div>
+        </div>
+        <div class="event-mini-card">
+          <div class="emc-top">
+            <div class="emc-title">💼 Job Fair — Construction</div>
+            <div class="emc-date">Nov 22</div>
+          </div>
+          <div class="emc-meta">📍 Hadapsar Hall · 156 going</div>
+        </div>
+      </div>
+
+      <div class="rp-section">
+        <div class="rp-title">People from Bihar <span class="rp-see-all">See all →</span></div>
+        <div class="member-mini">
+          <div class="mm-avatar" style="background:linear-gradient(135deg,#1B4F8A,#2563B0);">M</div>
+          <div class="mm-info"><div class="mm-name">Mukesh Yadav</div><div class="mm-occ">Electrician · Kothrud</div></div>
+          <div class="mm-connect">+ Connect</div>
+        </div>
+        <div class="member-mini">
+          <div class="mm-avatar" style="background:linear-gradient(135deg,#1B6B45,#27A06A);">P</div>
+          <div class="mm-info"><div class="mm-name">Poonam Devi</div><div class="mm-occ">Nurse · Warje</div></div>
+          <div class="mm-connect">+ Connect</div>
+        </div>
+        <div class="member-mini">
+          <div class="mm-avatar" style="background:linear-gradient(135deg,#C9920A,#A67206);">A</div>
+          <div class="mm-info"><div class="mm-name">Arun Paswan</div><div class="mm-occ">Driver · Bibwewadi</div></div>
+          <div class="mm-connect">+ Connect</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════════════ JOBS ══════════════════ -->
+<div class="screen-panel" id="tab-jobs">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Filter Jobs</div>
+        <div style="padding:0 4px;">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;margin-top:12px;">Job Category</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px;border-radius:8px;" class="sidebar-link active">🧱 Construction</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px;border-radius:8px;" class="sidebar-link">🏠 Domestic Work</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px;border-radius:8px;" class="sidebar-link">🏭 Factory / Manufacturing</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px;border-radius:8px;" class="sidebar-link">🚗 Transport / Driving</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px;border-radius:8px;" class="sidebar-link">🍳 Food / Hotel</label>
+          </div>
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin:14px 0 8px;">Pay Range</div>
+          <div style="font-size:13px;font-weight:700;">₹8,000 — ₹35,000/mo</div>
+          <div style="height:4px;background:var(--border);border-radius:2px;margin:8px 0;position:relative;">
+            <div style="position:absolute;left:15%;right:20%;height:100%;background:var(--saffron);border-radius:2px;"></div>
+          </div>
+          <div style="margin-top:16px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;">
+              <div style="width:18px;height:18px;background:var(--saffron);border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;">✓</div>
+              Community Jobs Only
+            </label>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;padding-left:26px;">Jobs from your state community</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Browse Jobs</div>
+          <div class="page-subtitle">142 jobs in Pune · 38 from Bihar community</div>
+        </div>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;">+ Post a Job</button>
+      </div>
+
+      <div class="search-bar-wrap">
+        <div class="search-bar">🔍 &nbsp;Search by skill, job title, or keyword...</div>
+        <button class="filter-btn">⚙️ Filters</button>
+        <button class="filter-btn">📍 Pune</button>
+      </div>
+
+      <!-- Community Jobs Banner -->
+      <div style="background:linear-gradient(135deg,var(--saffron-light),rgba(255,255,255,0));border:1px solid rgba(232,98,26,0.2);border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:22px;">🌾</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--saffron);">38 Bihar Community Jobs in Pune</div>
+          <div style="font-size:12px;color:var(--muted);">Jobs posted by employers from your state — extra trust, fewer misunderstandings</div>
+        </div>
+        <button class="btn-primary" style="font-size:12px;padding:8px 16px;margin-left:auto;white-space:nowrap;">View All →</button>
+      </div>
+
+      <!-- Job Cards -->
+      <div class="job-card community">
+        <div class="jc-logo">🧱</div>
+        <div class="jc-main">
+          <div class="jc-top">
+            <div>
+              <div class="jc-title">Senior Mason — Residential Project</div>
+              <div class="jc-employer">Ramesh Construction · <span class="trust-verified">✅ Verified</span> · <span class="fc-state-badge">🌾 Bihar Employer</span></div>
+            </div>
+            <div class="jc-pay">₹18,000/mo</div>
+          </div>
+          <div class="jc-tags">
+            <span class="jc-tag">📍 Hadapsar, Pune</span>
+            <span class="jc-tag">📅 3 months</span>
+            <span class="jc-tag lang">🗣️ Hindi / Bhojpuri</span>
+            <span class="jc-tag community">🌾 Bihar Community</span>
+            <span class="jc-tag">🏠 Housing Included</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-card">
+        <div class="jc-logo">🏠</div>
+        <div class="jc-main">
+          <div class="jc-top">
+            <div>
+              <div class="jc-title">Live-in Cook — Marathi Family</div>
+              <div class="jc-employer">Priya Joshi (Household) · Baner</div>
+            </div>
+            <div class="jc-pay">₹12,000/mo</div>
+          </div>
+          <div class="jc-tags">
+            <span class="jc-tag">📍 Baner, Pune</span>
+            <span class="jc-tag">📅 Ongoing</span>
+            <span class="jc-tag lang">🗣️ Hindi / Marathi</span>
+            <span class="jc-tag">🍳 Cooking skills</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-card community">
+        <div class="jc-logo">🏭</div>
+        <div class="jc-main">
+          <div class="jc-top">
+            <div>
+              <div class="jc-title">Machine Operator — Packaging Unit</div>
+              <div class="jc-employer">Shiv Enterprises · <span class="trust-verified">✅ Verified</span> · <span class="fc-state-badge">🌾 Bihar Employer</span></div>
+            </div>
+            <div class="jc-pay">₹14,500/mo</div>
+          </div>
+          <div class="jc-tags">
+            <span class="jc-tag">📍 Chakan, Pune</span>
+            <span class="jc-tag">📅 Full-time</span>
+            <span class="jc-tag lang">🗣️ Hindi</span>
+            <span class="jc-tag community">🌾 Bihar Community</span>
+            <span class="jc-tag">🚌 Bus pickup available</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="right-panel">
+      <div class="rp-section">
+        <div class="rp-title">My Applications</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px;">
+            <div style="font-size:13px;font-weight:600;">Plumber — Kothrud</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Applied 2 days ago</div>
+            <div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--gold);background:var(--gold-light);padding:3px 10px;border-radius:6px;">👀 Viewed</div>
+          </div>
+          <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px;">
+            <div style="font-size:13px;font-weight:600;">Mason — Hadapsar Project</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Applied 5 days ago</div>
+            <div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--green);background:var(--green-light);padding:3px 10px;border-radius:6px;">⭐ Shortlisted</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════════════ EVENTS ══════════════════ -->
+<div class="screen-panel" id="tab-events">
+  <div style="padding: 24px 40px;">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Community Events</div>
+        <div class="page-subtitle">Cultural celebrations, job fairs & community meetups in Pune</div>
+      </div>
+      <button class="btn-primary" style="font-size:13px;padding:10px 18px;">+ Create Event</button>
+    </div>
+
+    <div class="feed-tabs" style="max-width:600px;">
+      <div class="feed-tab active">🔥 All</div>
+      <div class="feed-tab">🪔 Cultural</div>
+      <div class="feed-tab">🙏 Religious</div>
+      <div class="feed-tab">💼 Professional</div>
+      <div class="feed-tab">🎊 Social</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;max-width:1100px;">
+      <div class="event-card">
+        <div class="event-card-banner" style="background:linear-gradient(135deg,#FDF4DC,#FAE5A0);">
+          <span class="ev-emoji">🪔</span>
+          <div class="ev-date-badge"><div class="ev-date-day">7</div><div class="ev-date-month">Nov</div></div>
+        </div>
+        <div class="event-card-body">
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <span style="font-size:10px;font-weight:700;background:var(--gold-light);color:var(--gold);padding:3px 8px;border-radius:6px;">RELIGIOUS</span>
+            <span class="fc-state-badge">🌾 Bihar Community</span>
+          </div>
+          <div class="ev-title">Chhath Puja 2025 — Grand Celebration</div>
+          <div class="ev-meta">📍 Khadakwasla Lake &nbsp;·&nbsp; 🆓 Free Entry</div>
+          <div class="ev-rsvp-bar">
+            <div class="ev-rsvp-label"><span>240 / 500 going</span><span style="color:var(--green);font-weight:600;">48%</span></div>
+            <div class="ev-rsvp-track"><div class="ev-rsvp-fill" style="width:48%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-card-banner" style="background:linear-gradient(135deg,var(--blue-light),#C5D9F5);">
+          <span class="ev-emoji">💼</span>
+          <div class="ev-date-badge"><div class="ev-date-day">22</div><div class="ev-date-month">Nov</div></div>
+        </div>
+        <div class="event-card-body">
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <span style="font-size:10px;font-weight:700;background:var(--blue-light);color:var(--blue);padding:3px 8px;border-radius:6px;">JOB FAIR</span>
+          </div>
+          <div class="ev-title">Construction Job Fair — 50+ Employers</div>
+          <div class="ev-meta">📍 Hadapsar Community Hall &nbsp;·&nbsp; 🆓 Free</div>
+          <div class="ev-rsvp-bar">
+            <div class="ev-rsvp-label"><span>156 / 300 going</span><span style="color:var(--green);font-weight:600;">52%</span></div>
+            <div class="ev-rsvp-track"><div class="ev-rsvp-fill" style="width:52%;background:var(--blue);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-card-banner" style="background:linear-gradient(135deg,var(--green-light),#A8E0C0);">
+          <span class="ev-emoji">🥘</span>
+          <div class="ev-date-badge"><div class="ev-date-day">15</div><div class="ev-date-month">Nov</div></div>
+        </div>
+        <div class="event-card-body">
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <span style="font-size:10px;font-weight:700;background:var(--green-light);color:var(--green);padding:3px 8px;border-radius:6px;">SOCIAL</span>
+          </div>
+          <div class="ev-title">Bihar Food Festival & Cultural Night</div>
+          <div class="ev-meta">📍 FC Road, Pune &nbsp;·&nbsp; 🎟️ ₹99 Entry</div>
+          <div class="ev-rsvp-bar">
+            <div class="ev-rsvp-label"><span>89 / 200 going</span><span style="color:var(--green);font-weight:600;">44%</span></div>
+            <div class="ev-rsvp-track"><div class="ev-rsvp-fill" style="width:44%;background:var(--green);"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ONBOARDING ══════════════════ -->
+<div class="screen-panel" id="tab-onboarding">
+  <div class="onboard-container">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div class="nav-logo-mark" style="margin:0 auto 12px;width:48px;height:48px;font-size:22px;border-radius:14px;">AS</div>
+      <div style="font-size:13px;color:var(--muted);">Step 2 of 4 — Where are you from?</div>
+    </div>
+    <div class="onboard-card">
+      <div class="onboard-progress"><div class="onboard-progress-fill"></div></div>
+      <div class="onboard-header">
+        <div class="onboard-step">Step 2 of 4</div>
+        <div class="onboard-title">Your native state 🗺️</div>
+        <div class="onboard-desc">This helps us connect you with people from your own community in your current city.</div>
+      </div>
+      <div class="onboard-body">
+        <div class="state-grid">
+          <button class="state-btn selected"><span class="s-emoji">🌾</span>Bihar</button>
+          <button class="state-btn"><span class="s-emoji">🏛️</span>Uttar Pradesh</button>
+          <button class="state-btn"><span class="s-emoji">🌊</span>Odisha</button>
+          <button class="state-btn"><span class="s-emoji">🐯</span>West Bengal</button>
+          <button class="state-btn"><span class="s-emoji">🏜️</span>Rajasthan</button>
+          <button class="state-btn"><span class="s-emoji">🌿</span>Jharkhand</button>
+          <button class="state-btn"><span class="s-emoji">🌴</span>Kerala</button>
+          <button class="state-btn"><span class="s-emoji">🎭</span>Tamil Nadu</button>
+          <button class="state-btn"><span class="s-emoji">➕</span>Other</button>
+        </div>
+        <button class="btn-primary" style="width:100%;justify-content:center;">Continue →</button>
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted);">You can always change this later in settings</div>
+      </div>
+    </div>
+
+    <!-- Role selection card below -->
+    <div style="margin-top:24px;opacity:0.5;">
+      <div class="onboard-card">
+        <div class="onboard-progress"><div class="onboard-progress-fill" style="width:75%"></div></div>
+        <div class="onboard-header">
+          <div class="onboard-step">Step 3 of 4</div>
+          <div class="onboard-title">What are you here for? 🎯</div>
+          <div class="onboard-desc">Select all that apply. You can be more than one.</div>
+        </div>
+        <div class="onboard-body">
+          <div class="role-grid">
+            <button class="role-btn selected">
+              <span class="role-emoji">💼</span>
+              <div class="role-name">Job Seeker</div>
+              <div class="role-desc">Find work in the city</div>
+            </button>
+            <button class="role-btn">
+              <span class="role-emoji">🔧</span>
+              <div class="role-name">Service Provider</div>
+              <div class="role-desc">Offer your skills</div>
+            </button>
+            <button class="role-btn">
+              <span class="role-emoji">🎉</span>
+              <div class="role-name">Event Organizer</div>
+              <div class="role-desc">Host community events</div>
+            </button>
+            <button class="role-btn selected">
+              <span class="role-emoji">👥</span>
+              <div class="role-name">Community Member</div>
+              <div class="role-desc">Stay connected</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PROFILE ══════════════════ -->
+<div class="screen-panel" id="tab-profile">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Profile Sections</div>
+        <nav class="sidebar-nav">
+          <a class="sidebar-link active">👤 My Profile</a>
+          <a class="sidebar-link">💼 Job History</a>
+          <a class="sidebar-link">🔧 My Services</a>
+          <a class="sidebar-link">⭐ Reviews</a>
+          <a class="sidebar-link">🤝 Vouches</a>
+          <a class="sidebar-link">⚙️ Settings</a>
+        </nav>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="profile-card">
+        <div class="profile-banner">
+          <div class="profile-banner-pattern"></div>
+        </div>
+        <div class="profile-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div class="profile-avatar-wrap">R</div>
+            <button class="btn-secondary" style="margin-top:8px;font-size:12px;padding:8px 16px;">✏️ Edit Profile</button>
+          </div>
+          <div class="profile-name">Rajesh Kumar Sharma</div>
+          <div class="profile-meta">
+            <span class="fc-state-badge">🌾 Bihar</span>
+            <span class="profile-sep"></span>
+            📍 Pune, Maharashtra
+            <span class="profile-sep"></span>
+            🧱 Mason & Contractor
+          </div>
+          <div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.7;">Experienced mason with 12 years of work. Specialized in RCC construction, tiling, and plastering. Looking for projects in Pune area.</div>
+
+          <div class="trust-score-widget">
+            <svg class="trust-ring-svg" viewBox="0 0 64 64">
+              <circle class="trust-ring-bg" cx="32" cy="32" r="26"/>
+              <circle class="trust-ring-fill" cx="32" cy="32" r="26"/>
+              <text class="trust-number" x="32" y="37" text-anchor="middle">142</text>
+            </svg>
+            <div class="trust-info">
+              <div class="trust-label">Trust Score</div>
+              <div class="trust-value">142 / 200</div>
+              <div class="trust-sub">🥈 Community Trusted</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="font-size:11px;font-weight:600;color:var(--muted);">Next level at 160</div>
+              <div style="height:6px;width:100px;background:var(--border);border-radius:3px;">
+                <div style="height:100%;width:71%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="trust-breakdown">
+            <div class="tb-item"><div class="tb-check done">✓</div><span class="tb-label">Phone Verified</span><span class="tb-pts">+20</span></div>
+            <div class="tb-item"><div class="tb-check done">✓</div><span class="tb-label">Profile Complete</span><span class="tb-pts">+15</span></div>
+            <div class="tb-item"><div class="tb-check done">✓</div><span class="tb-label">3 Community Vouches</span><span class="tb-pts">+30</span></div>
+            <div class="tb-item"><div class="tb-check done">✓</div><span class="tb-label">8 Positive Reviews</span><span class="tb-pts">+40</span></div>
+            <div class="tb-item"><div class="tb-check pending">○</div><span class="tb-label">Aadhaar Verified</span><span class="tb-pts" style="color:var(--muted);">+20</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+        <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:16px;text-align:center;">
+          <div style="font-size:24px;font-weight:800;letter-spacing:-1px;">14</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;">Jobs Applied</div>
+        </div>
+        <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:16px;text-align:center;">
+          <div style="font-size:24px;font-weight:800;letter-spacing:-1px;color:var(--green);">8</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;">Jobs Hired</div>
+        </div>
+        <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:16px;text-align:center;">
+          <div style="font-size:24px;font-weight:800;letter-spacing:-1px;color:var(--saffron);">3</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;">Vouches</div>
+        </div>
+        <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:16px;text-align:center;">
+          <div style="font-size:24px;font-weight:800;letter-spacing:-1px;color:var(--gold);">4.8⭐</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;">Avg Rating</div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="right-panel">
+      <div class="rp-section">
+        <div class="rp-title">Vouches Received</div>
+        <div class="member-mini">
+          <div class="mm-avatar" style="background:linear-gradient(135deg,#1B4F8A,#2563B0);">S</div>
+          <div class="mm-info">
+            <div class="mm-name">Suresh Bhai</div>
+            <div class="mm-occ" style="font-style:italic;">"Very reliable worker, always on time"</div>
+          </div>
+        </div>
+        <div class="member-mini">
+          <div class="mm-avatar" style="background:linear-gradient(135deg,#1B6B45,#27A06A);">M</div>
+          <div class="mm-info">
+            <div class="mm-name">Manoj Kumar</div>
+            <div class="mm-occ" style="font-style:italic;">"Excellent mason, quality work"</div>
+          </div>
+        </div>
+        <div class="member-mini">
+          <div class="mm-avatar" style="background:linear-gradient(135deg,#C9920A,#A67206);">P</div>
+          <div class="mm-info">
+            <div class="mm-name">Prakash Singh</div>
+            <div class="mm-occ" style="font-style:italic;">"Honest and hardworking"</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════════════ DESIGN SYSTEM ══════════════════ -->
+<div class="screen-panel" id="tab-design">
+  <div class="color-palette-section">
+    <div class="palette-title">Color System</div>
+    <div class="palette-sub">Core palette — warm, grounded, Indian context</div>
+    <div class="palette-row">
+      <div class="swatch" style="background:#E8621A;"><span>Saffron #E8621A</span></div>
+      <div class="swatch" style="background:#1B4F8A;"><span>Deep Blue #1B4F8A</span></div>
+      <div class="swatch" style="background:#1B6B45;"><span>Forest Green #1B6B45</span></div>
+      <div class="swatch" style="background:#C9920A;"><span>Gold #C9920A</span></div>
+      <div class="swatch" style="background:#0F1923;"><span>Ink #0F1923</span></div>
+    </div>
+    <div class="palette-row">
+      <div class="swatch" style="background:#FDF0E8;"><span style="color:#E8621A;">Saffron Light</span></div>
+      <div class="swatch" style="background:#EBF2FC;"><span style="color:#1B4F8A;">Blue Light</span></div>
+      <div class="swatch" style="background:#E8F5EE;"><span style="color:#1B6B45;">Green Light</span></div>
+      <div class="swatch" style="background:#FDF4DC;"><span style="color:#C9920A;">Gold Light</span></div>
+      <div class="swatch" style="background:#F7F3EE;"><span style="color:#0F1923;">Paper</span></div>
+    </div>
+  </div>
+
+  <div class="typo-section">
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);">Typography</div>
+    <div class="typo-grid">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;">SORA — English UI Font</div>
+        <div style="font-size:48px;font-weight:800;letter-spacing:-2px;line-height:1;">Apna Sheher</div>
+        <div style="font-size:24px;font-weight:600;color:var(--muted);margin-top:4px;">Community First</div>
+        <div style="font-size:14px;color:var(--muted);margin-top:8px;line-height:1.7;">Regular body text for descriptions, captions, and secondary information throughout the platform.</div>
+        <div style="margin-top:16px;display:flex;gap:12px;align-items:baseline;">
+          <span style="font-size:32px;font-weight:800;">H1</span>
+          <span style="font-size:22px;font-weight:700;">H2</span>
+          <span style="font-size:16px;font-weight:600;">H3</span>
+          <span style="font-size:14px;font-weight:500;">Body</span>
+          <span style="font-size:12px;color:var(--muted);">Caption</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;">NOTO SANS DEVANAGARI — Hindi UI</div>
+        <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:42px;font-weight:700;letter-spacing:0;line-height:1.3;color:var(--saffron);">अपना शहर</div>
+        <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:20px;font-weight:500;color:var(--muted);margin-top:4px;">अपने लोग, अपनी पहचान</div>
+        <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:14px;color:var(--muted);margin-top:8px;line-height:1.8;">नौकरी, सेवाएं और उत्सव खोजें — अपने ही लोगों के साथ।</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:40px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;">Component Library</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:24px;">
+      <button class="btn-primary">Primary CTA</button>
+      <button class="btn-secondary">Secondary</button>
+      <button class="btn-primary" style="background:linear-gradient(135deg,var(--green),#0F5035);">Success</button>
+      <button class="btn-primary" style="background:linear-gradient(135deg,var(--blue-mid),var(--blue));">Blue Action</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;">
+      <div class="chip bihar">🌾 Bihar · 4.2K</div>
+      <div class="chip up">🏛️ UP · 6.8K</div>
+      <div class="chip odisha">🌊 Odisha · 2.1K</div>
+      <div class="chip bengal">🐯 Bengal · 3.4K</div>
+      <span class="fc-type-badge job">💼 Job</span>
+      <span class="fc-type-badge event">🎉 Event</span>
+      <span class="fc-type-badge service">🔧 Service</span>
+      <div class="trust-verified">✅ Community Verified</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification demo -->
+<div class="toast-demo">
+  <div class="toast-icon">🌾</div>
+  <div class="toast-text">
+    <div class="toast-title">New Bihar Community Job</div>
+    <div class="toast-body">Mason needed in Hadapsar · ₹18,000/mo</div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.screen-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.screen-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Interactive state selection
+document.querySelectorAll('.state-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.state-btn').forEach(b => b.classList.remove('selected'));
+    this.classList.add('selected');
+  });
+});
+
+// Interactive role selection
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.classList.toggle('selected');
+  });
+});
+
+// Interactive feed tabs
+document.querySelectorAll('.feed-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    this.closest('.feed-tabs').querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+## DESIGN REFERENCE FILES
+The folder /design/ contains two HTML files that are the SINGLE SOURCE OF TRUTH for all UI decisions.
+
+1. rekkomo_design_palette.html — Contains:
+   - All CSS variables (copy exactly into globals.css)
+   - Color palette: Royal Blue #2B4FD4 primary, Amber #F59E0B accent
+   - Typography: Plus Jakarta Sans (English) + Noto Sans Devanagari (Hindi)
+   - Button styles, badge styles, card styles, input styles
+   - Spacing scale (4px base), border radius scale
+   - DO's and DON'Ts for color usage
+
+2. apna_sheher_ui.html — Contains:
+   - Navbar component
+   - Home Feed layout (3-column: sidebar + main + right panel)
+   - Job cards with community badges
+   - Event cards with RSVP bars
+   - Onboarding wizard screens
+   - Profile + Trust Score widget
+   - All component states (hover, active, error, focused)
+
+RULE: Never invent colors, fonts, spacing, or components.
+Always refer to these files before writing any UI code.

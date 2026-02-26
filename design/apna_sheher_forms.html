@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REKKOMO — Post Job & Create Event Forms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --royal:#2B4FD4; --royal-dark:#1A35A8; --royal-deep:#0F1F6B;
+  --royal-mid:#4068E8; --royal-light:#EEF2FF; --royal-xlight:#F5F7FF;
+  --amber:#F59E0B; --amber-dark:#D97706; --amber-light:#FFFBEB;
+  --emerald:#059669; --emerald-dark:#047857; --emerald-light:#ECFDF5;
+  --coral:#EF4444; --coral-light:#FEF2F2;
+  --ink:#0D1340; --slate:#64748B; --mist:#94A3B8;
+  --fog:#CBD5E1; --cloud:#F1F5F9; --paper:#F8FAFF; --white:#FFFFFF;
+  --shadow-sm:0 1px 3px rgba(43,79,212,0.08),0 1px 2px rgba(43,79,212,0.05);
+  --shadow-md:0 4px 16px rgba(43,79,212,0.12),0 2px 6px rgba(43,79,212,0.07);
+  --shadow-lg:0 16px 48px rgba(43,79,212,0.15),0 4px 16px rgba(43,79,212,0.08);
+  --radius:14px; --radius-sm:9px; --radius-lg:20px;
+}
+
+html,body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100%;}
+
+/* ══════════════════════════════
+   DEMO SWITCHER
+══════════════════════════════ */
+.demo-bar{
+  position:sticky; top:0; z-index:200;
+  background:var(--royal-deep);
+  padding:0 28px; height:48px;
+  display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.demo-label{font-size:10px;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:0.16em;text-transform:uppercase;margin-right:6px;}
+.dtab{
+  padding:6px 16px; border-radius:100px; font-size:12px; font-weight:700;
+  color:rgba(255,255,255,0.4); cursor:pointer; transition:all 0.2s;
+  border:1px solid rgba(255,255,255,0.1); font-family:'Plus Jakarta Sans',sans-serif;
+}
+.dtab.active{background:var(--royal);color:white;border-color:var(--royal);box-shadow:0 2px 8px rgba(43,79,212,0.4);}
+.dtab:hover:not(.active){color:white;background:rgba(255,255,255,0.08);}
+
+/* Views */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ══════════════════════════════
+   SHARED NAVBAR
+══════════════════════════════ */
+.navbar{
+  background:rgba(248,250,255,0.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--fog);
+  padding:0 32px; height:60px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{
+  background:linear-gradient(135deg,var(--royal),var(--royal-dark));
+  border-radius:9px; padding:6px 10px;
+  font-size:13px; font-weight:800; color:white; letter-spacing:0.05em;
+}
+.nav-brand-name{font-size:15px;font-weight:800;color:var(--ink);}
+.nav-sep{width:1px;height:18px;background:var(--fog);}
+.nav-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mist);}
+.nav-breadcrumb-active{color:var(--ink);font-weight:700;}
+.nav-breadcrumb-sep{color:var(--fog);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-cancel{
+  padding:7px 16px; border-radius:9px; font-size:13px; font-weight:600;
+  background:var(--cloud); border:1px solid var(--fog); color:var(--slate);
+  cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; transition:all 0.15s;
+}
+.nav-cancel:hover{border-color:var(--coral);color:var(--coral);background:var(--coral-light);}
+.nav-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--royal),var(--royal-dark));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:14px;font-weight:700;
+}
+
+/* ══════════════════════════════
+   PAGE LAYOUT
+══════════════════════════════ */
+.page-wrap{
+  max-width:1120px; margin:0 auto;
+  padding:32px 28px 80px;
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:28px;
+  align-items:start;
+}
+
+/* ══════════════════════════════
+   PROGRESS STEPS
+══════════════════════════════ */
+.progress-steps{
+  display:flex; align-items:center; gap:0;
+  margin-bottom:28px; grid-column:1/-1;
+}
+.step{
+  display:flex; align-items:center; gap:8px;
+  flex:1; position:relative;
+}
+.step:not(:last-child)::after{
+  content:'';
+  position:absolute; left:calc(50% + 16px); right:calc(-50% + 16px);
+  top:16px; height:2px;
+  background:var(--fog); border-radius:1px;
+  transition:background 0.4s;
+}
+.step.done:not(:last-child)::after{background:var(--royal);}
+.step-inner{display:flex;align-items:center;gap:8px;margin:0 auto;}
+.step-num{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;
+  background:var(--fog);color:var(--mist);
+  transition:all 0.3s; flex-shrink:0;
+  border:2px solid var(--fog);
+}
+.step.active .step-num{background:var(--royal);color:white;border-color:var(--royal);box-shadow:0 0 0 4px rgba(43,79,212,0.15);}
+.step.done .step-num{background:var(--emerald);color:white;border-color:var(--emerald);}
+.step-label{font-size:12px;font-weight:700;color:var(--mist);white-space:nowrap;}
+.step.active .step-label{color:var(--royal);}
+.step.done .step-label{color:var(--emerald);}
+
+/* ══════════════════════════════
+   FORM CARD
+══════════════════════════════ */
+.form-card{
+  background:white; border-radius:var(--radius-lg);
+  border:1px solid var(--fog);
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+}
+.form-card-header{
+  padding:24px 28px 20px;
+  border-bottom:1px solid var(--fog);
+  display:flex; align-items:flex-start; justify-content:space-between;
+}
+.fch-title{font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-0.4px;}
+.fch-sub{font-size:12px;color:var(--mist);margin-top:3px;}
+.fch-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 12px; border-radius:9px;
+  font-size:11px; font-weight:700;
+}
+.fch-badge.job{background:var(--royal-light);color:var(--royal);}
+.fch-badge.event{background:var(--emerald-light);color:var(--emerald-dark);}
+
+.form-body{padding:24px 28px;}
+
+/* ── SECTION GROUPS ── */
+.form-section{margin-bottom:28px;}
+.form-section:last-child{margin-bottom:0;}
+.section-title{
+  font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--royal); margin-bottom:16px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--royal-light);}
+
+/* ── FIELD ROW ── */
+.field-row{display:grid;gap:14px;margin-bottom:14px;}
+.field-row.cols-2{grid-template-columns:1fr 1fr;}
+.field-row.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.field-row.cols-1{grid-template-columns:1fr;}
+
+/* ── FIELD ── */
+.field{display:flex;flex-direction:column;gap:5px;}
+.field-label{
+  font-size:12px; font-weight:700; color:var(--ink);
+  display:flex; align-items:center; gap:6px;
+}
+.field-label .required{color:var(--coral);font-size:13px;}
+.field-label .optional{color:var(--mist);font-size:10px;font-weight:600;}
+.field-hint{font-size:11px;color:var(--mist);margin-top:2px;}
+
+/* ── INPUT STYLES ── */
+input[type=text],input[type=number],input[type=date],input[type=time],
+input[type=email],input[type=tel],textarea,select{
+  width:100%;
+  padding:10px 14px;
+  border:1.5px solid var(--fog);
+  border-radius:var(--radius-sm);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px; color:var(--ink);
+  background:white; outline:none;
+  transition:all 0.15s;
+  -webkit-appearance:none; appearance:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--royal);
+  box-shadow:0 0 0 3px rgba(43,79,212,0.1);
+}
+input::placeholder,textarea::placeholder{color:var(--mist);}
+textarea{resize:vertical;min-height:90px;line-height:1.65;}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:38px;
+  cursor:pointer;
+}
+
+/* Input with icon prefix */
+.input-wrap{position:relative;}
+.input-prefix{
+  position:absolute; left:13px; top:50%; transform:translateY(-50%);
+  font-size:15px; pointer-events:none; user-select:none;
+}
+.input-suffix{
+  position:absolute; right:13px; top:50%; transform:translateY(-50%);
+  font-size:11px; font-weight:700; color:var(--mist);
+}
+.input-wrap input,.input-wrap textarea,.input-wrap select{padding-left:38px;}
+.input-wrap.suffix input{padding-right:52px;}
+
+/* Character count */
+.char-count{font-size:10px;color:var(--mist);text-align:right;margin-top:3px;}
+
+/* ── PAY RANGE ── */
+.pay-range{
+  display:flex; align-items:center; gap:10px;
+}
+.pay-range .input-wrap{flex:1;}
+.pay-range-sep{font-size:12px;font-weight:700;color:var(--mist);white-space:nowrap;}
+
+/* ── RADIO / CHECKBOX GROUPS ── */
+.radio-group,.check-group{display:flex;flex-wrap:wrap;gap:8px;}
+.radio-pill,.check-pill{
+  display:flex; align-items:center; gap:7px;
+  padding:7px 14px; border-radius:100px;
+  border:1.5px solid var(--fog); background:white;
+  font-size:12px; font-weight:600; color:var(--slate);
+  cursor:pointer; transition:all 0.15s; user-select:none;
+}
+.radio-pill:hover,.check-pill:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+.radio-pill.selected,.check-pill.selected{border-color:var(--royal);background:var(--royal);color:white;}
+.radio-pill.selected .pill-icon,.check-pill.selected .pill-icon{filter:brightness(10);}
+.pill-icon{font-size:14px;}
+
+/* Card-style radio buttons */
+.card-radio-group{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.card-radio{
+  border:1.5px solid var(--fog); border-radius:var(--radius);
+  padding:14px 16px; cursor:pointer; transition:all 0.18s;
+  background:white; position:relative;
+}
+.card-radio:hover{border-color:rgba(43,79,212,0.35);box-shadow:var(--shadow-sm);}
+.card-radio.selected{border-color:var(--royal);background:var(--royal-xlight);box-shadow:0 0 0 3px rgba(43,79,212,0.1);}
+.card-radio.selected .cr-check{opacity:1;transform:scale(1);}
+.cr-icon{font-size:22px;margin-bottom:6px;display:block;}
+.cr-label{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.cr-desc{font-size:11px;color:var(--mist);line-height:1.4;}
+.cr-check{
+  position:absolute; top:10px; right:10px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--royal);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;
+  opacity:0;transform:scale(0.6);transition:all 0.2s;
+}
+
+/* 4-col card grid for event type */
+.card-radio-4{grid-template-columns:repeat(4,1fr);}
+
+/* ── TOGGLE SWITCH ── */
+.toggle-row{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:12px 14px; border-radius:var(--radius-sm);
+  border:1.5px solid var(--fog); background:white;
+  margin-bottom:8px; cursor:pointer; transition:border-color 0.15s;
+  gap:16px;
+}
+.toggle-row:hover{border-color:rgba(43,79,212,0.3);}
+.toggle-row.on{border-color:var(--royal);background:var(--royal-xlight);}
+.tr-info{flex:1;}
+.tr-title{font-size:13px;font-weight:700;color:var(--ink);}
+.tr-desc{font-size:11px;color:var(--mist);margin-top:2px;line-height:1.5;}
+.toggle-switch{
+  width:40px;height:22px;border-radius:11px;
+  background:var(--fog); position:relative; flex-shrink:0;
+  transition:background 0.2s; cursor:pointer; margin-top:2px;
+}
+.toggle-switch::after{
+  content:''; position:absolute; left:3px; top:3px;
+  width:16px;height:16px;border-radius:50%;
+  background:white; box-shadow:var(--shadow-sm);
+  transition:left 0.2s;
+}
+.toggle-switch.on{background:var(--royal);}
+.toggle-switch.on::after{left:21px;}
+
+/* ── BOOST SECTION ── */
+.boost-section{
+  border:1.5px solid rgba(245,158,11,0.3);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-top:6px;
+}
+.boost-section-header{
+  background:linear-gradient(135deg,var(--amber-light),rgba(255,255,255,0));
+  padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(245,158,11,0.2);
+}
+.bsh-icon{font-size:20px;}
+.bsh-title{font-size:13px;font-weight:800;color:var(--amber-dark);}
+.bsh-sub{font-size:11px;color:var(--amber-dark);opacity:0.7;margin-top:1px;}
+.bsh-toggle{margin-left:auto;}
+.boost-section-body{padding:14px 16px;display:none;}
+.boost-section-body.visible{display:block;}
+.boost-tier-group{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.boost-tier{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 14px; border-radius:var(--radius-sm);
+  border:1.5px solid var(--fog); background:white;
+  cursor:pointer; transition:all 0.15s;
+}
+.boost-tier:hover{border-color:var(--amber);box-shadow:var(--shadow-sm);}
+.boost-tier.selected{border-color:var(--amber);background:var(--amber-light);}
+.bt-icon{font-size:18px;flex-shrink:0;}
+.bt-info{flex:1;}
+.bt-name{font-size:13px;font-weight:700;color:var(--ink);}
+.bt-desc{font-size:11px;color:var(--mist);margin-top:1px;}
+.bt-price{font-size:15px;font-weight:800;color:var(--amber-dark);white-space:nowrap;}
+.bt-radio{
+  width:18px;height:18px;border-radius:50%;border:2px solid var(--fog);
+  flex-shrink:0;transition:all 0.15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.boost-tier.selected .bt-radio{border-color:var(--amber);background:var(--amber);}
+.boost-tier.selected .bt-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:white;}
+
+/* Boost state target */
+.boost-state-picker{
+  display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;
+}
+.state-pill{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 13px;border-radius:100px;
+  border:1.5px solid var(--fog);background:white;
+  font-size:12px;font-weight:600;color:var(--slate);
+  cursor:pointer;transition:all 0.15s;
+}
+.state-pill:hover{border-color:var(--amber);color:var(--amber-dark);background:var(--amber-light);}
+.state-pill.selected{border-color:var(--amber);background:var(--amber);color:white;}
+
+/* Boost preview card */
+.boost-preview{
+  border:1px solid rgba(245,158,11,0.25);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  background:linear-gradient(to right,var(--amber-light),white);
+}
+.bp-eyebrow{font-size:9px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber-dark);margin-bottom:6px;}
+.bp-title{font-size:12px;font-weight:700;color:var(--ink);}
+.bp-sub{font-size:11px;color:var(--slate);margin-top:2px;}
+
+/* ── MEDIA UPLOAD ── */
+.media-upload{
+  border:2px dashed var(--fog); border-radius:var(--radius);
+  padding:28px 20px; text-align:center; cursor:pointer;
+  transition:all 0.2s; background:var(--cloud);
+}
+.media-upload:hover{border-color:var(--royal);background:var(--royal-xlight);}
+.mu-icon{font-size:32px;margin-bottom:10px;opacity:0.5;}
+.mu-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.mu-sub{font-size:11px;color:var(--mist);}
+.mu-btn{
+  display:inline-block;margin-top:12px;
+  padding:7px 18px;border-radius:8px;
+  background:var(--royal-light);color:var(--royal);
+  font-size:12px;font-weight:700;border:1.5px solid rgba(43,79,212,0.25);
+  font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
+  transition:all 0.15s;
+}
+.mu-btn:hover{background:var(--royal);color:white;}
+
+/* ── TAG INPUT ── */
+.tag-input-wrap{
+  border:1.5px solid var(--fog); border-radius:var(--radius-sm);
+  padding:6px 8px; background:white; min-height:44px;
+  display:flex; flex-wrap:wrap; gap:5px; cursor:text;
+  transition:border-color 0.15s;
+}
+.tag-input-wrap:focus-within{border-color:var(--royal);box-shadow:0 0 0 3px rgba(43,79,212,0.1);}
+.tag-chip{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:100px;
+  background:var(--royal-light);color:var(--royal);
+  font-size:11px;font-weight:700;
+}
+.tag-chip-x{cursor:pointer;opacity:0.6;font-size:13px;line-height:1;}
+.tag-chip-x:hover{opacity:1;}
+.tag-input-wrap input{
+  border:none;outline:none;padding:4px 6px;
+  font-size:12px;color:var(--ink);background:transparent;
+  min-width:80px;flex:1;box-shadow:none;
+}
+
+/* ── LOCATION PICKER ── */
+.location-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;}
+.location-detect{
+  display:flex;align-items:center;gap:7px;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  border:1.5px solid rgba(43,79,212,0.2);background:var(--royal-light);
+  color:var(--royal);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.location-detect:hover{background:var(--royal);color:white;}
+
+/* ── DATE-TIME ROW ── */
+.datetime-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* ── TICKET TIER ── */
+.ticket-tier{
+  border:1.5px solid var(--fog);border-radius:var(--radius-sm);
+  padding:12px 14px;margin-bottom:8px;
+  display:grid;grid-template-columns:1fr 100px 36px;gap:10px;align-items:center;
+  background:white;
+}
+.tt-name{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.tt-sub{font-size:10px;color:var(--mist);}
+.tt-remove{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--coral-light);color:var(--coral);
+  border:1px solid rgba(239,68,68,0.2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:14px;transition:all 0.15s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.tt-remove:hover{background:var(--coral);color:white;}
+.add-tier-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 14px;border-radius:var(--radius-sm);
+  border:1.5px dashed rgba(43,79,212,0.25);background:var(--royal-xlight);
+  color:var(--royal);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;width:100%;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.add-tier-btn:hover{border-color:var(--royal);background:var(--royal-light);}
+
+/* ── CO-ORGANISER ── */
+.coorg-row{display:flex;gap:8px;align-items:center;}
+.coorg-av{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:12px;font-weight:700;flex-shrink:0;
+}
+.coorg-name{font-size:12px;font-weight:700;color:var(--ink);}
+.coorg-role{font-size:10px;color:var(--mist);}
+.coorg-remove{
+  margin-left:auto;font-size:11px;font-weight:700;color:var(--coral);
+  cursor:pointer;padding:4px 8px;border-radius:6px;
+  border:1px solid rgba(239,68,68,0.2);background:var(--coral-light);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.coorg-remove:hover{background:var(--coral);color:white;}
+
+/* ══════════════════════════════
+   RIGHT SIDEBAR (Preview + Tips)
+══════════════════════════════ */
+.right-col{display:flex;flex-direction:column;gap:16px;}
+.preview-card{
+  background:white;border-radius:var(--radius);
+  border:1px solid var(--fog);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+  position:sticky; top:72px;
+}
+.pc-header{
+  padding:16px 18px 14px;
+  border-bottom:1px solid var(--fog);
+}
+.pch-eyebrow{font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:var(--mist);margin-bottom:4px;}
+.pch-title{font-size:13px;font-weight:800;color:var(--ink);}
+.pc-body{padding:16px 18px;}
+
+/* Live preview — Job card mini */
+.preview-job{
+  border:1.5px solid var(--fog);border-radius:var(--radius-sm);
+  background:var(--paper); padding:13px 14px;
+}
+.pj-type{font-size:10px;font-weight:700;background:var(--royal-light);color:var(--royal);padding:2px 8px;border-radius:5px;display:inline-block;margin-bottom:8px;}
+.pj-title{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-0.3px;margin-bottom:3px;}
+.pj-company{font-size:11px;color:var(--mist);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.pj-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.pj-item{background:var(--royal-xlight);border-radius:6px;padding:6px 8px;}
+.pji-label{font-size:9px;font-weight:800;color:var(--royal);text-transform:uppercase;letter-spacing:0.08em;}
+.pji-val{font-size:12px;font-weight:700;color:var(--ink);margin-top:1px;}
+.pji-val.pay{color:var(--emerald);font-size:14px;}
+.pj-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.pj-tag{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:600;background:var(--cloud);color:var(--slate);border:1px solid var(--fog);}
+.pj-tag.comm{background:var(--royal);color:white;}
+
+/* Live preview — Event card mini */
+.preview-event{
+  border:1.5px solid var(--fog);border-radius:var(--radius-sm);
+  overflow:hidden;background:var(--paper);
+}
+.pe-banner{
+  height:80px;
+  background:linear-gradient(135deg,var(--emerald-light),var(--royal-light));
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;position:relative;
+}
+.pe-date-pill{
+  position:absolute;top:10px;right:10px;
+  background:white;border-radius:8px;padding:5px 9px;
+  text-align:center;box-shadow:var(--shadow-sm);
+}
+.pedp-day{font-size:16px;font-weight:800;color:var(--ink);line-height:1;}
+.pedp-mon{font-size:9px;font-weight:700;text-transform:uppercase;color:var(--mist);}
+.pe-body{padding:11px 13px;}
+.pe-type-badge{font-size:10px;font-weight:700;display:inline-block;padding:2px 8px;border-radius:5px;margin-bottom:6px;}
+.pe-title{font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-0.2px;margin-bottom:4px;}
+.pe-meta{font-size:11px;color:var(--mist);display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.pe-meta-sep{width:2px;height:2px;background:var(--fog);border-radius:50%;}
+.pe-rsvp-bar{margin-top:10px;}
+.pe-rsvp-track{height:4px;background:var(--fog);border-radius:2px;overflow:hidden;}
+.pe-rsvp-fill{height:100%;border-radius:2px;background:var(--emerald);width:0%;transition:width 0.4s;}
+.pe-rsvp-label{font-size:10px;color:var(--mist);margin-top:3px;display:flex;justify-content:space-between;}
+
+/* Tips card */
+.tips-card{
+  background:var(--royal-xlight);border-radius:var(--radius);
+  border:1px solid rgba(43,79,212,0.12);
+  padding:16px 18px;
+}
+.tips-title{font-size:12px;font-weight:800;color:var(--royal);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.tip-item{display:flex;gap:8px;margin-bottom:8px;font-size:12px;color:var(--slate);line-height:1.55;}
+.tip-item:last-child{margin-bottom:0;}
+.tip-dot{color:var(--royal);flex-shrink:0;margin-top:1px;}
+
+/* Cost estimate card */
+.cost-card{
+  border:1.5px solid rgba(43,79,212,0.15);
+  border-radius:var(--radius); padding:16px 18px;
+  background:white;
+}
+.cost-title{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:12px;}
+.cost-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;}
+.cost-label{color:var(--slate);}
+.cost-val{font-weight:700;color:var(--ink);}
+.cost-val.free{color:var(--emerald);}
+.cost-divider{height:1px;background:var(--fog);margin:10px 0;}
+.cost-total{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:800;}
+.cost-total-val{color:var(--royal);}
+.cost-footnote{font-size:10px;color:var(--mist);margin-top:6px;}
+
+/* ══════════════════════════════
+   FORM FOOTER (sticky)
+══════════════════════════════ */
+.form-footer{
+  position:sticky; bottom:0;
+  background:rgba(248,250,255,0.97);backdrop-filter:blur(12px);
+  border-top:1px solid var(--fog);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;
+  grid-column:1/-1;
+  margin:-28px -28px -80px;
+  width:calc(100% + 56px);
+}
+.ff-save{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--mist);
+}
+.ff-save-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);}
+.ff-actions{display:flex;gap:10px;align-items:center;}
+.btn-draft{
+  padding:9px 18px;border-radius:10px;
+  border:1.5px solid var(--fog);background:white;
+  font-size:13px;font-weight:700;color:var(--slate);
+  cursor:pointer;transition:all 0.15s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-draft:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+.btn-prev{
+  padding:9px 18px;border-radius:10px;
+  border:1.5px solid var(--fog);background:white;
+  font-size:13px;font-weight:700;color:var(--slate);
+  cursor:pointer;transition:all 0.15s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-prev:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+.btn-next{
+  padding:10px 24px;border-radius:10px;
+  background:linear-gradient(135deg,var(--royal),var(--royal-dark));
+  color:white;border:none;
+  font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  display:flex;align-items:center;gap:7px;
+  box-shadow:0 3px 10px rgba(43,79,212,0.25);
+}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(43,79,212,0.35);}
+.btn-publish{
+  padding:10px 28px;border-radius:10px;
+  background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));
+  color:white;border:none;
+  font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  display:flex;align-items:center;gap:7px;
+  box-shadow:0 3px 10px rgba(5,150,105,0.25);
+}
+.btn-publish:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(5,150,105,0.35);}
+
+/* Step panels */
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+
+/* ══════════════════════════════
+   SUCCESS SCREEN
+══════════════════════════════ */
+.success-screen{
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center; padding:60px 40px;
+  grid-column:1/-1;
+}
+.success-icon{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--emerald-light);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin-bottom:20px;
+  animation:popin 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes popin{from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
+.success-title{font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-0.5px;margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--slate);line-height:1.65;max-width:400px;margin:0 auto 32px;}
+.success-actions{display:flex;gap:12px;justify-content:center;}
+.btn-view{
+  padding:11px 24px;border-radius:11px;
+  background:linear-gradient(135deg,var(--royal),var(--royal-dark));
+  color:white;border:none;font-size:14px;font-weight:700;
+  cursor:pointer;box-shadow:0 3px 10px rgba(43,79,212,0.25);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-another{
+  padding:10px 22px;border-radius:11px;
+  border:1.5px solid var(--fog);background:white;
+  font-size:13px;font-weight:700;color:var(--slate);
+  cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+}
+
+/* Slide-in animation */
+.slide-up{animation:slideup 0.3s cubic-bezier(0.22,1,0.36,1) both;}
+@keyframes slideup{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* Progress bar */
+.progress-bar{height:3px;background:var(--fog);border-radius:2px;overflow:hidden;margin-bottom:24px;grid-column:1/-1;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--royal),var(--royal-mid));border-radius:2px;transition:width 0.4s ease;}
+</style>
+</head>
+<body>
+
+<!-- Demo switcher -->
+<div class="demo-bar">
+  <span class="demo-label">Form</span>
+  <div class="dtab active" onclick="showForm('job',this)">💼 Post a Job</div>
+  <div class="dtab" onclick="showForm('event',this)">🎉 Create Event</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     FORM 1 — POST A JOB
+═══════════════════════════════════════════ -->
+<div class="view active" id="form-job">
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">R</div>
+      <div class="nav-brand-name">REKKOMO</div>
+      <div class="nav-sep"></div>
+      <div class="nav-breadcrumb">
+        <span>Jobs</span><span class="nav-breadcrumb-sep">›</span>
+        <span class="nav-breadcrumb-active">Post a New Job</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-cancel">✕ Cancel</button>
+      <div class="nav-avatar">S</div>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+    <!-- Progress bar -->
+    <div class="progress-bar"><div class="progress-fill" id="job-progress" style="width:33%;"></div></div>
+
+    <!-- Steps -->
+    <div class="progress-steps">
+      <div class="step active" id="jstep-1">
+        <div class="step-inner"><div class="step-num">1</div><div class="step-label">Job Details</div></div>
+      </div>
+      <div class="step" id="jstep-2">
+        <div class="step-inner"><div class="step-num">2</div><div class="step-label">Requirements</div></div>
+      </div>
+      <div class="step" id="jstep-3">
+        <div class="step-inner"><div class="step-num">3</div><div class="step-label">Reach & Boost</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 1 — Job Details -->
+    <div class="step-panel active slide-up" id="jpanel-1">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div><div class="fch-title">Job Details</div><div class="fch-sub">Tell workers about the role and pay</div></div>
+          <div class="fch-badge job">💼 Job Posting</div>
+        </div>
+        <div class="form-body">
+
+          <div class="form-section">
+            <div class="section-title">Basic Information</div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Job Title <span class="required">*</span></div>
+                <input type="text" placeholder="e.g. Senior Mason, Machine Operator, Cook" id="job-title" oninput="updateJobPreview()">
+              </div>
+            </div>
+
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">Job Category <span class="required">*</span></div>
+                <select id="job-category" onchange="updateJobPreview()">
+                  <option value="">Select category...</option>
+                  <option>🏗️ Construction</option>
+                  <option>🏭 Manufacturing</option>
+                  <option>🏠 Household / Domestic</option>
+                  <option>🚗 Driving / Logistics</option>
+                  <option>🍳 Food / Catering</option>
+                  <option>🔧 Plumbing / Electrical</option>
+                  <option>🏥 Healthcare</option>
+                  <option>🎓 Teaching / Tutoring</option>
+                  <option>📦 Warehouse</option>
+                  <option>🔐 Security</option>
+                  <option>💻 IT / Tech</option>
+                  <option>🧹 Cleaning / Housekeeping</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-label">Job Type <span class="required">*</span></div>
+                <select id="job-type" onchange="updateJobPreview()">
+                  <option value="">Select type...</option>
+                  <option>Full-time</option>
+                  <option>Part-time</option>
+                  <option>Contract / Fixed Term</option>
+                  <option>Daily Wage</option>
+                  <option>Freelance / Gig</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Job Description <span class="required">*</span></div>
+                <textarea placeholder="Describe the work, daily duties, and what kind of person you're looking for. Write in simple language." id="job-desc" rows="4" maxlength="500" oninput="this.nextElementSibling.textContent=this.value.length+'/500 chars'"></textarea>
+                <div class="char-count">0/500 chars</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Pay & Duration</div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Pay Type <span class="required">*</span></div>
+                <div class="radio-group" id="pay-type-group">
+                  <div class="radio-pill selected" onclick="selectPay(this,'Monthly')"><span class="pill-icon">📅</span> Monthly</div>
+                  <div class="radio-pill" onclick="selectPay(this,'Daily')"><span class="pill-icon">☀️</span> Daily Wage</div>
+                  <div class="radio-pill" onclick="selectPay(this,'Weekly')"><span class="pill-icon">📆</span> Weekly</div>
+                  <div class="radio-pill" onclick="selectPay(this,'Fixed/Project')"><span class="pill-icon">🎯</span> Fixed / Project</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">Minimum Pay <span class="required">*</span></div>
+                <div class="input-wrap suffix">
+                  <span class="input-prefix">₹</span>
+                  <input type="number" placeholder="12,000" id="pay-min" oninput="updateJobPreview()">
+                  <span class="input-suffix" id="pay-suffix">/mo</span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-label">Maximum Pay <span class="optional">(optional)</span></div>
+                <div class="input-wrap suffix">
+                  <span class="input-prefix">₹</span>
+                  <input type="number" placeholder="18,000" id="pay-max" oninput="updateJobPreview()">
+                  <span class="input-suffix" id="pay-suffix-2">/mo</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">Duration / Notice Period <span class="optional">(optional)</span></div>
+                <select>
+                  <option value="">Select duration...</option>
+                  <option>Ongoing / Permanent</option>
+                  <option>1 Month</option>
+                  <option>3 Months</option>
+                  <option>6 Months</option>
+                  <option>1 Year Contract</option>
+                  <option>Project-based</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-label">Vacancies <span class="required">*</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">👤</span>
+                  <input type="number" placeholder="2" min="1">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Location & Benefits</div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Work Location <span class="required">*</span></div>
+                <div class="location-row">
+                  <div class="input-wrap">
+                    <span class="input-prefix">📍</span>
+                    <input type="text" placeholder="Area, Neighborhood — e.g. Hadapsar, Pune" id="job-location" oninput="updateJobPreview()">
+                  </div>
+                  <button class="location-detect">📡 Detect</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Benefits & Perks <span class="optional">(select all that apply)</span></div>
+                <div class="check-group" id="benefits-group">
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">🏠</span> Housing</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">🍱</span> Free Meals</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">🚌</span> Transport</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">🏥</span> Medical</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">⏰</span> Overtime Pay</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">📅</span> Weekly Off</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">💳</span> PF/ESI</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')"><span class="pill-icon">🎓</span> Skill Training</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Requirements -->
+    <div class="step-panel slide-up" id="jpanel-2">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div><div class="fch-title">Requirements</div><div class="fch-sub">Who are you looking for?</div></div>
+          <div class="fch-badge job">💼 Step 2 of 3</div>
+        </div>
+        <div class="form-body">
+
+          <div class="form-section">
+            <div class="section-title">Experience & Skills</div>
+
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">Experience Required <span class="required">*</span></div>
+                <select>
+                  <option>Fresher / No Experience</option>
+                  <option>6 months – 1 year</option>
+                  <option selected>1–3 years</option>
+                  <option>3–5 years</option>
+                  <option>5+ years</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-label">Education Level <span class="optional">(optional)</span></div>
+                <select>
+                  <option value="">Any</option>
+                  <option>No minimum required</option>
+                  <option>Class 8 pass</option>
+                  <option>Class 10 pass</option>
+                  <option>Class 12 pass</option>
+                  <option>ITI / Diploma</option>
+                  <option>Graduate</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Required Skills</div>
+                <div class="tag-input-wrap" id="skills-wrap" onclick="document.getElementById('skill-input').focus()">
+                  <div class="tag-chip">Masonry <span class="tag-chip-x" onclick="removeTag(this)">×</span></div>
+                  <div class="tag-chip">Plastering <span class="tag-chip-x" onclick="removeTag(this)">×</span></div>
+                  <input type="text" id="skill-input" placeholder="Type and press Enter..." onkeydown="addTag(event,'skills-wrap')">
+                </div>
+                <div class="field-hint">Press Enter after each skill. E.g. Welding, Electrical wiring, Driving</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Language & Communication</div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Languages Accepted <span class="required">*</span></div>
+                <div class="check-group">
+                  <div class="check-pill selected" onclick="this.classList.toggle('selected')"><span class="pill-icon">🗣️</span> Hindi</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">Marathi</div>
+                  <div class="check-pill selected" onclick="this.classList.toggle('selected')">Bhojpuri</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">Bengali</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">Odia</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">Telugu</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">Tamil</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">English</div>
+                  <div class="check-pill" onclick="this.classList.toggle('selected')">Any</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Gender & Age</div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">Gender Preference <span class="optional">(optional)</span></div>
+                <select>
+                  <option>Any Gender</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-label">Age Range <span class="optional">(optional)</span></div>
+                <div class="pay-range">
+                  <div class="input-wrap" style="flex:1;">
+                    <span class="input-prefix">👤</span>
+                    <input type="number" placeholder="18" min="18">
+                  </div>
+                  <span class="pay-range-sep">to</span>
+                  <input type="number" placeholder="55" min="18" style="flex:1;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Contact & Apply Settings</div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">How to Apply <span class="required">*</span></div>
+                <select>
+                  <option>Apply on Platform</option>
+                  <option>Call / WhatsApp</option>
+                  <option>Walk-in Interview</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-label">Application Deadline <span class="optional">(optional)</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">📅</span>
+                  <input type="date">
+                </div>
+              </div>
+            </div>
+            <div class="field-row cols-1">
+              <div class="toggle-row" onclick="toggleSwitch(this)">
+                <div class="tr-info">
+                  <div class="tr-title">Auto-close when filled</div>
+                  <div class="tr-desc">Automatically stop showing this job once you've hired enough people</div>
+                </div>
+                <div class="toggle-switch on"></div>
+              </div>
+              <div class="toggle-row" onclick="toggleSwitch(this)">
+                <div class="tr-info">
+                  <div class="tr-title">Show employer phone number</div>
+                  <div class="tr-desc">Workers can WhatsApp or call you directly</div>
+                </div>
+                <div class="toggle-switch"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 — Reach & Boost -->
+    <div class="step-panel slide-up" id="jpanel-3">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div><div class="fch-title">Reach & Boost</div><div class="fch-sub">Decide who sees your job and how prominently</div></div>
+          <div class="fch-badge job">💼 Step 3 of 3</div>
+        </div>
+        <div class="form-body">
+
+          <div class="form-section">
+            <div class="section-title">Audience</div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Post to <span class="required">*</span></div>
+                <div class="card-radio-group">
+                  <div class="card-radio selected" onclick="selectCardRadio(this)">
+                    <div class="cr-check">✓</div>
+                    <span class="cr-icon">🌐</span>
+                    <div class="cr-label">Global Feed</div>
+                    <div class="cr-desc">Visible to all registered workers in Pune</div>
+                  </div>
+                  <div class="card-radio" onclick="selectCardRadio(this)">
+                    <div class="cr-check">✓</div>
+                    <span class="cr-icon">👥</span>
+                    <div class="cr-label">Community Only</div>
+                    <div class="cr-desc">Only visible to circle members you target</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Community Reach Boost</div>
+
+            <div class="boost-section">
+              <div class="boost-section-header">
+                <div class="bsh-icon">🌾</div>
+                <div>
+                  <div class="bsh-title">Target Community Workers Directly</div>
+                  <div class="bsh-sub">Your job appears in their community feed with a trusted badge</div>
+                </div>
+                <div class="bsh-toggle">
+                  <div class="toggle-switch on" onclick="toggleBoostBody(this)"></div>
+                </div>
+              </div>
+              <div class="boost-section-body visible" id="boost-body">
+                <div style="margin-bottom:12px;">
+                  <div class="field-label" style="margin-bottom:8px;">Target Community <span class="required">*</span></div>
+                  <div class="boost-state-picker">
+                    <div class="state-pill selected" onclick="this.classList.toggle('selected')">🌾 Bihar</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">🏛️ UP</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">🌊 Odisha</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">🐯 Bengal</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">🏜️ Rajasthan</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">⛰️ Jharkhand</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">🌿 Chhattisgarh</div>
+                    <div class="state-pill" onclick="this.classList.toggle('selected')">All States</div>
+                  </div>
+                </div>
+                <div class="boost-tier-group">
+                  <div class="boost-tier" onclick="selectBoostTier(this)">
+                    <div class="bt-icon">📌</div>
+                    <div class="bt-info">
+                      <div class="bt-name">Standard Reach</div>
+                      <div class="bt-desc">Appears in community feed for 7 days</div>
+                    </div>
+                    <div class="bt-price">₹299</div>
+                    <div class="bt-radio"></div>
+                  </div>
+                  <div class="boost-tier selected" onclick="selectBoostTier(this)">
+                    <div class="bt-icon">⭐</div>
+                    <div class="bt-info">
+                      <div class="bt-name">Featured Reach</div>
+                      <div class="bt-desc">Pinned at top of community feed for 7 days</div>
+                    </div>
+                    <div class="bt-price">₹699</div>
+                    <div class="bt-radio"></div>
+                  </div>
+                  <div class="boost-tier" onclick="selectBoostTier(this)">
+                    <div class="bt-icon">🔔</div>
+                    <div class="bt-info">
+                      <div class="bt-name">Notification Blast</div>
+                      <div class="bt-desc">Push notification to matching community members</div>
+                    </div>
+                    <div class="bt-price">₹1,499</div>
+                    <div class="bt-radio"></div>
+                  </div>
+                </div>
+                <div class="boost-preview">
+                  <div class="bp-eyebrow">👀 How it appears in Bihar Circle feed</div>
+                  <div class="bp-title">🌾 Shiv Enterprises · Community Employer · Featured</div>
+                  <div class="bp-sub">Your job gets a trusted "Community Employer" badge and ranks above regular listings for Bihar workers.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Global Listing Boost</div>
+            <div class="boost-tier-group">
+              <div class="boost-tier" onclick="selectGlobalTier(this)">
+                <div class="bt-icon">📋</div>
+                <div class="bt-info">
+                  <div class="bt-name">Free Listing</div>
+                  <div class="bt-desc">Standard placement in global feed</div>
+                </div>
+                <div class="bt-price" style="color:var(--emerald)">Free</div>
+                <div class="bt-radio"></div>
+              </div>
+              <div class="boost-tier selected" onclick="selectGlobalTier(this)">
+                <div class="bt-icon">🚀</div>
+                <div class="bt-info">
+                  <div class="bt-name">Standard Boost — Global</div>
+                  <div class="bt-desc">Highlighted card, appears above free listings for 7 days</div>
+                </div>
+                <div class="bt-price">₹299</div>
+                <div class="bt-radio"></div>
+              </div>
+              <div class="boost-tier" onclick="selectGlobalTier(this)">
+                <div class="bt-icon">⭐</div>
+                <div class="bt-info">
+                  <div class="bt-name">Featured — Top of Feed</div>
+                  <div class="bt-desc">Always first position + "Featured" badge for 14 days</div>
+                </div>
+                <div class="bt-price">₹1,499</div>
+                <div class="bt-radio"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="right-col">
+      <div class="preview-card">
+        <div class="pc-header">
+          <div class="pch-eyebrow">Live Preview</div>
+          <div class="pch-title">How your job will look</div>
+        </div>
+        <div class="pc-body">
+          <div class="preview-job">
+            <div class="pj-type">💼 Job</div>
+            <div class="pj-title" id="prev-job-title">Job Title</div>
+            <div class="pj-company">
+              <span style="background:var(--emerald-light);color:var(--emerald-dark);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;">✅ Verified</span>
+              Shiv Enterprises
+            </div>
+            <div class="pj-grid">
+              <div class="pj-item"><div class="pji-label">Pay</div><div class="pji-val pay" id="prev-pay">₹–/mo</div></div>
+              <div class="pj-item"><div class="pji-label">Location</div><div class="pji-val" id="prev-loc">–</div></div>
+            </div>
+            <div class="pj-tags">
+              <span class="pj-tag">🏭 Manufacturing</span>
+              <span class="pj-tag">🗣️ Hindi</span>
+              <span class="pj-tag comm">🌾 Bihar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-card" id="job-cost-card">
+        <div class="cost-title">💳 Estimated Cost</div>
+        <div class="cost-row"><span class="cost-label">Job Listing</span><span class="cost-val free">Free</span></div>
+        <div class="cost-row"><span class="cost-label">Global Boost</span><span class="cost-val">₹299</span></div>
+        <div class="cost-row"><span class="cost-label">Community Reach (Bihar)</span><span class="cost-val">₹699</span></div>
+        <div class="cost-divider"></div>
+        <div class="cost-total"><span>Total</span><span class="cost-total-val">₹998</span></div>
+        <div class="cost-footnote">You pay only after workers are hired. Boost fee due now.</div>
+      </div>
+
+      <div class="tips-card">
+        <div class="tips-title">💡 Job Posting Tips</div>
+        <div class="tip-item"><span class="tip-dot">→</span>State the pay clearly — posts with visible pay get 3× more applications</div>
+        <div class="tip-item"><span class="tip-dot">→</span>Mention language — Hindi/Bhojpuri employers get higher trust from community workers</div>
+        <div class="tip-item"><span class="tip-dot">→</span>List housing or transport benefits — reduces cost anxiety for migrant workers</div>
+        <div class="tip-item"><span class="tip-dot">→</span>Community Reach boost gets your job in front of workers who already trust your state network</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer">
+      <div class="ff-save"><div class="ff-save-dot"></div>Draft auto-saved</div>
+      <div class="ff-actions">
+        <button class="btn-draft">💾 Save Draft</button>
+        <button class="btn-prev" id="job-prev-btn" style="display:none;" onclick="jobStep(-1)">← Previous</button>
+        <button class="btn-next" id="job-next-btn" onclick="jobStep(1)">Next: Requirements →</button>
+        <button class="btn-publish" id="job-publish-btn" style="display:none;" onclick="publishJob()">🚀 Publish Job</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     FORM 2 — CREATE EVENT
+═══════════════════════════════════════════ -->
+<div class="view" id="form-event">
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">R</div>
+      <div class="nav-brand-name">REKKOMO</div>
+      <div class="nav-sep"></div>
+      <div class="nav-breadcrumb">
+        <span>Events</span><span class="nav-breadcrumb-sep">›</span>
+        <span class="nav-breadcrumb-active">Create New Event</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-cancel">✕ Cancel</button>
+      <div class="nav-avatar">P</div>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+    <!-- Progress bar -->
+    <div class="progress-bar"><div class="progress-fill" id="event-progress" style="width:33%;"></div></div>
+
+    <!-- Steps -->
+    <div class="progress-steps">
+      <div class="step active" id="estep-1">
+        <div class="step-inner"><div class="step-num">1</div><div class="step-label">Event Details</div></div>
+      </div>
+      <div class="step" id="estep-2">
+        <div class="step-inner"><div class="step-num">2</div><div class="step-label">Tickets & RSVP</div></div>
+      </div>
+      <div class="step" id="estep-3">
+        <div class="step-inner"><div class="step-num">3</div><div class="step-label">Audience & Boost</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 1 — Event Details -->
+    <div class="step-panel active slide-up" id="epanel-1">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div><div class="fch-title">Event Details</div><div class="fch-sub">Tell people about your event</div></div>
+          <div class="fch-badge event">🎉 Create Event</div>
+        </div>
+        <div class="form-body">
+
+          <div class="form-section">
+            <div class="section-title">Event Type</div>
+            <div class="card-radio-group card-radio-4">
+              <div class="card-radio selected" onclick="selectCardRadio(this);updateEventPreview('type','🪔 Cultural')">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">🪔</span>
+                <div class="cr-label">Cultural</div>
+                <div class="cr-desc">Chhath, Navratri, festivals</div>
+              </div>
+              <div class="card-radio" onclick="selectCardRadio(this);updateEventPreview('type','💼 Job Fair')">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">💼</span>
+                <div class="cr-label">Job Fair</div>
+                <div class="cr-desc">Hiring drives, career events</div>
+              </div>
+              <div class="card-radio" onclick="selectCardRadio(this);updateEventPreview('type','🎓 Training')">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">🎓</span>
+                <div class="cr-label">Training</div>
+                <div class="cr-desc">Skill development workshops</div>
+              </div>
+              <div class="card-radio" onclick="selectCardRadio(this);updateEventPreview('type','👥 Meetup')">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">👥</span>
+                <div class="cr-label">Meetup</div>
+                <div class="cr-desc">Community gatherings</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Basic Information</div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Event Name <span class="required">*</span></div>
+                <input type="text" placeholder="e.g. Chhath Puja 2025 — Bihar Community Pune" id="event-title" oninput="updateEventPreview('title',this.value)">
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Event Description <span class="required">*</span></div>
+                <textarea placeholder="Tell people what the event is about, who it's for, and what they can expect. Write in simple, warm language." rows="4" maxlength="600" id="event-desc" oninput="this.nextElementSibling.textContent=this.value.length+'/600 chars'"></textarea>
+                <div class="char-count">0/600 chars</div>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Cover Image <span class="optional">(recommended)</span></div>
+                <div class="media-upload" onclick="document.getElementById('cover-img-input').click()">
+                  <div class="mu-icon">🖼️</div>
+                  <div class="mu-title">Upload a cover image</div>
+                  <div class="mu-sub">JPG or PNG, min. 1200×630px for best quality</div>
+                  <div class="mu-btn">Choose File</div>
+                  <input type="file" id="cover-img-input" accept="image/*" style="display:none;" onchange="previewCoverImage(this)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Date, Time & Location</div>
+
+            <div class="datetime-row">
+              <div class="field">
+                <div class="field-label">Date <span class="required">*</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">📅</span>
+                  <input type="date" id="event-date" onchange="updateEventPreview('date',this.value)">
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-label">Start Time <span class="required">*</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">⏰</span>
+                  <input type="time" value="17:00">
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-label">End Time <span class="optional">(optional)</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">⏰</span>
+                  <input type="time" value="21:00">
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="toggle-row on" onclick="toggleSwitch(this)">
+                <div class="tr-info">
+                  <div class="tr-title">This is an in-person event</div>
+                  <div class="tr-desc">Turn off if this is an online / virtual event</div>
+                </div>
+                <div class="toggle-switch on"></div>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Venue / Location <span class="required">*</span></div>
+                <div class="location-row">
+                  <div class="input-wrap">
+                    <span class="input-prefix">📍</span>
+                    <input type="text" placeholder="e.g. Khadakwasla Lake, Pune" id="event-loc" oninput="updateEventPreview('loc',this.value)">
+                  </div>
+                  <button class="location-detect">📡 Detect</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row cols-1">
+              <div class="field">
+                <div class="field-label">Capacity <span class="optional">(optional)</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">👥</span>
+                  <input type="number" placeholder="500 (leave blank for unlimited)" id="event-capacity">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Organiser Details</div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">Organised by <span class="required">*</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">👤</span>
+                  <input type="text" value="Prakash Singh" placeholder="Your name or organisation">
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-label">Contact (WhatsApp) <span class="optional">(optional)</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">📱</span>
+                  <input type="tel" placeholder="+91 98765 43210">
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <div class="field-label" style="margin-bottom:8px;">Co-Organisers <span class="optional">(optional)</span></div>
+              <div style="border:1.5px solid var(--fog);border-radius:var(--radius-sm);padding:10px 12px;background:white;">
+                <div class="coorg-row" style="margin-bottom:8px;">
+                  <div class="coorg-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">A</div>
+                  <div><div class="coorg-name">Arun Lal</div><div class="coorg-role">Co-organiser</div></div>
+                  <div class="coorg-remove" onclick="this.closest('.coorg-row').remove()">Remove</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <div class="input-wrap" style="flex:1;">
+                    <span class="input-prefix">🔍</span>
+                    <input type="text" placeholder="Search circle members by name...">
+                  </div>
+                  <button class="mu-btn" style="margin:0;white-space:nowrap;">+ Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Tickets & RSVP -->
+    <div class="step-panel slide-up" id="epanel-2">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div><div class="fch-title">Tickets & RSVP</div><div class="fch-sub">Is this a free or paid event?</div></div>
+          <div class="fch-badge event">🎉 Step 2 of 3</div>
+        </div>
+        <div class="form-body">
+
+          <div class="form-section">
+            <div class="section-title">Entry Type</div>
+            <div class="card-radio-group">
+              <div class="card-radio selected" onclick="selectCardRadio(this);toggleTickets(false)">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">🆓</span>
+                <div class="cr-label">Free Entry</div>
+                <div class="cr-desc">No payment, RSVP only</div>
+              </div>
+              <div class="card-radio" onclick="selectCardRadio(this);toggleTickets(true)">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">🎟️</span>
+                <div class="cr-label">Paid Tickets</div>
+                <div class="cr-desc">Sell tickets, 8% platform fee</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section" id="ticket-tiers-section" style="display:none;">
+            <div class="section-title">Ticket Tiers</div>
+            <div id="ticket-tiers">
+              <div class="ticket-tier">
+                <div>
+                  <div class="tt-name">General Entry</div>
+                  <div class="tt-sub">Standard ticket</div>
+                </div>
+                <div class="input-wrap suffix">
+                  <span class="input-prefix">₹</span>
+                  <input type="number" placeholder="99" value="99" style="padding-left:32px;">
+                </div>
+                <div class="tt-remove" onclick="this.closest('.ticket-tier').remove()">×</div>
+              </div>
+              <div class="ticket-tier">
+                <div>
+                  <div class="tt-name">Community Member</div>
+                  <div class="tt-sub">Bihar Circle discount</div>
+                </div>
+                <div class="input-wrap suffix">
+                  <span class="input-prefix">₹</span>
+                  <input type="number" placeholder="49" value="49" style="padding-left:32px;">
+                </div>
+                <div class="tt-remove" onclick="this.closest('.ticket-tier').remove()">×</div>
+              </div>
+            </div>
+            <button class="add-tier-btn" onclick="addTicketTier()">+ Add Another Tier</button>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">RSVP Settings</div>
+            <div class="field-row cols-2">
+              <div class="field">
+                <div class="field-label">RSVP Deadline <span class="optional">(optional)</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">📅</span>
+                  <input type="date">
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-label">Max RSVPs <span class="optional">(optional)</span></div>
+                <div class="input-wrap">
+                  <span class="input-prefix">👥</span>
+                  <input type="number" placeholder="500">
+                </div>
+              </div>
+            </div>
+            <div class="field-row cols-1" style="margin-top:8px;">
+              <div class="toggle-row on" onclick="toggleSwitch(this)">
+                <div class="tr-info">
+                  <div class="tr-title">Send reminder notifications</div>
+                  <div class="tr-desc">Notify RSVPed members 24 hours before the event</div>
+                </div>
+                <div class="toggle-switch on"></div>
+              </div>
+              <div class="toggle-row" onclick="toggleSwitch(this)">
+                <div class="tr-info">
+                  <div class="tr-title">Allow +1 / guests</div>
+                  <div class="tr-desc">RSVP holders can bring one additional person</div>
+                </div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-row on" onclick="toggleSwitch(this)">
+                <div class="tr-info">
+                  <div class="tr-title">Show attendee count publicly</div>
+                  <div class="tr-desc">Shows "156 people going" on event card — builds social proof</div>
+                </div>
+                <div class="toggle-switch on"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Tags & Hashtags</div>
+            <div class="field">
+              <div class="tag-input-wrap" id="event-tags-wrap" onclick="document.getElementById('event-tag-input').focus()">
+                <div class="tag-chip">Chhath Puja <span class="tag-chip-x" onclick="removeTag(this)">×</span></div>
+                <div class="tag-chip">Bihar Community <span class="tag-chip-x" onclick="removeTag(this)">×</span></div>
+                <div class="tag-chip">Pune <span class="tag-chip-x" onclick="removeTag(this)">×</span></div>
+                <input type="text" id="event-tag-input" placeholder="Add tags and press Enter..." onkeydown="addTag(event,'event-tags-wrap')">
+              </div>
+              <div class="field-hint">Tags help people discover your event from search and feed filters</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 — Audience & Boost -->
+    <div class="step-panel slide-up" id="epanel-3">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div><div class="fch-title">Audience & Visibility</div><div class="fch-sub">Who should see this event?</div></div>
+          <div class="fch-badge event">🎉 Step 3 of 3</div>
+        </div>
+        <div class="form-body">
+
+          <div class="form-section">
+            <div class="section-title">Visibility</div>
+            <div class="card-radio-group">
+              <div class="card-radio" onclick="selectCardRadio(this)">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">🔒</span>
+                <div class="cr-label">Community Only</div>
+                <div class="cr-desc">Only Bihar Circle members in Pune can see and join</div>
+              </div>
+              <div class="card-radio selected" onclick="selectCardRadio(this)">
+                <div class="cr-check">✓</div>
+                <span class="cr-icon">🌐</span>
+                <div class="cr-label">Open to All</div>
+                <div class="cr-desc">Visible on global feed — anyone registered can RSVP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Circle Announcements</div>
+            <div class="field">
+              <div class="field-label" style="margin-bottom:8px;">Pin to circle feeds <span class="optional">(select circles)</span></div>
+              <div class="check-group">
+                <div class="check-pill selected" onclick="this.classList.toggle('selected')">🌾 Bihar · Pune</div>
+                <div class="check-pill" onclick="this.classList.toggle('selected')">🏛️ UP · Pune</div>
+                <div class="check-pill" onclick="this.classList.toggle('selected')">🌊 Odisha · Pune</div>
+                <div class="check-pill" onclick="this.classList.toggle('selected')">🐯 Bengal · Pune</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Promotion Boost</div>
+            <div class="boost-tier-group">
+              <div class="boost-tier selected" onclick="selectBoostTier(this)">
+                <div class="bt-icon">📣</div>
+                <div class="bt-info">
+                  <div class="bt-name">Featured Event</div>
+                  <div class="bt-desc">Highlighted card in Global and Community feeds for 7 days</div>
+                </div>
+                <div class="bt-price">₹499</div>
+                <div class="bt-radio"></div>
+              </div>
+              <div class="boost-tier" onclick="selectBoostTier(this)">
+                <div class="bt-icon">🔔</div>
+                <div class="bt-info">
+                  <div class="bt-name">Push Notification Blast</div>
+                  <div class="bt-desc">Notify all matching community members directly</div>
+                </div>
+                <div class="bt-price">₹999</div>
+                <div class="bt-radio"></div>
+              </div>
+              <div class="boost-tier" onclick="selectBoostTier(this)">
+                <div class="bt-icon">🆓</div>
+                <div class="bt-info">
+                  <div class="bt-name">No Boost</div>
+                  <div class="bt-desc">Free organic listing only</div>
+                </div>
+                <div class="bt-price" style="color:var(--emerald);">Free</div>
+                <div class="bt-radio"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="right-col">
+      <div class="preview-card">
+        <div class="pc-header">
+          <div class="pch-eyebrow">Live Preview</div>
+          <div class="pch-title">Event card appearance</div>
+        </div>
+        <div class="pc-body">
+          <div class="preview-event">
+            <div class="pe-banner" id="prev-event-banner">
+              <span id="prev-event-emoji">🪔</span>
+              <div class="pe-date-pill">
+                <div class="pedp-day" id="prev-date-day">–</div>
+                <div class="pedp-mon" id="prev-date-mon">–</div>
+              </div>
+            </div>
+            <div class="pe-body">
+              <div class="pe-type-badge" id="prev-event-type" style="background:var(--amber-light);color:var(--amber-dark);">🪔 Cultural</div>
+              <div class="pe-title" id="prev-event-title">Your Event Name</div>
+              <div class="pe-meta">
+                <span id="prev-event-loc">📍 Location</span>
+                <span class="pe-meta-sep"></span>
+                <span>🆓 Free Entry</span>
+              </div>
+              <div class="pe-rsvp-bar">
+                <div class="pe-rsvp-track"><div class="pe-rsvp-fill" style="width:0%;"></div></div>
+                <div class="pe-rsvp-label"><span>0 going</span><span>– / – seats</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-card" id="event-cost-card">
+        <div class="cost-title">💳 Estimated Cost</div>
+        <div class="cost-row"><span class="cost-label">Event Listing</span><span class="cost-val free">Free</span></div>
+        <div class="cost-row"><span class="cost-label">Featured Boost</span><span class="cost-val">₹499</span></div>
+        <div class="cost-divider"></div>
+        <div class="cost-total"><span>Total</span><span class="cost-total-val">₹499</span></div>
+        <div class="cost-footnote">Ticketing revenue (if any) released 48 hrs after event. 8% platform commission applies.</div>
+      </div>
+
+      <div class="tips-card" style="background:var(--emerald-light);border-color:rgba(5,150,105,0.15);">
+        <div class="tips-title" style="color:var(--emerald-dark);">💡 Event Tips</div>
+        <div class="tip-item" style="color:var(--slate);"><span class="tip-dot" style="color:var(--emerald);">→</span>Upload a cover image — events with images get 4× more RSVPs</div>
+        <div class="tip-item" style="color:var(--slate);"><span class="tip-dot" style="color:var(--emerald);">→</span>Pin to relevant circles — Bihar events should reach Bihar, UP, and Jharkhand circles</div>
+        <div class="tip-item" style="color:var(--slate);"><span class="tip-dot" style="color:var(--emerald);">→</span>Enable reminder notifications — reduces no-shows by up to 40%</div>
+        <div class="tip-item" style="color:var(--slate);"><span class="tip-dot" style="color:var(--emerald);">→</span>Show attendee count — social proof increases registrations once 20+ people join</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer">
+      <div class="ff-save"><div class="ff-save-dot"></div>Draft auto-saved</div>
+      <div class="ff-actions">
+        <button class="btn-draft">💾 Save Draft</button>
+        <button class="btn-prev" id="event-prev-btn" style="display:none;" onclick="eventStep(-1)">← Previous</button>
+        <button class="btn-next" id="event-next-btn" onclick="eventStep(1)">Next: Tickets & RSVP →</button>
+        <button class="btn-publish" id="event-publish-btn" style="display:none;" onclick="publishEvent()">✅ Publish Event</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── FORM SWITCHER ── */
+function showForm(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('form-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── CARD RADIO ── */
+function selectCardRadio(el) {
+  const group = el.closest('.card-radio-group, .card-radio-4');
+  group.querySelectorAll('.card-radio').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ── RADIO PILLS ── */
+function selectPay(el, type) {
+  const group = el.closest('.radio-group');
+  group.querySelectorAll('.radio-pill').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  const suffix = type === 'Daily' ? '/day' : type === 'Weekly' ? '/week' : type === 'Fixed/Project' ? '/project' : '/mo';
+  document.getElementById('pay-suffix').textContent = suffix;
+  document.getElementById('pay-suffix-2').textContent = suffix;
+}
+
+/* ── TOGGLE SWITCH ── */
+function toggleSwitch(rowEl) {
+  const sw = rowEl.querySelector('.toggle-switch');
+  sw.classList.toggle('on');
+  rowEl.classList.toggle('on');
+}
+function toggleBoostBody(sw) {
+  sw.classList.toggle('on');
+  const body = document.getElementById('boost-body');
+  body.classList.toggle('visible');
+}
+
+/* ── BOOST TIER SELECT ── */
+function selectBoostTier(el) {
+  const group = el.closest('.boost-tier-group');
+  group.querySelectorAll('.boost-tier').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectGlobalTier(el) {
+  const group = el.closest('.boost-tier-group');
+  group.querySelectorAll('.boost-tier').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ── CHIP FILTER TOGGLE ── */
+function toggleChip(el) {
+  el.classList.toggle('active');
+}
+
+/* ── TAG INPUT ── */
+function addTag(e, wrapId) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const input = e.target;
+  const val = input.value.trim();
+  if (!val) return;
+  const wrap = document.getElementById(wrapId);
+  const chip = document.createElement('div');
+  chip.className = 'tag-chip';
+  chip.innerHTML = val + ' <span class="tag-chip-x" onclick="removeTag(this)">×</span>';
+  wrap.insertBefore(chip, input);
+  input.value = '';
+}
+function removeTag(x) { x.closest('.tag-chip').remove(); }
+
+/* ── JOB STEPS ── */
+let jobCurrentStep = 1;
+const jobPanels = ['jpanel-1','jpanel-2','jpanel-3'];
+const jobStepEls = ['jstep-1','jstep-2','jstep-3'];
+const jobNextLabels = ['Next: Requirements →','Next: Reach & Boost →',''];
+const jobProgressVals = ['33%','66%','100%'];
+
+function jobStep(dir) {
+  const oldPanel = document.getElementById(jobPanels[jobCurrentStep-1]);
+  oldPanel.classList.remove('active');
+  document.getElementById(jobStepEls[jobCurrentStep-1]).classList.add('done');
+  jobCurrentStep = Math.max(1, Math.min(3, jobCurrentStep + dir));
+  const newPanel = document.getElementById(jobPanels[jobCurrentStep-1]);
+  newPanel.classList.add('active','slide-up');
+  document.getElementById(jobStepEls[jobCurrentStep-1]).classList.add('active');
+  document.getElementById('job-progress').style.width = jobProgressVals[jobCurrentStep-1];
+  document.getElementById('job-next-btn').textContent = jobNextLabels[jobCurrentStep-1] || '';
+  document.getElementById('job-next-btn').style.display = jobCurrentStep < 3 ? '' : 'none';
+  document.getElementById('job-publish-btn').style.display = jobCurrentStep === 3 ? '' : 'none';
+  document.getElementById('job-prev-btn').style.display = jobCurrentStep > 1 ? '' : 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function publishJob() {
+  document.getElementById('jpanel-3').classList.remove('active');
+  const success = document.createElement('div');
+  success.className = 'success-screen';
+  success.innerHTML = `
+    <div class="success-icon">✅</div>
+    <div class="success-title">Job Posted Successfully!</div>
+    <div class="success-sub">Your job is now live on Apna Sheher. Community Reach boost is active for Bihar Circle in Pune. You'll start receiving applications within hours.</div>
+    <div class="success-actions">
+      <button class="btn-view" onclick="location.reload()">View Job Listing →</button>
+      <button class="btn-another" onclick="location.reload()">Post Another Job</button>
+    </div>`;
+  document.querySelector('#form-job .page-wrap').insertBefore(success, document.querySelector('#form-job .form-footer'));
+  document.querySelector('#form-job .form-footer').style.display = 'none';
+}
+
+/* ── EVENT STEPS ── */
+let eventCurrentStep = 1;
+const eventPanels = ['epanel-1','epanel-2','epanel-3'];
+const eventStepEls = ['estep-1','estep-2','estep-3'];
+const eventNextLabels = ['Next: Tickets & RSVP →','Next: Audience & Boost →',''];
+const eventProgressVals = ['33%','66%','100%'];
+
+function eventStep(dir) {
+  const oldPanel = document.getElementById(eventPanels[eventCurrentStep-1]);
+  oldPanel.classList.remove('active');
+  document.getElementById(eventStepEls[eventCurrentStep-1]).classList.add('done');
+  eventCurrentStep = Math.max(1, Math.min(3, eventCurrentStep + dir));
+  const newPanel = document.getElementById(eventPanels[eventCurrentStep-1]);
+  newPanel.classList.add('active','slide-up');
+  document.getElementById(eventStepEls[eventCurrentStep-1]).classList.add('active');
+  document.getElementById('event-progress').style.width = eventProgressVals[eventCurrentStep-1];
+  document.getElementById('event-next-btn').textContent = eventNextLabels[eventCurrentStep-1] || '';
+  document.getElementById('event-next-btn').style.display = eventCurrentStep < 3 ? '' : 'none';
+  document.getElementById('event-publish-btn').style.display = eventCurrentStep === 3 ? '' : 'none';
+  document.getElementById('event-prev-btn').style.display = eventCurrentStep > 1 ? '' : 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function publishEvent() {
+  document.getElementById('epanel-3').classList.remove('active');
+  const success = document.createElement('div');
+  success.className = 'success-screen';
+  success.innerHTML = `
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Event Created!</div>
+    <div class="success-sub">Your event is live on Apna Sheher. It's pinned to Bihar Circle in Pune and visible on the Global Feed. Featured boost is active for 7 days.</div>
+    <div class="success-actions">
+      <button class="btn-view" onclick="location.reload()">View Event Page →</button>
+      <button class="btn-another" onclick="location.reload()">Create Another Event</button>
+    </div>`;
+  document.querySelector('#form-event .page-wrap').insertBefore(success, document.querySelector('#form-event .form-footer'));
+  document.querySelector('#form-event .form-footer').style.display = 'none';
+}
+
+/* ── TICKET TIERS ── */
+function toggleTickets(show) {
+  document.getElementById('ticket-tiers-section').style.display = show ? '' : 'none';
+}
+function addTicketTier() {
+  const tiers = document.getElementById('ticket-tiers');
+  const tier = document.createElement('div');
+  tier.className = 'ticket-tier';
+  tier.innerHTML = `
+    <div><div class="tt-name" contenteditable="true" style="outline:none;border-bottom:1px dashed var(--fog);">New Tier</div><div class="tt-sub">Add description</div></div>
+    <div class="input-wrap suffix"><span class="input-prefix">₹</span><input type="number" placeholder="99" style="padding-left:32px;"></div>
+    <div class="tt-remove" onclick="this.closest('.ticket-tier').remove()">×</div>`;
+  tiers.appendChild(tier);
+}
+
+/* ── LIVE PREVIEW — JOB ── */
+function updateJobPreview() {
+  const t = document.getElementById('job-title').value || 'Job Title';
+  const min = document.getElementById('pay-min').value;
+  const max = document.getElementById('pay-max').value;
+  const loc = document.getElementById('job-location').value || '–';
+  document.getElementById('prev-job-title').textContent = t;
+  document.getElementById('prev-pay').textContent = min ? '₹' + Number(min).toLocaleString('en-IN') + (max ? '–' + Number(max).toLocaleString('en-IN') : '') + '/mo' : '₹–/mo';
+  document.getElementById('prev-loc').textContent = loc;
+}
+
+/* ── LIVE PREVIEW — EVENT ── */
+const eventTypeMap = {
+  '🪔 Cultural': { bg:'linear-gradient(135deg,#FFFBEB,#FEF3C7)', emoji:'🪔', badge:'background:var(--amber-light);color:var(--amber-dark)' },
+  '💼 Job Fair':  { bg:'linear-gradient(135deg,var(--royal-light),var(--royal-xlight))', emoji:'💼', badge:'background:var(--royal-light);color:var(--royal)' },
+  '🎓 Training':  { bg:'linear-gradient(135deg,var(--emerald-light),#D1FAE5)', emoji:'🎓', badge:'background:var(--emerald-light);color:var(--emerald-dark)' },
+  '👥 Meetup':    { bg:'linear-gradient(135deg,#F3E8FF,#EDE9FE)', emoji:'👥', badge:'background:#F3E8FF;color:#7C3AED' },
+};
+function updateEventPreview(field, val) {
+  if (field === 'title') document.getElementById('prev-event-title').textContent = val || 'Your Event Name';
+  if (field === 'loc')   document.getElementById('prev-event-loc').textContent = '📍 ' + (val || 'Location');
+  if (field === 'type') {
+    const cfg = eventTypeMap[val] || eventTypeMap['🪔 Cultural'];
+    document.getElementById('prev-event-banner').style.background = cfg.bg;
+    document.getElementById('prev-event-emoji').textContent = cfg.emoji;
+    const badge = document.getElementById('prev-event-type');
+    badge.textContent = val;
+    badge.style.cssText = cfg.badge;
+  }
+  if (field === 'date') {
+    const d = new Date(val);
+    if (!isNaN(d)) {
+      document.getElementById('prev-date-day').textContent = d.getDate();
+      document.getElementById('prev-date-mon').textContent = d.toLocaleString('en',{month:'short'}).toUpperCase();
+    }
+  }
+}
+
+/* ── COVER IMAGE PREVIEW ── */
+function previewCoverImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const banner = document.getElementById('prev-event-banner');
+      banner.style.backgroundImage = `url(${e.target.result})`;
+      banner.style.backgroundSize = 'cover';
+      banner.style.backgroundPosition = 'center';
+      document.getElementById('prev-event-emoji').style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+</body>
+</html>

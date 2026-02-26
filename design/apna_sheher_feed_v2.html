@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REKKOMO Apna Sheher — Feed UI v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root {
+  --royal:        #2B4FD4;
+  --royal-dark:   #1A35A8;
+  --royal-deep:   #0F1F6B;
+  --royal-mid:    #4068E8;
+  --royal-light:  #EEF2FF;
+  --royal-xlight: #F5F7FF;
+  --amber:        #F59E0B;
+  --amber-dark:   #D97706;
+  --amber-light:  #FFFBEB;
+  --amber-mid:    #FCD34D;
+  --emerald:      #059669;
+  --emerald-dark: #047857;
+  --emerald-light:#ECFDF5;
+  --coral:        #EF4444;
+  --coral-light:  #FEF2F2;
+  --ink:          #0D1340;
+  --slate:        #64748B;
+  --mist:         #94A3B8;
+  --fog:          #CBD5E1;
+  --cloud:        #F1F5F9;
+  --paper:        #F8FAFF;
+  --white:        #FFFFFF;
+  --shadow-sm:    0 1px 3px rgba(43,79,212,0.08),0 1px 2px rgba(43,79,212,0.05);
+  --shadow-md:    0 4px 16px rgba(43,79,212,0.12),0 2px 6px rgba(43,79,212,0.07);
+  --shadow-lg:    0 16px 48px rgba(43,79,212,0.15),0 4px 16px rgba(43,79,212,0.08);
+}
+
+html,body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--paper);color:var(--ink);height:100%;overflow-x:hidden;}
+
+/* ═══════════════════════════════
+   DEMO SWITCHER (outer tabs)
+═══════════════════════════════ */
+.demo-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  background: var(--royal-deep);
+  padding: 8px 24px;
+  display: flex; align-items: center; gap: 8px;
+}
+.demo-bar-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; text-transform: uppercase; margin-right: 8px; }
+.dtab {
+  padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,0.45); cursor: pointer; transition: all 0.2s;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.dtab.active { background: var(--royal); color: white; border-color: var(--royal); box-shadow: 0 2px 8px rgba(43,79,212,0.4); }
+.dtab:hover:not(.active) { color: white; background: rgba(255,255,255,0.08); }
+
+/* views */
+.view { display: none; padding-top: 44px; }
+.view.active { display: block; }
+
+/* ═══════════════════════════════
+   SHARED NAVBAR
+═══════════════════════════════ */
+.navbar {
+  position: sticky; top: 44px; z-index: 100;
+  background: rgba(248,250,255,0.95); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--fog);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 0 var(--fog);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-logo-mark {
+  background: linear-gradient(135deg,var(--royal),var(--royal-dark));
+  border-radius: 9px; padding: 6px 10px;
+  font-size: 13px; font-weight: 800; color: white; letter-spacing: 0.05em;
+}
+.nav-brand-name { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: 0.04em; }
+.nav-sep { width: 1px; height: 18px; background: var(--fog); }
+.nav-app { font-size: 13px; font-weight: 600; color: var(--slate); }
+
+.nav-links { display: flex; align-items: center; gap: 2px; }
+.nav-link {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; color: var(--slate);
+  cursor: pointer; transition: all 0.15s; text-decoration: none;
+}
+.nav-link:hover { background: var(--royal-light); color: var(--royal); }
+.nav-link.active { background: var(--royal-light); color: var(--royal); }
+.nav-link .badge {
+  background: var(--royal); color: white;
+  font-size: 10px; font-weight: 800;
+  padding: 1px 6px; border-radius: 100px; margin-left: 2px;
+}
+.nav-link .badge.coral { background: var(--coral); }
+
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-lang {
+  background: var(--cloud); border: 1px solid var(--fog);
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 12px; font-weight: 700; color: var(--ink); cursor: pointer;
+}
+.nav-notif {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--cloud); border: 1px solid var(--fog);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; position: relative;
+}
+.nav-notif .dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; background: var(--coral);
+  border-radius: 50%; border: 2px solid var(--paper);
+}
+.nav-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg,var(--royal),var(--royal-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px; font-weight: 700; cursor: pointer;
+  position: relative;
+}
+.trust-ring {
+  position: absolute; inset: -3px; border-radius: 50%;
+  border: 2px solid var(--amber);
+  border-top-color: transparent; border-right-color: transparent;
+  transform: rotate(-45deg);
+}
+
+/* ═══════════════════════════════
+   APP SHELL — 3 COLUMN
+═══════════════════════════════ */
+.app-shell {
+  display: grid;
+  grid-template-columns: 232px 1fr 272px;
+  min-height: calc(100vh - 104px);
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+/* ═══════════════════════════════
+   SIDEBAR
+═══════════════════════════════ */
+.sidebar {
+  padding: 20px 14px;
+  border-right: 1px solid var(--fog);
+  background: white;
+  position: sticky; top: 104px; height: calc(100vh - 104px);
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--fog); border-radius: 2px; }
+
+.sb-section { margin-bottom: 24px; }
+.sb-head {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--mist);
+  padding: 0 8px; margin-bottom: 6px;
+}
+.sb-nav { display: flex; flex-direction: column; gap: 1px; }
+.sb-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 10px; border-radius: 9px;
+  font-size: 13px; font-weight: 600; color: var(--slate);
+  cursor: pointer; transition: all 0.15s; position: relative;
+}
+.sb-link:hover { background: var(--cloud); color: var(--ink); }
+.sb-link.active { background: var(--royal-light); color: var(--royal); }
+.sb-link.active::before {
+  content: ''; position: absolute; left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 18px; background: var(--royal); border-radius: 0 2px 2px 0;
+}
+.sb-icon { font-size: 15px; width: 20px; text-align: center; }
+.sb-badge {
+  margin-left: auto; background: var(--royal); color: white;
+  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 100px;
+}
+.sb-badge.amber { background: var(--amber); }
+.sb-badge.coral { background: var(--coral); }
+
+/* Circle card in sidebar */
+.circle-card {
+  background: linear-gradient(135deg,var(--royal-deep) 0%,var(--royal) 100%);
+  border-radius: 14px; padding: 14px 16px; color: white; margin-bottom: 12px;
+  position: relative; overflow: hidden;
+}
+.circle-card::after {
+  content: ''; position: absolute; right: -20px; top: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+.cc-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.55; }
+.cc-name { font-size: 15px; font-weight: 800; margin: 3px 0 2px; letter-spacing: -0.3px; }
+.cc-city { font-size: 11px; opacity: 0.6; }
+.cc-count { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-top: 12px; line-height: 1; }
+.cc-sub { font-size: 10px; opacity: 0.55; margin-top: 1px; }
+.cc-health { display: flex; align-items: center; gap: 5px; margin-top: 10px; }
+.cc-health-dot { width: 6px; height: 6px; background: #34D399; border-radius: 50%; animation: pulse-g 2s ease-in-out infinite; }
+@keyframes pulse-g { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+.cc-health-txt { font-size: 10px; opacity: 0.7; font-weight: 600; }
+
+/* Employer sidebar card */
+.employer-card {
+  background: linear-gradient(135deg, var(--royal-deep), #1A2B7A);
+  border-radius: 14px; padding: 14px 16px; color: white; margin-bottom: 12px;
+  position: relative; overflow: hidden;
+}
+.ec-label { font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.55; }
+.ec-name { font-size: 15px; font-weight: 800; margin: 3px 0 2px; }
+.ec-type { font-size: 11px; opacity: 0.6; }
+.ec-stats { display: flex; gap: 12px; margin-top: 12px; }
+.ec-stat-num { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.ec-stat-label { font-size: 9px; opacity: 0.55; font-weight: 600; text-transform: uppercase; }
+
+/* ═══════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════ */
+.main { padding: 20px 24px; }
+
+/* ── PAGE HEADER ── */
+.page-hdr {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.page-title { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: -0.5px; }
+.page-sub { font-size: 12px; color: var(--mist); margin-top: 2px; }
+
+.btn-post {
+  background: linear-gradient(135deg,var(--royal),var(--royal-dark));
+  color: white; border: none; border-radius: 10px;
+  padding: 9px 18px; font-family: 'Plus Jakarta Sans',sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  box-shadow: 0 3px 10px rgba(43,79,212,0.25);
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-post:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(43,79,212,0.35); }
+
+/* ═══════════════════════════════
+   FEED TOGGLE  ← KEY COMPONENT
+═══════════════════════════════ */
+.feed-toggle-wrap {
+  background: var(--cloud);
+  border: 1px solid var(--fog);
+  border-radius: 14px;
+  padding: 4px;
+  display: flex;
+  gap: 3px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.ft-tab {
+  flex: 1; padding: 10px 14px; border-radius: 10px;
+  font-family: 'Plus Jakarta Sans',sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--slate);
+  cursor: pointer; text-align: center; transition: all 0.2s ease;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  border: none; background: transparent; position: relative;
+}
+.ft-tab:hover:not(.active) { color: var(--ink); background: rgba(255,255,255,0.6); }
+.ft-tab.active {
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+.ft-tab.active.global-tab { background: var(--royal); }
+.ft-tab.active.community-tab { background: var(--royal-deep); }
+
+.ft-tab-icon { font-size: 15px; }
+.ft-unread {
+  background: var(--coral); color: white;
+  font-size: 10px; font-weight: 800;
+  padding: 1px 6px; border-radius: 100px;
+}
+.ft-tab.active .ft-unread { background: rgba(255,255,255,0.3); }
+
+/* No community prompt inside toggle area */
+.ft-no-community {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 9px;
+  background: var(--amber-light); border: 1px solid rgba(245,158,11,0.25);
+  font-size: 12px; font-weight: 600; color: var(--amber-dark);
+  cursor: pointer; white-space: nowrap; transition: all 0.15s;
+  margin-left: 4px;
+}
+.ft-no-community:hover { background: var(--amber); color: white; }
+
+/* ── FILTER CHIPS BAR ── */
+.filter-bar {
+  display: flex; gap: 6px; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.filter-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 100px;
+  font-size: 12px; font-weight: 600;
+  background: white; border: 1.5px solid var(--fog);
+  color: var(--slate); cursor: pointer; transition: all 0.15s;
+}
+.filter-chip:hover { border-color: var(--royal); color: var(--royal); background: var(--royal-light); }
+.filter-chip.active { border-color: var(--royal); background: var(--royal); color: white; }
+.filter-chip.active.amber { border-color: var(--amber); background: var(--amber); }
+
+/* ── COMPOSER BAR ── */
+.composer {
+  background: white; border: 1.5px solid var(--fog);
+  border-radius: 14px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px; cursor: text;
+  box-shadow: var(--shadow-sm); transition: border-color 0.15s;
+}
+.composer:hover { border-color: var(--royal); }
+.comp-av {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg,var(--royal),var(--royal-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px; font-weight: 700;
+}
+.comp-input {
+  flex: 1; font-size: 14px; color: var(--mist); font-family: 'Plus Jakarta Sans',sans-serif;
+}
+.comp-actions { display: flex; gap: 6px; }
+.comp-action {
+  padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; border: 1px solid var(--fog);
+  background: var(--cloud); color: var(--slate); white-space: nowrap;
+  font-family: 'Plus Jakarta Sans',sans-serif;
+}
+.comp-action:hover { background: var(--royal-light); color: var(--royal); border-color: rgba(43,79,212,0.25); }
+.comp-action.sos { background: var(--coral-light); color: var(--coral); border-color: rgba(239,68,68,0.25); }
+.comp-action.sos:hover { background: var(--coral); color: white; }
+
+/* ═══════════════════════════════
+   FEED CARDS — BASE
+═══════════════════════════════ */
+.card {
+  background: white; border-radius: 16px; border: 1px solid var(--fog);
+  padding: 18px; margin-bottom: 12px;
+  transition: all 0.2s ease; cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); border-color: rgba(43,79,212,0.15); }
+
+/* Card header */
+.card-hdr { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }
+.card-av {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px; font-weight: 700; flex-shrink: 0;
+}
+.card-meta { flex: 1; }
+.card-name { font-size: 14px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+.card-verified { color: var(--emerald); font-size: 12px; }
+.card-info {
+  font-size: 11px; color: var(--mist); margin-top: 2px;
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+}
+.card-info-sep { width: 2px; height: 2px; background: var(--fog); border-radius: 50%; }
+
+/* Type badge */
+.type-badge {
+  padding: 3px 10px; border-radius: 7px;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.type-badge.job       { background: var(--royal-light); color: var(--royal); }
+.type-badge.event     { background: var(--emerald-light); color: var(--emerald-dark); }
+.type-badge.service   { background: var(--amber-light); color: var(--amber-dark); }
+.type-badge.sos       { background: var(--coral-light); color: var(--coral); }
+.type-badge.meetup    { background: #F3E8FF; color: #7C3AED; }
+.type-badge.gyaan     { background: var(--royal-light); color: var(--royal-deep); }
+.type-badge.welcome   { background: var(--amber-light); color: var(--amber-dark); }
+.type-badge.announce  { background: var(--cloud); color: var(--slate); }
+
+/* State badge */
+.state-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--amber-light); border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 100px; padding: 2px 8px;
+  font-size: 10px; font-weight: 700; color: var(--amber-dark);
+}
+
+/* Card body */
+.card-body { font-size: 13px; line-height: 1.65; color: var(--slate); margin-bottom: 13px; }
+.card-body strong { color: var(--ink); font-weight: 700; }
+
+/* Card footer actions */
+.card-footer { display: flex; align-items: center; gap: 6px; }
+.card-action {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; border: 1px solid var(--fog);
+  background: var(--cloud); color: var(--slate);
+  font-family: 'Plus Jakarta Sans',sans-serif;
+}
+.card-action:hover { background: var(--royal-light); color: var(--royal); border-color: rgba(43,79,212,0.2); }
+
+.card-cta {
+  margin-left: auto;
+  background: linear-gradient(135deg,var(--royal),var(--royal-dark));
+  color: white; border: none; border-radius: 9px;
+  padding: 8px 16px; font-family: 'Plus Jakarta Sans',sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(43,79,212,0.22);
+  transition: all 0.18s; white-space: nowrap;
+}
+.card-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(43,79,212,0.35); }
+.card-cta.emerald { background: linear-gradient(135deg,var(--emerald),var(--emerald-dark)); box-shadow: 0 2px 8px rgba(5,150,105,0.22); }
+.card-cta.amber { background: linear-gradient(135deg,var(--amber),var(--amber-dark)); box-shadow: 0 2px 8px rgba(245,158,11,0.22); }
+.card-cta.purple { background: linear-gradient(135deg,#7C3AED,#5B21B6); }
+
+/* ── JOB DETAILS BOX ── */
+.job-box {
+  background: var(--royal-xlight); border-radius: 10px;
+  padding: 11px 14px; display: grid;
+  grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px;
+  border: 1px solid rgba(43,79,212,0.08);
+}
+.jb-item {}
+.jb-label { font-size: 9px; font-weight: 800; color: var(--royal); text-transform: uppercase; letter-spacing: 0.1em; }
+.jb-val { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.jb-val.pay { color: var(--emerald); font-size: 15px; }
+
+/* ── COMMUNITY BOOST CARD STYLE (global feed) ── */
+.card.community-boost {
+  border: 1.5px solid rgba(245,158,11,0.35);
+  background: linear-gradient(to bottom right, var(--amber-light), white);
+}
+.boost-header {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--amber-light); border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 8px; padding: 7px 12px; margin-bottom: 14px;
+  font-size: 12px; font-weight: 700; color: var(--amber-dark);
+}
+.boost-join {
+  margin-left: auto; font-size: 11px; color: var(--royal);
+  font-weight: 700; text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* ── SOS CARD ── */
+.card.sos-card {
+  border: 1.5px solid rgba(239,68,68,0.35);
+  background: linear-gradient(to bottom right,var(--coral-light),white);
+  animation: sos-pulse 3s ease-in-out infinite;
+}
+@keyframes sos-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.15); }
+  50%      { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+.sos-urgency {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;
+  font-size: 12px; font-weight: 700;
+}
+.sos-urgency.critical { background: var(--coral); color: white; }
+.sos-urgency.urgent   { background: var(--amber-light); color: var(--amber-dark); border: 1px solid rgba(245,158,11,0.3); }
+.sos-urgency.moderate { background: var(--royal-light); color: var(--royal); }
+.sos-responses { font-size: 11px; color: var(--mist); margin-top: 8px; }
+
+/* ── MEETUP CARD ── */
+.meetup-box {
+  background: #F3E8FF; border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 12px; border: 1px solid rgba(124,58,237,0.15);
+  display: flex; align-items: center; gap: 14px;
+}
+.meetup-date {
+  background: white; border-radius: 10px; padding: 8px 12px;
+  text-align: center; box-shadow: var(--shadow-sm); flex-shrink: 0;
+}
+.md-day { font-size: 22px; font-weight: 800; color: var(--ink); line-height: 1; }
+.md-mon { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--mist); }
+.meetup-info {}
+.mi-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+.mi-loc { font-size: 11px; color: var(--slate); margin-top: 3px; }
+.meetup-rsvp { margin-left: auto; }
+
+/* ── GYAAN CARD ── */
+.gyaan-box {
+  background: var(--royal-xlight); border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 12px; border: 1px solid rgba(43,79,212,0.08);
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.gyaan-cat-icon { font-size: 24px; flex-shrink: 0; }
+.gyaan-info { flex: 1; }
+.gyaan-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.gyaan-preview { font-size: 12px; color: var(--slate); line-height: 1.55; }
+.gyaan-upvote {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  background: var(--royal-light); color: var(--royal); cursor: pointer;
+  border: 1px solid rgba(43,79,212,0.15); transition: all 0.15s; flex-shrink: 0;
+}
+.gyaan-upvote:hover { background: var(--royal); color: white; }
+
+/* ── WELCOME CARD ── */
+.card.welcome-card {
+  border: 1.5px solid rgba(245,158,11,0.3);
+  background: linear-gradient(135deg, var(--amber-light) 0%, white 60%);
+}
+.welcome-avatar-stack { display: flex; gap: -6px; margin-bottom: 10px; }
+.welcome-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.welcome-chip {
+  padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  background: white; border: 1px solid var(--fog); color: var(--slate);
+}
+
+/* ── JOIN COMMUNITY PROMPT (in global feed) ── */
+.card.join-prompt {
+  border: 1.5px dashed rgba(43,79,212,0.25);
+  background: linear-gradient(135deg,var(--royal-xlight),white);
+  text-align: center; padding: 24px 20px;
+}
+.jp-icon { font-size: 36px; margin-bottom: 12px; }
+.jp-title { font-size: 16px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.jp-sub { font-size: 13px; color: var(--slate); line-height: 1.6; margin-bottom: 18px; }
+.jp-avatars { display: flex; align-items: center; justify-content: center; gap: -8px; margin-bottom: 16px; }
+.jp-av { width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: -8px; }
+.jp-av:first-child { margin-left: 0; }
+.jp-count { font-size: 12px; color: var(--slate); font-weight: 600; margin-left: 10px; }
+.jp-btn {
+  background: linear-gradient(135deg,var(--royal),var(--royal-dark));
+  color: white; border: none; border-radius: 10px;
+  padding: 10px 24px; font-family: 'Plus Jakarta Sans',sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(43,79,212,0.25); transition: all 0.2s;
+}
+.jp-btn:hover { transform: translateY(-1px); }
+
+/* ── FEATURED / BOOSTED BADGE ── */
+.boosted-banner {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700; color: var(--amber-dark);
+  margin-bottom: 8px;
+}
+.boosted-dot { width: 5px; height: 5px; background: var(--amber); border-radius: 50%; }
+
+/* ── EMPLOYER JOB CARD (global) ── */
+.employer-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--emerald-light); border: 1px solid rgba(5,150,105,0.2);
+  border-radius: 100px; padding: 2px 9px;
+  font-size: 10px; font-weight: 700; color: var(--emerald-dark);
+}
+
+/* ── TAGS ROW ── */
+.tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+.tag {
+  padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  background: var(--cloud); color: var(--slate); border: 1px solid var(--fog);
+}
+.tag.blue { background: var(--royal-light); color: var(--royal); border-color: rgba(43,79,212,0.15); }
+.tag.amber { background: var(--amber-light); color: var(--amber-dark); border-color: rgba(245,158,11,0.2); }
+.tag.green { background: var(--emerald-light); color: var(--emerald-dark); border-color: rgba(5,150,105,0.15); }
+.tag.community { background: var(--royal); color: white; border-color: var(--royal); }
+
+/* ═══════════════════════════════
+   RIGHT PANEL
+═══════════════════════════════ */
+.right-panel {
+  padding: 20px 18px; border-left: 1px solid var(--fog); background: white;
+  position: sticky; top: 104px; height: calc(100vh - 104px); overflow-y: auto;
+}
+.right-panel::-webkit-scrollbar { width: 4px; }
+.right-panel::-webkit-scrollbar-thumb { background: var(--fog); border-radius: 2px; }
+
+.rp-section { margin-bottom: 24px; }
+.rp-head {
+  font-size: 12px; font-weight: 800; color: var(--ink);
+  margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+}
+.rp-see-all { font-size: 11px; color: var(--royal); font-weight: 700; cursor: pointer; }
+.rp-see-all:hover { text-decoration: underline; }
+
+/* Event mini */
+.ev-mini {
+  background: var(--cloud); border-radius: 10px; padding: 10px 12px;
+  margin-bottom: 7px; cursor: pointer; transition: all 0.15s;
+  border: 1px solid var(--fog);
+}
+.ev-mini:hover { border-color: var(--emerald); box-shadow: var(--shadow-sm); }
+.ev-mini-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+.ev-mini-title { font-size: 12px; font-weight: 700; color: var(--ink); }
+.ev-mini-date { font-size: 10px; font-weight: 700; background: var(--emerald-light); color: var(--emerald-dark); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.ev-mini-meta { font-size: 11px; color: var(--mist); }
+
+/* Member mini */
+.mem-mini { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--fog); }
+.mem-mini:last-child { border-bottom: none; }
+.mem-av { width: 34px; height: 34px; border-radius: 50%; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mem-name { font-size: 12px; font-weight: 700; color: var(--ink); }
+.mem-occ { font-size: 11px; color: var(--mist); }
+.mem-btn {
+  margin-left: auto; font-size: 11px; font-weight: 700; color: var(--royal);
+  border: 1px solid rgba(43,79,212,0.25); background: var(--royal-light);
+  border-radius: 7px; padding: 4px 10px; cursor: pointer; white-space: nowrap;
+  font-family: 'Plus Jakarta Sans',sans-serif; transition: all 0.15s;
+}
+.mem-btn:hover { background: var(--royal); color: white; }
+
+/* Trust widget mini */
+.trust-mini {
+  background: var(--cloud); border-radius: 12px; padding: 14px;
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+}
+.trust-svg-wrap { flex-shrink: 0; }
+.trust-info { flex: 1; }
+.ti-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mist); }
+.ti-score { font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -1px; line-height: 1; }
+.ti-status { font-size: 11px; color: var(--royal); font-weight: 700; margin-top: 2px; }
+.ti-bar { height: 4px; background: var(--fog); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.ti-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg,var(--royal),var(--amber)); }
+
+/* Employer stats widget */
+.employer-stats {
+  background: var(--royal-xlight); border-radius: 12px; padding: 14px;
+  border: 1px solid rgba(43,79,212,0.1); margin-bottom: 14px;
+}
+.es-title { font-size: 11px; font-weight: 800; color: var(--royal); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.es-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.es-item { text-align: center; }
+.es-num { font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -0.8px; }
+.es-lbl { font-size: 10px; color: var(--mist); font-weight: 600; margin-top: 1px; }
+
+/* Leaderboard mini */
+.lb-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--fog); }
+.lb-item:last-child { border-bottom: none; }
+.lb-rank { font-size: 14px; font-weight: 800; width: 20px; color: var(--mist); }
+.lb-rank.gold { color: #F59E0B; }
+.lb-rank.silver { color: #94A3B8; }
+.lb-rank.bronze { color: #B45309; }
+.lb-av { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,var(--royal),var(--royal-dark)); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.lb-info { flex: 1; }
+.lb-name { font-size: 12px; font-weight: 700; color: var(--ink); }
+.lb-cat { font-size: 10px; color: var(--mist); }
+.lb-score { font-size: 12px; font-weight: 800; color: var(--royal); }
+
+/* Boost CTA card */
+.boost-cta {
+  background: linear-gradient(135deg,var(--royal-deep),var(--royal));
+  border-radius: 14px; padding: 16px; color: white; margin-bottom: 14px;
+}
+.bct-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.bct-sub { font-size: 12px; opacity: 0.7; line-height: 1.5; margin-bottom: 14px; }
+.bct-btn {
+  background: var(--amber); color: white; border: none; border-radius: 8px;
+  padding: 8px 16px; font-family: 'Plus Jakarta Sans',sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer; width: 100%;
+  transition: all 0.15s;
+}
+.bct-btn:hover { background: var(--amber-dark); }
+
+/* ═══════════════════════════════
+   LOADING SKELETON
+═══════════════════════════════ */
+.skeleton { background: linear-gradient(90deg,var(--cloud) 25%,var(--fog) 50%,var(--cloud) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+@keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+/* ═══════════════════════════════
+   SLIDE ANIMATION
+═══════════════════════════════ */
+.slide-in { animation: slidein 0.35s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes slidein { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+
+/* Feed containers */
+.feed-content { display: none; }
+.feed-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ DEMO SWITCHER ═══════════ -->
+<div class="demo-bar">
+  <span class="demo-bar-label">View</span>
+  <div class="dtab active" onclick="switchView('global-user',this)">🌐 Global User (Employer)</div>
+  <div class="dtab" onclick="switchView('community-user',this)">👥 Community User (Migrant)</div>
+  <div class="dtab" onclick="switchView('both-user',this)">🔀 Both Feeds (Migrant + Jobs)</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VIEW 1 — GLOBAL USER (Employer / non-migrant)
+═══════════════════════════════════════════════ -->
+<div class="view active" id="view-global-user">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo-mark">R</div>
+      <div class="nav-brand-name">REKKOMO</div>
+      <div class="nav-sep"></div>
+      <div class="nav-app">Apna Sheher</div>
+    </div>
+    <div class="nav-links">
+      <div class="nav-link active">📰 Feed</div>
+      <div class="nav-link">💼 Post Job</div>
+      <div class="nav-link">🔍 Find Workers</div>
+      <div class="nav-link">🎉 Events</div>
+      <div class="nav-link">📋 My Listings</div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-lang">EN</div>
+      <div class="nav-notif">🔔<div class="dot"></div></div>
+      <div class="nav-avatar" style="background:linear-gradient(135deg,#059669,#047857);">S<div class="trust-ring" style="border-color:var(--emerald);"></div></div>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+
+    <!-- SIDEBAR — EMPLOYER -->
+    <aside class="sidebar">
+      <div class="employer-card">
+        <div class="ec-label">My Business</div>
+        <div class="ec-name">Shiv Enterprises</div>
+        <div class="ec-type">🏭 Manufacturing · Chakan, Pune</div>
+        <div class="ec-stats">
+          <div><div class="ec-stat-num">5</div><div class="ec-stat-label">Active Jobs</div></div>
+          <div><div class="ec-stat-num">38</div><div class="ec-stat-label">Applicants</div></div>
+          <div><div class="ec-stat-num">12</div><div class="ec-stat-label">Hired</div></div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-head">Employer Tools</div>
+        <div class="sb-nav">
+          <div class="sb-link active"><span class="sb-icon">📰</span> Global Feed</div>
+          <div class="sb-link"><span class="sb-icon">➕</span> Post a Job</div>
+          <div class="sb-link"><span class="sb-icon">📋</span> My Listings <span class="sb-badge">5</span></div>
+          <div class="sb-link"><span class="sb-icon">👥</span> Applicants <span class="sb-badge amber">38</span></div>
+          <div class="sb-link"><span class="sb-icon">⭐</span> Boost a Job</div>
+          <div class="sb-link"><span class="sb-icon">📊</span> Analytics</div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-head">Find Workers</div>
+        <div class="sb-nav">
+          <div class="sb-link"><span class="sb-icon">🔍</span> Browse Profiles</div>
+          <div class="sb-link"><span class="sb-icon">✅</span> Verified Workers</div>
+          <div class="sb-link"><span class="sb-icon">🌾</span> Community Reach</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN — GLOBAL FEED -->
+    <main class="main">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">Global Feed</div>
+          <div class="page-sub">Workers, services and events in Pune · 2,840 active listings</div>
+        </div>
+        <button class="btn-post">➕ Post a Job</button>
+      </div>
+
+      <!-- Feed toggle — GLOBAL ONLY for employer -->
+      <div class="feed-toggle-wrap" style="max-width:360px;">
+        <button class="ft-tab active global-tab">
+          <span class="ft-tab-icon">🌐</span> Global Feed
+        </button>
+        <div class="ft-no-community" onclick="switchView('both-user', document.querySelectorAll('.dtab')[2])">
+          👥 + Join a Circle
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="filter-chip active">🔥 All</div>
+        <div class="filter-chip">💼 Jobs</div>
+        <div class="filter-chip">🔧 Services</div>
+        <div class="filter-chip">🎉 Events</div>
+        <div class="filter-chip amber active">⭐ Featured</div>
+        <div class="filter-chip">🌾 Community Reach</div>
+      </div>
+
+      <!-- CARD 1 — Boosted job listing -->
+      <div class="card slide-in" style="border-color:rgba(245,158,11,0.3);">
+        <div class="boosted-banner"><div class="boosted-dot"></div>⭐ Featured Listing</div>
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,#1A35A8,#2B4FD4);font-size:18px;border-radius:12px;width:44px;height:44px;">🏭</div>
+          <div class="card-meta">
+            <div class="card-name">Machine Operator — Packaging Unit <span class="card-verified">✅</span></div>
+            <div class="card-info">
+              <span class="employer-badge">✅ Verified Employer</span>
+              <span class="card-info-sep"></span>
+              Shiv Enterprises · Chakan, Pune
+              <span class="card-info-sep"></span>
+              2 hours ago
+            </div>
+          </div>
+          <span class="type-badge job">💼 Job</span>
+        </div>
+        <div class="job-box">
+          <div class="jb-item"><div class="jb-label">Pay</div><div class="jb-val pay">₹14,500/mo</div></div>
+          <div class="jb-item"><div class="jb-label">Location</div><div class="jb-val">Chakan, Pune</div></div>
+          <div class="jb-item"><div class="jb-label">Duration</div><div class="jb-val">Full-time</div></div>
+        </div>
+        <div class="tags">
+          <span class="tag">🏭 Manufacturing</span>
+          <span class="tag amber">🗣️ Hindi preferred</span>
+          <span class="tag">🚌 Bus pickup</span>
+          <span class="tag community">🌾 Community Reach — Bihar/UP</span>
+        </div>
+        <div class="card-footer" style="margin-top:12px;">
+          <div class="card-action">👍 24</div>
+          <div class="card-action">💬 8</div>
+          <div class="card-action">🔗 Share</div>
+          <button class="card-cta">Apply Now →</button>
+        </div>
+      </div>
+
+      <!-- CARD 2 — Community Boost card (employer paid to reach community) -->
+      <div class="card community-boost slide-in">
+        <div class="boost-header">
+          🌾 From Bihar Community · Sponsored
+          <span class="boost-join">Join Bihar Circle →</span>
+        </div>
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">R</div>
+          <div class="card-meta">
+            <div class="card-name">Ramesh Kumar <span class="card-verified">✅</span></div>
+            <div class="card-info">
+              <span class="state-badge">🌾 Bihar</span>
+              <span class="card-info-sep"></span>
+              Construction Contractor · 3 hrs ago
+            </div>
+          </div>
+          <span class="type-badge job">💼 Job</span>
+        </div>
+        <div class="card-body">Looking for <strong>2 experienced Masons</strong> for residential project in Hadapsar. Housing provided. Hindi/Bhojpuri employer. Trusted community employer with 14 hires.</div>
+        <div class="job-box" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.15);">
+          <div class="jb-item"><div class="jb-label" style="color:var(--amber-dark);">Pay</div><div class="jb-val pay">₹18,000/mo</div></div>
+          <div class="jb-item"><div class="jb-label" style="color:var(--amber-dark);">Location</div><div class="jb-val">Hadapsar, Pune</div></div>
+          <div class="jb-item"><div class="jb-label" style="color:var(--amber-dark);">Language</div><div class="jb-val">Hindi / Bhojpuri</div></div>
+        </div>
+        <div class="card-footer">
+          <div class="card-action">👍 18</div>
+          <div class="card-action">💬 5</div>
+          <button class="card-cta">Apply Now →</button>
+        </div>
+      </div>
+
+      <!-- CARD 3 — Service listing -->
+      <div class="card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,#D97706,#F59E0B);">D</div>
+          <div class="card-meta">
+            <div class="card-name">Dr. Dinesh Sahu ✅</div>
+            <div class="card-info">
+              <span class="state-badge" style="background:var(--royal-light);color:var(--royal);border-color:rgba(43,79,212,0.2);">🏛️ UP</span>
+              <span class="card-info-sep"></span>
+              General Physician · 1 day ago
+            </div>
+          </div>
+          <span class="type-badge service">🔧 Service</span>
+        </div>
+        <div class="card-body">Home visits available in <strong>Kothrud and Karve Nagar</strong>. Hindi-speaking doctor, affordable fees. Diabetes, BP, general medicine. <strong>Community discount</strong> for Apna Sheher members.</div>
+        <div class="tags">
+          <span class="tag blue">🏥 General Medicine</span>
+          <span class="tag amber">🗣️ Hindi / English</span>
+          <span class="tag">📍 Kothrud · Karve Nagar</span>
+          <span class="tag green">💚 Community Discount</span>
+        </div>
+        <div class="card-footer" style="margin-top:12px;">
+          <div class="card-action">👍 34</div>
+          <div class="card-action">💬 8</div>
+          <button class="card-cta amber">Contact →</button>
+        </div>
+      </div>
+
+      <!-- CARD 4 — Join Community Prompt -->
+      <div class="card join-prompt slide-in">
+        <div class="jp-icon">👥</div>
+        <div class="jp-title">Your Community is Here</div>
+        <div class="jp-sub">842 people from Bihar are in Pune right now.<br>Join Bihar Circle to access trusted jobs, emergency help,<br>and events from your own people.</div>
+        <div class="jp-avatars">
+          <div class="jp-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">R</div>
+          <div class="jp-av" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));">P</div>
+          <div class="jp-av" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">M</div>
+          <div class="jp-av" style="background:linear-gradient(135deg,#7C3AED,#5B21B6);">S</div>
+          <div class="jp-av" style="background:linear-gradient(135deg,var(--coral),#DC2626);">A</div>
+          <span class="jp-count">+837 more</span>
+        </div>
+        <button class="jp-btn">Join Bihar Circle Free →</button>
+      </div>
+
+    </main>
+
+    <!-- RIGHT PANEL — EMPLOYER -->
+    <aside class="right-panel">
+      <div class="rp-section">
+        <div class="employer-stats">
+          <div class="es-title">📊 This Week</div>
+          <div class="es-grid">
+            <div class="es-item"><div class="es-num" style="color:var(--royal);">38</div><div class="es-lbl">Applicants</div></div>
+            <div class="es-item"><div class="es-num" style="color:var(--emerald);">6</div><div class="es-lbl">Shortlisted</div></div>
+            <div class="es-item"><div class="es-num" style="color:var(--amber-dark);">142</div><div class="es-lbl">Profile Views</div></div>
+            <div class="es-item"><div class="es-num" style="color:var(--ink);">2</div><div class="es-lbl">Hired</div></div>
+          </div>
+        </div>
+        <div class="boost-cta">
+          <div class="bct-title">🌾 Reach Community Workers</div>
+          <div class="bct-sub">Target Bihar & UP workers directly in their community feed. 4,200+ verified workers in Pune.</div>
+          <button class="bct-btn">Boost with Community Reach — ₹499</button>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-head">📅 Open Events <span class="rp-see-all">See all →</span></div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">💼 Construction Job Fair</div><div class="ev-mini-date">Nov 22</div></div>
+          <div class="ev-mini-meta">📍 Hadapsar Hall · 156 going</div>
+        </div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">🎓 Skill Training Camp</div><div class="ev-mini-date">Nov 28</div></div>
+          <div class="ev-mini-meta">📍 Pimpri · Free entry</div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     VIEW 2 — COMMUNITY USER (Migrant — Community Feed)
+═══════════════════════════════════════════════════ -->
+<div class="view" id="view-community-user">
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo-mark">R</div>
+      <div class="nav-brand-name">REKKOMO</div>
+      <div class="nav-sep"></div>
+      <div class="nav-app">Apna Sheher</div>
+    </div>
+    <div class="nav-links">
+      <div class="nav-link active">📰 Feed</div>
+      <div class="nav-link">💼 Jobs <span class="badge">12</span></div>
+      <div class="nav-link">🔧 Services</div>
+      <div class="nav-link">🎉 Events</div>
+      <div class="nav-link">👥 My Circles</div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-lang">हि / EN</div>
+      <div class="nav-notif">🔔<div class="dot"></div></div>
+      <div class="nav-avatar">R<div class="trust-ring"></div></div>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+
+    <!-- SIDEBAR — COMMUNITY -->
+    <aside class="sidebar">
+      <div class="circle-card">
+        <div class="cc-eyebrow">My Primary Circle</div>
+        <div class="cc-name">Bihar Circle · बिहार सर्कल</div>
+        <div class="cc-city">📍 Pune, Maharashtra</div>
+        <div class="cc-count">4,218</div>
+        <div class="cc-sub">members nearby</div>
+        <div class="cc-health"><div class="cc-health-dot"></div><div class="cc-health-txt">Very Active — 47 posts this week</div></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-head">Navigate</div>
+        <div class="sb-nav">
+          <div class="sb-link active"><span class="sb-icon">📰</span> Community Feed</div>
+          <div class="sb-link"><span class="sb-icon">💼</span> Jobs <span class="sb-badge">12</span></div>
+          <div class="sb-link"><span class="sb-icon">🔧</span> Services</div>
+          <div class="sb-link"><span class="sb-icon">🎉</span> Events</div>
+          <div class="sb-link"><span class="sb-icon">👥</span> My Circles</div>
+          <div class="sb-link"><span class="sb-icon">🚨</span> SOS <span class="sb-badge coral">2</span></div>
+          <div class="sb-link"><span class="sb-icon">💬</span> Messages <span class="sb-badge">3</span></div>
+          <div class="sb-link"><span class="sb-icon">💡</span> Apna Gyaan</div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-head">Other Circles</div>
+        <div class="sb-nav">
+          <div class="sb-link"><span class="sb-icon">🏛️</span> UP Circle · 6.8K</div>
+          <div class="sb-link"><span class="sb-icon">🌊</span> Odisha · 2.1K</div>
+          <div class="sb-link"><span class="sb-icon">🐯</span> Bengal · 3.4K</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN — COMMUNITY FEED -->
+    <main class="main">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">Community Feed</div>
+          <div class="page-sub">Bihar Circle · Pune · 47 posts this week</div>
+        </div>
+        <button class="btn-post" style="background:linear-gradient(135deg,var(--royal-deep),var(--royal));">✏️ Post Update</button>
+      </div>
+
+      <!-- Feed toggle — BOTH tabs, community active -->
+      <div class="feed-toggle-wrap">
+        <button class="ft-tab community-tab active" onclick="switchView('community-user', document.querySelectorAll('.dtab')[1])">
+          <span class="ft-tab-icon">👥</span> Bihar Circle
+          <span class="ft-unread">4</span>
+        </button>
+        <button class="ft-tab global-tab" onclick="switchView('both-user', document.querySelectorAll('.dtab')[2])">
+          <span class="ft-tab-icon">🌐</span> Global Feed
+        </button>
+      </div>
+
+      <!-- Composer -->
+      <div class="composer">
+        <div class="comp-av">R</div>
+        <div class="comp-input">Share something with Bihar Circle...</div>
+        <div class="comp-actions">
+          <div class="comp-action">💼 Job</div>
+          <div class="comp-action">📍 Meetup</div>
+          <div class="comp-action">💡 Tip</div>
+          <div class="comp-action sos">🚨 SOS</div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="filter-chip active">🔥 All</div>
+        <div class="filter-chip">🚨 SOS</div>
+        <div class="filter-chip">💼 Jobs</div>
+        <div class="filter-chip">🎉 Events</div>
+        <div class="filter-chip">📍 Meetups</div>
+        <div class="filter-chip">💡 Gyaan</div>
+      </div>
+
+      <!-- CARD 1 — SOS URGENT -->
+      <div class="card sos-card slide-in">
+        <div class="sos-urgency urgent">⚠️ Urgent Help Needed · 🏠 Housing</div>
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,#DC2626,#EF4444);">M</div>
+          <div class="card-meta">
+            <div class="card-name">Mukesh Paswan</div>
+            <div class="card-info"><span class="state-badge">🌾 Bihar</span><span class="card-info-sep"></span>Labourer · Posted 20 mins ago</div>
+          </div>
+          <span class="type-badge sos">🚨 SOS</span>
+        </div>
+        <div class="card-body">My landlord has locked my room and taken my belongings. I have nowhere to stay tonight with my wife and child. <strong>Need urgent help in Hadapsar area.</strong> Please anyone from Bihar community who can help.</div>
+        <div class="sos-responses">💬 3 members have responded · 🔔 Notified 4,218 circle members</div>
+        <div class="card-footer" style="margin-top:12px;">
+          <div class="card-action">👀 156 viewed</div>
+          <div class="card-action">💬 3 responses</div>
+          <button class="card-cta" style="background:linear-gradient(135deg,var(--coral),#DC2626);">I Can Help →</button>
+        </div>
+      </div>
+
+      <!-- CARD 2 — Welcome new member -->
+      <div class="card welcome-card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">S</div>
+          <div class="card-meta">
+            <div class="card-name">👋 New Member from Muzaffarpur!</div>
+            <div class="card-info"><span class="state-badge">🌾 Bihar · Muzaffarpur</span><span class="card-info-sep"></span>Just joined · 45 mins ago</div>
+          </div>
+          <span class="type-badge welcome">👋 Welcome</span>
+        </div>
+        <div class="card-body">Say hello to <strong>Suresh Mahto</strong> — he just moved to Pune from Muzaffarpur and joined Bihar Circle. He's looking for construction work and knows masonry and plastering.</div>
+        <div class="welcome-chips">
+          <span class="welcome-chip">🧱 Masonry</span>
+          <span class="welcome-chip">🪣 Plastering</span>
+          <span class="welcome-chip">📍 Bibwewadi</span>
+        </div>
+        <div class="card-footer" style="margin-top:12px;">
+          <button class="card-cta amber" style="margin-left:0;">👋 Say Hello</button>
+          <button class="card-cta" style="margin-left:8px;">+ Connect</button>
+        </div>
+      </div>
+
+      <!-- CARD 3 — Community Job post -->
+      <div class="card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">R</div>
+          <div class="card-meta">
+            <div class="card-name">Ramesh Kumar <span class="card-verified">✅</span></div>
+            <div class="card-info"><span class="state-badge">🌾 Bihar</span><span class="card-info-sep"></span>Contractor · 2 hrs ago</div>
+          </div>
+          <span class="type-badge job">💼 Job</span>
+        </div>
+        <div class="card-body">Looking for <strong>2 experienced Masons</strong> for 3-month residential project in Hadapsar. Housing provided. Hindi/Bhojpuri employer. On-time payment guaranteed — ask anyone in circle.</div>
+        <div class="job-box">
+          <div class="jb-item"><div class="jb-label">Pay</div><div class="jb-val pay">₹18,000/mo</div></div>
+          <div class="jb-item"><div class="jb-label">Location</div><div class="jb-val">Hadapsar</div></div>
+          <div class="jb-item"><div class="jb-label">Duration</div><div class="jb-val">3 Months</div></div>
+        </div>
+        <div class="tags">
+          <span class="tag amber">🗣️ Hindi / Bhojpuri</span>
+          <span class="tag green">🏠 Housing Included</span>
+          <span class="tag community">🌾 Bihar Employer</span>
+        </div>
+        <div class="card-footer" style="margin-top:12px;">
+          <div class="card-action">👍 18</div>
+          <div class="card-action">💬 6</div>
+          <div class="card-action">🔗 Share</div>
+          <button class="card-cta">Apply Now →</button>
+        </div>
+      </div>
+
+      <!-- CARD 4 — Meetup -->
+      <div class="card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,#7C3AED,#5B21B6);">P</div>
+          <div class="card-meta">
+            <div class="card-name">Prakash Singh</div>
+            <div class="card-info"><span class="state-badge">🌾 Bihar</span><span class="card-info-sep"></span>Community Organizer · 4 hrs ago</div>
+          </div>
+          <span class="type-badge meetup">📍 Meetup</span>
+        </div>
+        <div class="card-body">Casual Bihar meetup at Swargate Bus Stand this Sunday! Anyone from Bihar area welcome — chai and chit-chat. Let's meet our own people in the city.</div>
+        <div class="meetup-box">
+          <div class="meetup-date"><div class="md-day">24</div><div class="md-mon">Nov</div></div>
+          <div class="meetup-info">
+            <div class="mi-title">Bihar Community Meetup — Swargate</div>
+            <div class="mi-loc">📍 Swargate Bus Stand · ⏰ 5:00 PM · 🆓 Free</div>
+          </div>
+          <div class="meetup-rsvp">
+            <button class="card-cta purple">RSVP →</button>
+            <div style="font-size:11px;color:var(--mist);text-align:center;margin-top:4px;">14 going</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-action">❤️ 24</div>
+          <div class="card-action">💬 9</div>
+        </div>
+      </div>
+
+      <!-- CARD 5 — Gyaan -->
+      <div class="card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--royal-deep),var(--royal));">A</div>
+          <div class="card-meta">
+            <div class="card-name">Arun Lal ✅</div>
+            <div class="card-info"><span class="state-badge">🌾 Bihar</span><span class="card-info-sep"></span>10 years in Pune · 1 day ago</div>
+          </div>
+          <span class="type-badge gyaan">💡 Gyaan</span>
+        </div>
+        <div class="card-body">Added a tip to Apna Gyaan:</div>
+        <div class="gyaan-box">
+          <div class="gyaan-cat-icon">⚖️</div>
+          <div class="gyaan-info">
+            <div class="gyaan-title">How to get your security deposit back in Pune</div>
+            <div class="gyaan-preview">Step 1: Always get a receipt. Step 2: Send WhatsApp message on last day. Step 3: If landlord denies, go to Lokadalat in your ward...</div>
+          </div>
+          <div class="gyaan-upvote">👍 47</div>
+        </div>
+        <div class="card-footer">
+          <div class="card-action">💬 12</div>
+          <div class="card-action">🔗 Share</div>
+          <button class="card-cta" style="background:linear-gradient(135deg,var(--royal-deep),var(--royal));">Read Full →</button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT PANEL — COMMUNITY -->
+    <aside class="right-panel">
+      <div class="rp-section">
+        <div class="trust-mini">
+          <svg width="56" height="56" viewBox="0 0 56 56" class="trust-svg-wrap">
+            <defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#2B4FD4"/><stop offset="100%" style="stop-color:#F59E0B"/></linearGradient></defs>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#E2E8F0" stroke-width="4"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="url(#tg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="40" transform="rotate(-90 28 28)"/>
+            <text x="28" y="33" text-anchor="middle" font-size="13" font-weight="800" fill="#0D1340" font-family="Plus Jakarta Sans">142</text>
+          </svg>
+          <div class="trust-info">
+            <div class="ti-label">Trust Score</div>
+            <div class="ti-score">142</div>
+            <div class="ti-status">🥈 Community Trusted</div>
+            <div class="ti-bar"><div class="ti-fill" style="width:71%;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-head">🏆 Top Helpers This Month <span class="rp-see-all">See all →</span></div>
+        <div class="lb-item"><div class="lb-rank gold">🥇</div><div class="lb-av">A</div><div class="lb-info"><div class="lb-name">Arun Lal</div><div class="lb-cat">Most Helpful</div></div><div class="lb-score">48 pts</div></div>
+        <div class="lb-item"><div class="lb-rank silver">🥈</div><div class="lb-av" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));">P</div><div class="lb-info"><div class="lb-name">Poonam Devi</div><div class="lb-cat">Job Connector</div></div><div class="lb-score">35 pts</div></div>
+        <div class="lb-item"><div class="lb-rank bronze">🥉</div><div class="lb-av" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">S</div><div class="lb-info"><div class="lb-name">Santosh M.</div><div class="lb-cat">Top Organizer</div></div><div class="lb-score">28 pts</div></div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-head">📅 Circle Events <span class="rp-see-all">See all →</span></div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">🪔 Chhath Puja 2025</div><div class="ev-mini-date">Nov 7</div></div>
+          <div class="ev-mini-meta">📍 Khadakwasla Lake · 240 going</div>
+        </div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">📍 Bihar Meetup</div><div class="ev-mini-date">Nov 24</div></div>
+          <div class="ev-mini-meta">📍 Swargate Bus Stand · 14 going</div>
+        </div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">🥘 Bihar Food Festival</div><div class="ev-mini-date">Nov 15</div></div>
+          <div class="ev-mini-meta">📍 FC Road · ₹99 entry</div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-head">👥 Bihar Members Nearby <span class="rp-see-all">See all →</span></div>
+        <div class="mem-mini"><div class="mem-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">M</div><div><div class="mem-name">Mukesh Yadav</div><div class="mem-occ">Electrician · Kothrud</div></div><div class="mem-btn">+ Connect</div></div>
+        <div class="mem-mini"><div class="mem-av" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));">P</div><div><div class="mem-name">Poonam Devi</div><div class="mem-occ">Nurse · Warje</div></div><div class="mem-btn">+ Connect</div></div>
+        <div class="mem-mini"><div class="mem-av" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">A</div><div><div class="mem-name">Arun Paswan</div><div class="mem-occ">Driver · Bibwewadi</div></div><div class="mem-btn">+ Connect</div></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VIEW 3 — BOTH FEEDS (Migrant on Global Tab)
+═══════════════════════════════════════════════ -->
+<div class="view" id="view-both-user">
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo-mark">R</div>
+      <div class="nav-brand-name">REKKOMO</div>
+      <div class="nav-sep"></div>
+      <div class="nav-app">Apna Sheher</div>
+    </div>
+    <div class="nav-links">
+      <div class="nav-link active">📰 Feed</div>
+      <div class="nav-link">💼 Jobs <span class="badge">12</span></div>
+      <div class="nav-link">🔧 Services</div>
+      <div class="nav-link">🎉 Events</div>
+      <div class="nav-link">👥 My Circles</div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-lang">हि / EN</div>
+      <div class="nav-notif">🔔<div class="dot"></div></div>
+      <div class="nav-avatar">R<div class="trust-ring"></div></div>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+
+    <!-- SIDEBAR — COMMUNITY (same) -->
+    <aside class="sidebar">
+      <div class="circle-card">
+        <div class="cc-eyebrow">My Primary Circle</div>
+        <div class="cc-name">Bihar Circle · बिहार सर्कल</div>
+        <div class="cc-city">📍 Pune, Maharashtra</div>
+        <div class="cc-count">4,218</div>
+        <div class="cc-sub">members nearby</div>
+        <div class="cc-health"><div class="cc-health-dot"></div><div class="cc-health-txt">Very Active · 47 posts this week</div></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-head">Navigate</div>
+        <div class="sb-nav">
+          <div class="sb-link active"><span class="sb-icon">📰</span> Feed</div>
+          <div class="sb-link"><span class="sb-icon">💼</span> Jobs <span class="sb-badge">38</span></div>
+          <div class="sb-link"><span class="sb-icon">🔧</span> Services</div>
+          <div class="sb-link"><span class="sb-icon">🎉</span> Events</div>
+          <div class="sb-link"><span class="sb-icon">👥</span> My Circles</div>
+          <div class="sb-link"><span class="sb-icon">🚨</span> SOS <span class="sb-badge coral">2</span></div>
+          <div class="sb-link"><span class="sb-icon">💬</span> Messages <span class="sb-badge">3</span></div>
+          <div class="sb-link"><span class="sb-icon">💡</span> Apna Gyaan</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN — GLOBAL TAB ACTIVE (for community user) -->
+    <main class="main">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">Global Feed</div>
+          <div class="page-sub">All jobs, services and events in Pune · 2,840 listings</div>
+        </div>
+        <button class="btn-post">✏️ Post</button>
+      </div>
+
+      <!-- Feed toggle — GLOBAL ACTIVE -->
+      <div class="feed-toggle-wrap">
+        <button class="ft-tab community-tab" onclick="switchView('community-user', document.querySelectorAll('.dtab')[1])">
+          <span class="ft-tab-icon">👥</span> Bihar Circle
+          <span class="ft-unread" style="background:rgba(239,68,68,0.8);">4</span>
+        </button>
+        <button class="ft-tab global-tab active">
+          <span class="ft-tab-icon">🌐</span> Global Feed
+        </button>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="filter-chip active">🔥 All</div>
+        <div class="filter-chip">💼 Jobs</div>
+        <div class="filter-chip">🔧 Services</div>
+        <div class="filter-chip">🎉 Events</div>
+        <div class="filter-chip amber active">🌾 Community Jobs</div>
+      </div>
+
+      <!-- CARD 1 — Verified employer job -->
+      <div class="card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--royal-deep),var(--royal));font-size:18px;border-radius:12px;width:44px;height:44px;">🏭</div>
+          <div class="card-meta">
+            <div class="card-name">Machine Operator — Packaging Unit <span class="card-verified">✅</span></div>
+            <div class="card-info"><span class="employer-badge">✅ Verified Employer</span><span class="card-info-sep"></span>Shiv Enterprises · Chakan · 1 hr ago</div>
+          </div>
+          <span class="type-badge job">💼 Job</span>
+        </div>
+        <div class="job-box">
+          <div class="jb-item"><div class="jb-label">Pay</div><div class="jb-val pay">₹14,500/mo</div></div>
+          <div class="jb-item"><div class="jb-label">Location</div><div class="jb-val">Chakan, Pune</div></div>
+          <div class="jb-item"><div class="jb-label">Type</div><div class="jb-val">Full-time</div></div>
+        </div>
+        <div class="tags">
+          <span class="tag">🏭 Manufacturing</span>
+          <span class="tag amber">🗣️ Hindi preferred</span>
+          <span class="tag">🚌 Bus pickup</span>
+          <span class="tag community">🌾 Prefers Bihar/UP workers</span>
+        </div>
+        <div class="card-footer" style="margin-top:12px;">
+          <div class="card-action">👍 24</div>
+          <div class="card-action">💬 8</div>
+          <button class="card-cta">Apply Now →</button>
+        </div>
+      </div>
+
+      <!-- CARD 2 — Community boost card in global -->
+      <div class="card community-boost slide-in">
+        <div class="boost-header">
+          🌾 Bihar Community Employer · Boosted to Global
+          <span class="boost-join" onclick="switchView('community-user', document.querySelectorAll('.dtab')[1])">See in Circle →</span>
+        </div>
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">R</div>
+          <div class="card-meta">
+            <div class="card-name">Ramesh Kumar <span class="card-verified">✅</span></div>
+            <div class="card-info"><span class="state-badge">🌾 Bihar</span><span class="card-info-sep"></span>Contractor · 2 hrs ago</div>
+          </div>
+          <span class="type-badge job">💼 Job</span>
+        </div>
+        <div class="card-body">Looking for <strong>2 experienced Masons</strong> for Hadapsar project. Housing included. Hindi/Bhojpuri employer.</div>
+        <div class="job-box" style="background:rgba(245,158,11,0.07);border-color:rgba(245,158,11,0.15);">
+          <div class="jb-item"><div class="jb-label" style="color:var(--amber-dark);">Pay</div><div class="jb-val pay">₹18,000/mo</div></div>
+          <div class="jb-item"><div class="jb-label" style="color:var(--amber-dark);">Location</div><div class="jb-val">Hadapsar</div></div>
+          <div class="jb-item"><div class="jb-label" style="color:var(--amber-dark);">Language</div><div class="jb-val">Hindi/Bhojpuri</div></div>
+        </div>
+        <div class="card-footer">
+          <div class="card-action">👍 18</div>
+          <div class="card-action">💬 5</div>
+          <button class="card-cta">Apply Now →</button>
+        </div>
+      </div>
+
+      <!-- CARD 3 — Open event -->
+      <div class="card slide-in">
+        <div class="card-hdr">
+          <div class="card-av" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));font-size:18px;border-radius:12px;width:44px;height:44px;">🎓</div>
+          <div class="card-meta">
+            <div class="card-name">Free Skill Training — Electrical Work</div>
+            <div class="card-info"><span class="employer-badge">🏛️ NGO Partner</span><span class="card-info-sep"></span>Skill India Initiative · 6 hrs ago</div>
+          </div>
+          <span class="type-badge event">🎉 Event</span>
+        </div>
+        <div class="card-body">Free 3-day electrical certification training in Pimpri. Government recognised certificate. Open to all Hindi and Marathi speakers. Limited seats — 40 only.</div>
+        <div class="tags">
+          <span class="tag">📍 Pimpri-Chinchwad</span>
+          <span class="tag green">🆓 Free Training</span>
+          <span class="tag blue">🏛️ Govt Certificate</span>
+          <span class="tag">Nov 28 – 30</span>
+        </div>
+        <div class="card-footer" style="margin-top:12px;">
+          <div class="card-action">❤️ 67</div>
+          <div class="card-action">💬 14</div>
+          <button class="card-cta emerald">RSVP Free →</button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT PANEL — COMMUNITY + GLOBAL combined -->
+    <aside class="right-panel">
+      <div class="rp-section">
+        <div class="trust-mini">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <defs><linearGradient id="tg2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#2B4FD4"/><stop offset="100%" style="stop-color:#F59E0B"/></linearGradient></defs>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#E2E8F0" stroke-width="4"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="url(#tg2)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="40" transform="rotate(-90 28 28)"/>
+            <text x="28" y="33" text-anchor="middle" font-size="13" font-weight="800" fill="#0D1340" font-family="Plus Jakarta Sans">142</text>
+          </svg>
+          <div class="trust-info">
+            <div class="ti-label">Trust Score</div>
+            <div class="ti-score">142</div>
+            <div class="ti-status">🥈 Community Trusted</div>
+            <div class="ti-bar"><div class="ti-fill" style="width:71%;"></div></div>
+          </div>
+        </div>
+        <!-- Community alert in global view -->
+        <div style="background:var(--coral-light);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="switchView('community-user', document.querySelectorAll('.dtab')[1])">
+          <span style="font-size:20px;">🚨</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:800;color:var(--coral);">2 SOS in Bihar Circle</div>
+            <div style="font-size:11px;color:var(--slate);">Your community needs help — tap to respond</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--coral);">→</div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-head">📅 Upcoming Events <span class="rp-see-all">See all →</span></div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">🪔 Chhath Puja 2025</div><div class="ev-mini-date">Nov 7</div></div>
+          <div class="ev-mini-meta">📍 Khadakwasla · 240 going</div>
+        </div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">💼 Construction Job Fair</div><div class="ev-mini-date">Nov 22</div></div>
+          <div class="ev-mini-meta">📍 Hadapsar Hall · Open to all</div>
+        </div>
+        <div class="ev-mini">
+          <div class="ev-mini-top"><div class="ev-mini-title">🎓 Free Electrical Training</div><div class="ev-mini-date">Nov 28</div></div>
+          <div class="ev-mini-meta">📍 Pimpri · 40 seats left</div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-head">👥 Bihar Members <span class="rp-see-all">See all →</span></div>
+        <div class="mem-mini"><div class="mem-av" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">M</div><div><div class="mem-name">Mukesh Yadav</div><div class="mem-occ">Electrician · Kothrud</div></div><div class="mem-btn">+ Connect</div></div>
+        <div class="mem-mini"><div class="mem-av" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));">P</div><div><div class="mem-name">Poonam Devi</div><div class="mem-occ">Nurse · Warje</div></div><div class="mem-btn">+ Connect</div></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+function switchView(id, tabEl) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  if (tabEl) tabEl.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Filter chip interactions
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    const bar = this.closest('.filter-bar');
+    bar.querySelectorAll('.filter-chip').forEach(c => {
+      if (!c.classList.contains('amber')) c.classList.remove('active');
+    });
+    this.classList.toggle('active');
+  });
+});
+
+// Feed tab switching within same view
+document.querySelectorAll('.ft-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    // handled by switchView calls in onclick
+  });
+});
+</script>
+</body>
+</html>

@@ -7,9 +7,9 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto max-w-6xl px-6 py-10">
-          <p className="text-sm text-slate-600">Loading...</p>
-        </main>
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--color-primary-deep)" }}>
+          <p className="text-sm text-white/70">Loading...</p>
+        </div>
       }
     >
       <SignInClient />

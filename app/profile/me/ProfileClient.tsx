@@ -37,10 +37,12 @@ type ProfileData = {
 
 export default function ProfileClient({
   initial,
+  startEditing = false,
 }: {
   initial: ProfileData;
+  startEditing?: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(startEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);

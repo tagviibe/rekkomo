@@ -19,10 +19,11 @@ export async function GET(req: Request) {
     );
   }
 
-  const placeType = type === "state" ? "(regions)" : "(cities)";
-  const url = `${GOOGLE_API}?input=${encodeURIComponent(
-    q
-  )}&types=${encodeURIComponent(placeType)}&components=country:in&key=${apiKey}`;
+  const placeType =
+    type === "state" ? "(regions)" : type === "city" ? "(cities)" : "";
+  const url = `${GOOGLE_API}?input=${encodeURIComponent(q)}${
+    placeType ? `&types=${encodeURIComponent(placeType)}` : ""
+  }&components=country:in&key=${apiKey}`;
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) {

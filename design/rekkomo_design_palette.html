@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REKKOMO — Design Palette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ── EXTRACTED FROM REKKOMO LOGO ── */
+    --royal: #2B4FD4;        /* Primary — logo blue */
+    --royal-dark: #1A35A8;   /* Hover / pressed */
+    --royal-deep: #0F1F6B;   /* Headings / ink */
+    --royal-mid: #4068E8;    /* Lighter interactive */
+    --royal-light: #EEF2FF;  /* Tint background */
+    --royal-xlight: #F5F7FF; /* Softest tint */
+
+    /* ── ACCENT — Warm Amber (complements blue, feels Indian) ── */
+    --amber: #F59E0B;
+    --amber-dark: #D97706;
+    --amber-light: #FFFBEB;
+    --amber-mid: #FCD34D;
+
+    /* ── SUCCESS / GROWTH ── */
+    --emerald: #059669;
+    --emerald-dark: #047857;
+    --emerald-light: #ECFDF5;
+
+    /* ── ALERT / CAUTION ── */
+    --coral: #EF4444;
+    --coral-light: #FEF2F2;
+
+    /* ── NEUTRALS ── */
+    --ink: #0D1340;           /* Deep navy-ink (not pure black) */
+    --ink-soft: #1E2760;
+    --slate: #64748B;
+    --mist: #94A3B8;
+    --fog: #CBD5E1;
+    --cloud: #F1F5F9;
+    --white: #FFFFFF;
+    --paper: #F8FAFF;         /* Blue-tinted off-white — feels like the logo world */
+
+    --shadow-sm: 0 1px 3px rgba(43,79,212,0.08), 0 1px 2px rgba(43,79,212,0.05);
+    --shadow-md: 0 4px 16px rgba(43,79,212,0.12), 0 2px 6px rgba(43,79,212,0.07);
+    --shadow-lg: 0 16px 48px rgba(43,79,212,0.15), 0 4px 16px rgba(43,79,212,0.08);
+    --shadow-glow: 0 0 0 4px rgba(43,79,212,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-hero {
+    background: linear-gradient(135deg, var(--royal-deep) 0%, var(--royal) 60%, var(--royal-mid) 100%);
+    padding: 64px 48px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%),
+                      radial-gradient(circle at 10% 80%, rgba(64,104,232,0.4) 0%, transparent 40%);
+  }
+  .hero-inner { position: relative; max-width: 900px; }
+  .hero-logo-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .hero-logo-box {
+    background: white;
+    border-radius: 14px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-lg);
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--royal) 0%, var(--royal-dark) 100%);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo-text { font-size: 20px; font-weight: 800; color: var(--royal); letter-spacing: 0.04em; }
+  .arrow { font-size: 20px; opacity: 0.5; }
+  .app-name { font-size: 18px; font-weight: 700; opacity: 0.85; }
+
+  .hero-title { font-size: 48px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
+  .hero-title span { color: var(--amber-mid); }
+  .hero-sub { font-size: 16px; opacity: 0.7; max-width: 560px; line-height: 1.7; }
+
+  /* ── SECTION ── */
+  .section { padding: 56px 48px; }
+  .section + .section { border-top: 1px solid var(--fog); }
+  .section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--royal);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .section-desc { font-size: 14px; color: var(--slate); margin-bottom: 40px; line-height: 1.7; }
+
+  /* ── COLOR PALETTE ── */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .swatch-card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--fog);
+    box-shadow: var(--shadow-sm);
+  }
+  .swatch-color {
+    height: 100px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+  }
+  .swatch-hex {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.05em;
+    font-family: monospace;
+  }
+  .swatch-hex.dark { background: rgba(0,0,0,0.12); color: var(--ink); }
+  .swatch-info { background: white; padding: 12px 14px; }
+  .swatch-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .swatch-role { font-size: 11px; color: var(--slate); margin-top: 2px; }
+
+  .palette-tints {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tint-swatch {
+    border-radius: 10px;
+    height: 56px;
+    display: flex;
+    align-items: flex-end;
+    padding: 6px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: monospace;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  /* ── COMPARISON ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .compare-card {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid var(--fog);
+  }
+  .compare-card.recommended { border-color: var(--royal); box-shadow: var(--shadow-md); }
+  .compare-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .compare-label { font-size: 13px; font-weight: 700; }
+  .compare-verdict {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+  .compare-verdict.yes { background: var(--emerald-light); color: var(--emerald); }
+  .compare-verdict.no { background: var(--coral-light); color: var(--coral); }
+  .compare-body { padding: 20px; background: white; }
+  .compare-colors { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .cc-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.06);
+    position: relative;
+  }
+  .cc-dot .tt {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    white-space: nowrap;
+    color: var(--slate);
+    font-weight: 600;
+  }
+  .compare-ui { border-radius: 12px; overflow: hidden; border: 1px solid var(--fog); margin-top: 20px; }
+  .cui-navbar { padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+  .cui-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .cui-card { border-radius: 10px; padding: 12px 14px; border: 1px solid transparent; }
+  .cui-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .cui-sub { font-size: 11px; }
+  .cui-btn { display: inline-block; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 6px; margin-top: 8px; color: white; }
+  .compare-note { font-size: 12px; color: var(--slate); margin-top: 14px; line-height: 1.6; padding: 10px 12px; border-radius: 8px; background: var(--cloud); }
+
+  /* ── TYPOGRAPHY ── */
+  .type-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .type-specimen { }
+  .type-name { font-size: 11px; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--royal); margin-bottom: 16px; }
+  .type-scale { display: flex; flex-direction: column; gap: 12px; }
+  .ts-row { display: flex; align-items: baseline; gap: 16px; }
+  .ts-size { font-size: 10px; color: var(--mist); font-weight: 600; width: 64px; flex-shrink: 0; font-family: monospace; }
+  .ts-sample { color: var(--ink); }
+
+  /* ── COMPONENT PREVIEW ── */
+  .component-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .comp-section { }
+  .comp-title { font-size: 12px; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px; }
+
+  /* Buttons */
+  .btn-row { display: flex; flex-direction: column; gap: 10px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s ease;
+    width: fit-content;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--royal) 0%, var(--royal-dark) 100%); color: white; box-shadow: 0 4px 12px rgba(43,79,212,0.3); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(43,79,212,0.4); }
+  .btn-amber { background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dark) 100%); color: white; box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+  .btn-success { background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%); color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
+  .btn-outline { background: white; color: var(--royal); border: 1.5px solid var(--royal); }
+  .btn-outline:hover { background: var(--royal-light); }
+  .btn-ghost { background: var(--cloud); color: var(--slate); border: 1px solid var(--fog); }
+  .btn-ghost:hover { background: var(--royal-light); color: var(--royal); border-color: rgba(43,79,212,0.3); }
+
+  /* Badges */
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1.5px solid transparent;
+  }
+  .badge-royal { background: var(--royal-light); color: var(--royal); border-color: rgba(43,79,212,0.2); }
+  .badge-amber { background: var(--amber-light); color: var(--amber-dark); border-color: rgba(245,158,11,0.25); }
+  .badge-emerald { background: var(--emerald-light); color: var(--emerald-dark); border-color: rgba(5,150,105,0.2); }
+  .badge-coral { background: var(--coral-light); color: var(--coral); border-color: rgba(239,68,68,0.2); }
+  .badge-dark { background: var(--ink); color: white; }
+  .badge-outline { background: transparent; color: var(--slate); border-color: var(--fog); }
+
+  /* Cards */
+  .card-demos { display: flex; flex-direction: column; gap: 12px; }
+  .demo-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--fog);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-strip { height: 4px; }
+  .dc-body { padding: 14px 16px; }
+  .dc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .dc-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .dc-meta { font-size: 12px; color: var(--slate); }
+  .dc-pay { font-size: 15px; font-weight: 800; color: var(--emerald); }
+  .dc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .dc-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 6px; }
+  .dc-tag.blue { background: var(--royal-light); color: var(--royal); }
+  .dc-tag.amber { background: var(--amber-light); color: var(--amber-dark); }
+  .dc-tag.gray { background: var(--cloud); color: var(--slate); }
+
+  /* Trust Score */
+  .trust-widget {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--fog);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .trust-svg { width: 72px; height: 72px; flex-shrink: 0; }
+  .tr-bg { fill: none; stroke: var(--fog); stroke-width: 5; }
+  .tr-fill { fill: none; stroke: url(#rg); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 48; transform: rotate(-90deg); transform-origin: 50% 50%; }
+  .tr-num { font-size: 16px; font-weight: 800; fill: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .trust-meta { flex: 1; }
+  .tm-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+  .tm-score { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -1px; line-height: 1; }
+  .tm-status { font-size: 12px; font-weight: 700; color: var(--royal); margin-top: 4px; }
+  .tm-bar { margin-top: 10px; height: 6px; background: var(--fog); border-radius: 3px; overflow: hidden; }
+  .tm-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--royal), var(--amber)); }
+
+  /* State Chips */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .state-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1.5px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sc-royal { background: var(--royal-light); border-color: rgba(43,79,212,0.25); color: var(--royal-dark); }
+  .sc-amber { background: var(--amber-light); border-color: rgba(245,158,11,0.3); color: var(--amber-dark); }
+  .sc-emerald { background: var(--emerald-light); border-color: rgba(5,150,105,0.25); color: var(--emerald-dark); }
+  .sc-slate { background: var(--cloud); border-color: var(--fog); color: var(--slate); }
+  .sc-ink { background: var(--ink); border-color: var(--ink); color: white; }
+
+  /* Input */
+  .input-demos { display: flex; flex-direction: column; gap: 12px; }
+  .input-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .input-label { font-size: 12px; font-weight: 700; color: var(--slate); }
+  .input-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 1.5px solid var(--fog);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--slate);
+    transition: border-color 0.15s;
+  }
+  .input-field.focused { border-color: var(--royal); box-shadow: var(--shadow-glow); color: var(--ink); }
+  .input-field.error { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(239,68,68,0.1); }
+
+  /* Navbar demo */
+  .navbar-demo {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--fog);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+  }
+  .nd-logo { display: flex; align-items: center; gap: 8px; }
+  .nd-logo-mark {
+    background: linear-gradient(135deg, var(--royal), var(--royal-dark));
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 8px;
+    border-radius: 7px;
+    letter-spacing: 0.04em;
+  }
+  .nd-logo-text { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: 0.03em; }
+  .nd-links { display: flex; gap: 4px; }
+  .nd-link {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--slate);
+    cursor: pointer;
+  }
+  .nd-link.active { background: var(--royal-light); color: var(--royal); }
+  .nd-cta {
+    background: linear-gradient(135deg, var(--royal), var(--royal-dark));
+    color: white;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Notification */
+  .notif-demo {
+    background: var(--ink);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: white;
+    margin-bottom: 10px;
+  }
+  .notif-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .notif-title { font-size: 13px; font-weight: 700; }
+  .notif-body { font-size: 12px; opacity: 0.65; margin-top: 2px; }
+  .notif-time { font-size: 11px; opacity: 0.45; margin-left: auto; white-space: nowrap; }
+
+  /* ── SPACING & RADIUS ── */
+  .spacing-row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 20px; }
+  .sp-block { background: var(--royal-light); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; }
+  .sp-label { font-size: 10px; font-weight: 700; color: var(--royal); }
+
+  .radius-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .rr-block { width: 64px; height: 64px; background: var(--royal-light); border: 2px solid rgba(43,79,212,0.2); display: flex; align-items: center; justify-content: center; }
+  .rr-label { font-size: 10px; font-weight: 700; color: var(--royal); text-align: center; margin-top: 4px; }
+
+  /* ── FINAL PREVIEW ── */
+  .final-preview {
+    background: var(--paper);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid var(--fog);
+    box-shadow: var(--shadow-lg);
+  }
+  .fp-navbar {
+    background: white;
+    border-bottom: 1px solid var(--fog);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .fp-body {
+    display: grid;
+    grid-template-columns: 200px 1fr 240px;
+    min-height: 400px;
+  }
+  .fp-sidebar {
+    background: white;
+    border-right: 1px solid var(--fog);
+    padding: 20px 14px;
+  }
+  .fp-main { padding: 24px; }
+  .fp-right { background: white; border-left: 1px solid var(--fog); padding: 20px; }
+
+  .fp-circle-card {
+    background: linear-gradient(135deg, var(--royal-deep), var(--royal));
+    border-radius: 12px;
+    padding: 14px;
+    color: white;
+    margin-bottom: 14px;
+  }
+  .fp-circle-label { font-size: 9px; font-weight: 700; letter-spacing: 0.15em; opacity: 0.6; text-transform: uppercase; }
+  .fp-circle-name { font-size: 15px; font-weight: 800; margin: 3px 0 1px; }
+  .fp-circle-city { font-size: 11px; opacity: 0.65; }
+  .fp-circle-count { font-size: 22px; font-weight: 800; letter-spacing: -1px; margin-top: 10px; }
+  .fp-circle-sub { font-size: 10px; opacity: 0.6; }
+
+  .fp-nav-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; color: var(--slate);
+    margin-bottom: 2px; cursor: pointer;
+  }
+  .fp-nav-link.active { background: var(--royal-light); color: var(--royal); }
+
+  .fp-feed-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--fog);
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .fp-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .fp-avatar { width: 36px; height: 36px; border-radius: 50%; color: white; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .fp-card-name { font-size: 13px; font-weight: 700; }
+  .fp-card-meta { font-size: 11px; color: var(--slate); }
+  .fp-card-type { margin-left: auto; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
+  .fp-card-body { font-size: 13px; color: var(--slate); line-height: 1.6; margin-bottom: 12px; }
+  .fp-card-body strong { color: var(--ink); font-weight: 700; }
+  .fp-card-info {
+    background: var(--royal-xlight);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .fp-ci-label { font-size: 9px; font-weight: 700; color: var(--royal); text-transform: uppercase; letter-spacing: 0.08em; }
+  .fp-ci-val { font-size: 12px; font-weight: 700; color: var(--ink); }
+  .fp-card-actions { display: flex; gap: 6px; }
+  .fp-action {
+    padding: 6px 12px; border-radius: 7px; font-size: 11px; font-weight: 700;
+    cursor: pointer; border: none; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .fp-action.ghost { background: var(--cloud); color: var(--slate); }
+  .fp-action.cta { background: linear-gradient(135deg, var(--royal), var(--royal-dark)); color: white; margin-left: auto; }
+
+  .fp-event-mini { background: var(--cloud); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .fp-em-title { font-size: 12px; font-weight: 700; }
+  .fp-em-date { font-size: 10px; color: var(--royal); font-weight: 700; margin-top: 2px; }
+
+  /* ── DO / DON'T ── */
+  .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dd-card { border-radius: 16px; overflow: hidden; }
+  .dd-header { padding: 12px 16px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .dd-header.do { background: var(--emerald-light); color: var(--emerald-dark); }
+  .dd-header.dont { background: var(--coral-light); color: var(--coral); }
+  .dd-body { background: white; padding: 16px; border: 1px solid var(--fog); border-top: none; border-radius: 0 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .dd-item { font-size: 13px; display: flex; align-items: flex-start; gap: 8px; color: var(--slate); line-height: 1.5; }
+  .dd-icon { flex-shrink: 0; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="page-hero">
+  <div class="hero-inner">
+    <div class="hero-logo-row">
+      <div class="hero-logo-box">
+        <div class="logo-icon">R</div>
+        <div class="logo-text">REKKOMO</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="app-name" style="color:white;">Apna Sheher Design System</div>
+    </div>
+    <h1 class="hero-title">Your Brand.<br><span>Right Palette.</span></h1>
+    <p class="hero-sub">Built directly from your REKKOMO logo colors — Royal Blue as the primary, Amber as the warm Indian accent. Trustworthy, modern, and culturally resonant.</p>
+  </div>
+</div>
+
+<!-- ── COMPARISON ── -->
+<div class="section">
+  <div class="section-label">Why Change</div>
+  <div class="section-title">Old palette vs. REKKOMO-aligned palette</div>
+  <div class="section-desc">The saffron/orange palette conflicts with your logo. Here's the side-by-side difference.</div>
+
+  <div class="compare-grid">
+    <!-- OLD -->
+    <div class="compare-card">
+      <div class="compare-header" style="background:#FDF0E8;">
+        <span class="compare-label">❌ Old Palette (Saffron-first)</span>
+        <span class="compare-verdict no">Not Aligned</span>
+      </div>
+      <div class="compare-body">
+        <div class="compare-colors">
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#E8621A;"><span class="tt">Saffron</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#1A56A0;"><span class="tt">Blue</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#1A7A4A;"><span class="tt">Green</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#C9920A;"><span class="tt">Gold</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#F7F3EE;border:1px solid #ccc;"><span class="tt">Warm Paper</span></div>
+          </div>
+        </div>
+        <div class="compare-ui" style="margin-top:28px;">
+          <div class="cui-navbar" style="background:#E8621A;color:white;">🔥 Apna Sheher (Saffron Nav)</div>
+          <div class="cui-body">
+            <div class="cui-card" style="background:#FDF0E8;border-color:#E8621A;">
+              <div class="cui-title">Mason Job — Hadapsar</div>
+              <div class="cui-sub" style="color:#E8621A;">₹18,000/mo</div>
+              <div class="cui-btn" style="background:#E8621A;">Apply Now</div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-note">🚫 Saffron as the primary color clashes visually when users see your REKKOMO logo (blue) alongside the app. Creates brand confusion — two different color identities.</div>
+      </div>
+    </div>
+
+    <!-- NEW -->
+    <div class="compare-card recommended">
+      <div class="compare-header" style="background:var(--royal-light);">
+        <span class="compare-label">✅ New Palette (Royal Blue-first)</span>
+        <span class="compare-verdict yes">REKKOMO Aligned</span>
+      </div>
+      <div class="compare-body">
+        <div class="compare-colors">
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#2B4FD4;"><span class="tt">Royal Blue</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#F59E0B;"><span class="tt">Amber</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#059669;"><span class="tt">Emerald</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#0F1F6B;"><span class="tt">Deep Navy</span></div>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:20px;">
+            <div class="cc-dot" style="background:#F8FAFF;border:1px solid #ccc;"><span class="tt">Blue Paper</span></div>
+          </div>
+        </div>
+        <div class="compare-ui" style="margin-top:28px;">
+          <div class="cui-navbar" style="background:var(--royal-deep);color:white;">💙 REKKOMO Apna Sheher</div>
+          <div class="cui-body">
+            <div class="cui-card" style="background:var(--royal-xlight);border-color:rgba(43,79,212,0.2);">
+              <div class="cui-title">Mason Job — Hadapsar</div>
+              <div class="cui-sub" style="color:var(--emerald);font-weight:700;">₹18,000/mo</div>
+              <div class="cui-btn" style="background:var(--royal);">Apply Now</div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-note" style="background:var(--royal-light);color:var(--royal-dark);">✅ Royal Blue is derived directly from your logo. Users who know REKKOMO will feel instant brand recognition. Amber adds warmth without overpowering.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COLOR PALETTE ── -->
+<div class="section" style="background:white;">
+  <div class="section-label">Color System</div>
+  <div class="section-title">Primary Palette — 5 Core Colors</div>
+  <div class="section-desc">Every color has a specific job. Royal Blue owns trust and action. Amber signals opportunity. Emerald signals success. Coral is for alerts only.</div>
+
+  <div class="palette-grid">
+    <div class="swatch-card">
+      <div class="swatch-color" style="background:linear-gradient(135deg,#2B4FD4,#1A35A8);">
+        <span class="swatch-hex">#2B4FD4</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Royal Blue</div>
+        <div class="swatch-role">Primary · CTAs · Nav · Links · Logo match</div>
+      </div>
+    </div>
+    <div class="swatch-card">
+      <div class="swatch-color" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+        <span class="swatch-hex">#F59E0B</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Warm Amber</div>
+        <div class="swatch-role">Accent · Community badges · Highlights · Indian warmth</div>
+      </div>
+    </div>
+    <div class="swatch-card">
+      <div class="swatch-color" style="background:linear-gradient(135deg,#059669,#047857);">
+        <span class="swatch-hex">#059669</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Emerald</div>
+        <div class="swatch-role">Success · Hired · Pay amounts · Verified badges</div>
+      </div>
+    </div>
+    <div class="swatch-card">
+      <div class="swatch-color" style="background:linear-gradient(135deg,#0F1F6B,#1A35A8);">
+        <span class="swatch-hex">#0F1F6B</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Deep Navy</div>
+        <div class="swatch-role">Headings · Sidebar background · Dark surfaces</div>
+      </div>
+    </div>
+    <div class="swatch-card">
+      <div class="swatch-color" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+        <span class="swatch-hex">#EF4444</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Coral Red</div>
+        <div class="swatch-role">Alerts · Errors · Urgent only — use sparingly</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:12px;">Royal Blue Tints (UI surfaces)</div>
+  <div class="palette-tints">
+    <div class="tint-swatch" style="background:#0F1F6B;"><span style="color:rgba(255,255,255,0.7);">Deep</span></div>
+    <div class="tint-swatch" style="background:#1A35A8;"><span style="color:rgba(255,255,255,0.7);">Dark</span></div>
+    <div class="tint-swatch" style="background:#2B4FD4;"><span style="color:white;">500</span></div>
+    <div class="tint-swatch" style="background:#4068E8;"><span style="color:white;">400</span></div>
+    <div class="tint-swatch" style="background:#7B96F0;"><span style="color:white;">300</span></div>
+    <div class="tint-swatch" style="background:#C4D0FA;"><span style="color:#1A35A8;">100</span></div>
+    <div class="tint-swatch" style="background:#EEF2FF;border:1px solid #C4D0FA;"><span style="color:#2B4FD4;">50</span></div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:12px;">Amber Tints (Accent surfaces)</div>
+  <div class="palette-tints">
+    <div class="tint-swatch" style="background:#92400E;"><span style="color:rgba(255,255,255,0.7);">Deep</span></div>
+    <div class="tint-swatch" style="background:#B45309;"><span style="color:rgba(255,255,255,0.7);">Dark</span></div>
+    <div class="tint-swatch" style="background:#D97706;"><span style="color:white;">500</span></div>
+    <div class="tint-swatch" style="background:#F59E0B;"><span style="color:white;">400</span></div>
+    <div class="tint-swatch" style="background:#FCD34D;"><span style="color:#92400E;">300</span></div>
+    <div class="tint-swatch" style="background:#FDE68A;border:1px solid #FCD34D;"><span style="color:#B45309;">100</span></div>
+    <div class="tint-swatch" style="background:#FFFBEB;border:1px solid #FDE68A;"><span style="color:#D97706;">50</span></div>
+  </div>
+</div>
+
+<!-- ── TYPOGRAPHY ── -->
+<div class="section">
+  <div class="section-label">Typography</div>
+  <div class="section-title">Plus Jakarta Sans + Noto Devanagari</div>
+  <div class="section-desc">Jakarta Sans is sharp, modern, and has excellent character — perfect match for a platform that's professional but not corporate. Replaces Sora which was too playful.</div>
+
+  <div class="type-section">
+    <div class="type-specimen">
+      <div class="type-name">Plus Jakarta Sans — English</div>
+      <div style="font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:16px;background:linear-gradient(135deg,var(--royal-deep),var(--royal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+        REKKOMO
+      </div>
+      <div class="type-scale">
+        <div class="ts-row"><span class="ts-size">56px / 800</span><span class="ts-sample" style="font-size:36px;font-weight:800;letter-spacing:-1px;">Hero Heading</span></div>
+        <div class="ts-row"><span class="ts-size">32px / 800</span><span class="ts-sample" style="font-size:26px;font-weight:800;letter-spacing:-0.5px;">Page Title</span></div>
+        <div class="ts-row"><span class="ts-size">20px / 700</span><span class="ts-sample" style="font-size:20px;font-weight:700;">Section Heading</span></div>
+        <div class="ts-row"><span class="ts-size">16px / 600</span><span class="ts-sample" style="font-size:16px;font-weight:600;">Card Title / Subheading</span></div>
+        <div class="ts-row"><span class="ts-size">14px / 500</span><span class="ts-sample" style="font-size:14px;color:var(--slate);">Body text, descriptions, and longer content like job descriptions, event details, and community posts.</span></div>
+        <div class="ts-row"><span class="ts-size">12px / 600</span><span class="ts-sample" style="font-size:12px;color:var(--mist);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">LABEL / CAPTION / META</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-name">Noto Sans Devanagari — Hindi UI</div>
+      <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:48px;font-weight:700;letter-spacing:0;line-height:1.2;margin-bottom:16px;color:var(--royal);">
+        अपना शहर
+      </div>
+      <div class="type-scale" style="font-family:'Noto Sans Devanagari',sans-serif;">
+        <div class="ts-row"><span class="ts-size">36px / 700</span><span class="ts-sample" style="font-size:28px;font-weight:700;font-family:'Noto Sans Devanagari';">नौकरी खोजें</span></div>
+        <div class="ts-row"><span class="ts-size">20px / 600</span><span class="ts-sample" style="font-size:20px;font-weight:600;font-family:'Noto Sans Devanagari';">अपने लोग, अपनी पहचान</span></div>
+        <div class="ts-row"><span class="ts-size">14px / 400</span><span class="ts-sample" style="font-size:14px;color:var(--slate);font-family:'Noto Sans Devanagari';">अपने राज्य के लोगों के साथ जुड़ें और भरोसेमंद नौकरी पाएं।</span></div>
+        <div class="ts-row"><span class="ts-size">12px / 500</span><span class="ts-sample" style="font-size:12px;color:var(--mist);font-family:'Noto Sans Devanagari';">बिहार सर्कल · पुणे · ४,२०० सदस्य</span></div>
+      </div>
+      <div style="margin-top:20px;background:var(--royal-light);border-radius:10px;padding:14px;font-size:13px;color:var(--royal-dark);line-height:1.7;">
+        <strong>Rule:</strong> Always use Noto Sans Devanagari when text switches to Hindi. Never render Devanagari in Plus Jakarta Sans — it will fall back to system fonts and look inconsistent.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPONENTS ── -->
+<div class="section" style="background:white;">
+  <div class="section-label">Component Library</div>
+  <div class="section-title">Buttons, Badges, Cards & Inputs</div>
+  <div class="section-desc">Every component uses the Royal Blue system. Amber is reserved for community-specific elements only — never for generic actions.</div>
+
+  <!-- Navbar -->
+  <div class="comp-title" style="margin-bottom:12px;">NAVBAR</div>
+  <div class="navbar-demo">
+    <div class="nd-logo">
+      <div class="nd-logo-mark">R</div>
+      <div class="nd-logo-text">REKKOMO</div>
+      <div style="width:1px;height:18px;background:var(--fog);margin:0 8px;"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--slate);">Apna Sheher</div>
+    </div>
+    <div class="nd-links">
+      <div class="nd-link active">📰 Feed</div>
+      <div class="nd-link">💼 Jobs</div>
+      <div class="nd-link">🔧 Services</div>
+      <div class="nd-link">🎉 Events</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="background:var(--cloud);border:1px solid var(--fog);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">हि / EN</div>
+      <div class="nd-cta">Join Free</div>
+    </div>
+  </div>
+
+  <div class="component-grid">
+    <!-- Buttons -->
+    <div class="comp-section">
+      <div class="comp-title">BUTTONS</div>
+      <div class="btn-row">
+        <button class="btn btn-primary">💼 Apply for Job</button>
+        <button class="btn btn-amber">⭐ RSVP to Event</button>
+        <button class="btn btn-success">✅ Mark as Hired</button>
+        <button class="btn btn-outline">View Profile →</button>
+        <button class="btn btn-ghost">🔗 Share Post</button>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="comp-title">STATE / COMMUNITY CHIPS</div>
+        <div class="chip-row" style="margin-top:8px;">
+          <div class="state-chip sc-ink">🌾 Bihar · 4.2K</div>
+          <div class="state-chip sc-royal">🏛️ UP · 6.8K</div>
+          <div class="state-chip sc-amber">🌊 Odisha · 2.1K</div>
+          <div class="state-chip sc-emerald">🐯 Bengal · 3.4K</div>
+          <div class="state-chip sc-slate">🏜️ Rajasthan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="comp-section">
+      <div class="comp-title">BADGES & TAGS</div>
+      <div class="badge-row" style="margin-bottom:16px;">
+        <span class="badge badge-royal">💙 Bihar Community</span>
+        <span class="badge badge-amber">⭐ Featured</span>
+        <span class="badge badge-emerald">✅ Verified</span>
+        <span class="badge badge-coral">🔴 Urgent</span>
+        <span class="badge badge-dark">💼 Job</span>
+        <span class="badge badge-outline">🔧 Service</span>
+      </div>
+      <div class="comp-title" style="margin-top:16px;">INPUTS</div>
+      <div class="input-demos">
+        <div class="input-wrap">
+          <div class="input-label">Search Jobs</div>
+          <div class="input-field focused">🔍 &nbsp;Mason, driver, cook...</div>
+        </div>
+        <div class="input-wrap">
+          <div class="input-label">Phone Number</div>
+          <div class="input-field">📱 +91 &nbsp;98765 43210</div>
+        </div>
+        <div class="input-wrap">
+          <div class="input-label">OTP (Error state)</div>
+          <div class="input-field error">⚠️ &nbsp;Incorrect OTP. Try again.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Card -->
+    <div class="comp-section">
+      <div class="comp-title">JOB CARDS</div>
+      <div class="card-demos">
+        <div class="demo-card">
+          <div class="dc-strip" style="background:linear-gradient(90deg,var(--royal),var(--amber));"></div>
+          <div class="dc-body">
+            <div class="dc-top">
+              <div>
+                <div class="dc-title">Senior Mason — Site Work</div>
+                <div class="dc-meta">Ramesh Construction · <span style="color:var(--emerald);font-weight:600;">✅ Verified</span></div>
+              </div>
+              <div class="dc-pay">₹18K/mo</div>
+            </div>
+            <div class="dc-tags">
+              <span class="dc-tag blue">🌾 Bihar Employer</span>
+              <span class="dc-tag amber">🗣️ Hindi</span>
+              <span class="dc-tag gray">📍 Hadapsar</span>
+              <span class="dc-tag gray">🏠 Housing</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-card">
+          <div class="dc-strip" style="background:var(--fog);"></div>
+          <div class="dc-body">
+            <div class="dc-top">
+              <div>
+                <div class="dc-title">Cook — Live-in Position</div>
+                <div class="dc-meta">Priya Household · Baner</div>
+              </div>
+              <div class="dc-pay">₹12K/mo</div>
+            </div>
+            <div class="dc-tags">
+              <span class="dc-tag gray">🍳 Cooking</span>
+              <span class="dc-tag amber">🗣️ Marathi</span>
+              <span class="dc-tag gray">📍 Baner</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust Score + Notifications -->
+    <div class="comp-section">
+      <div class="comp-title">TRUST SCORE WIDGET</div>
+      <div class="trust-widget" style="margin-bottom:16px;">
+        <svg class="trust-svg" viewBox="0 0 72 72">
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#2B4FD4"/>
+              <stop offset="100%" style="stop-color:#F59E0B"/>
+            </linearGradient>
+          </defs>
+          <circle class="tr-bg" cx="36" cy="36" r="28"/>
+          <circle class="tr-fill" cx="36" cy="36" r="28"/>
+          <text class="tr-num" x="36" y="41" text-anchor="middle">142</text>
+        </svg>
+        <div class="trust-meta">
+          <div class="tm-label">Trust Score</div>
+          <div class="tm-score">142</div>
+          <div class="tm-status">🥈 Community Trusted</div>
+          <div class="tm-bar"><div class="tm-bar-fill" style="width:71%;"></div></div>
+        </div>
+      </div>
+      <div class="comp-title" style="margin-bottom:8px;">NOTIFICATIONS</div>
+      <div class="notif-demo">
+        <div class="notif-icon" style="background:var(--royal);">💼</div>
+        <div>
+          <div class="notif-title">New Bihar Community Job</div>
+          <div class="notif-body">Mason needed · Hadapsar · ₹18,000/mo</div>
+        </div>
+        <div class="notif-time">2m ago</div>
+      </div>
+      <div class="notif-demo" style="background:var(--emerald-dark);">
+        <div class="notif-icon" style="background:var(--emerald);">✅</div>
+        <div>
+          <div class="notif-title">Congratulations! You're Hired</div>
+          <div class="notif-body">Ramesh Construction accepted your application</div>
+        </div>
+        <div class="notif-time">1hr ago</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SPACING & RADIUS ── -->
+<div class="section">
+  <div class="section-label">Spacing & Border Radius</div>
+  <div class="section-title">Consistent spatial system</div>
+  <div class="section-desc">Use multiples of 4px for all spacing. Border radius follows a strict scale to look cohesive across all components.</div>
+
+  <div class="comp-title" style="margin-bottom:16px;">SPACING SCALE (4px base)</div>
+  <div class="spacing-row">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:8px;height:8px;"></div><span class="sp-label">4px</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:16px;height:16px;"></div><span class="sp-label">8px</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:24px;height:24px;"></div><span class="sp-label">12px</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:32px;height:32px;"></div><span class="sp-label">16px</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:48px;height:48px;"></div><span class="sp-label">24px</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:64px;height:64px;"></div><span class="sp-label">32px</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="sp-block" style="width:96px;height:96px;"></div><span class="sp-label">48px</span></div>
+  </div>
+
+  <div class="comp-title" style="margin-top:32px;margin-bottom:16px;">BORDER RADIUS SCALE</div>
+  <div class="radius-row">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="rr-block" style="border-radius:4px;"></div><span class="rr-label">4px<br>Tags</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="rr-block" style="border-radius:8px;"></div><span class="rr-label">8px<br>Buttons</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="rr-block" style="border-radius:12px;"></div><span class="rr-label">12px<br>Inputs</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="rr-block" style="border-radius:16px;"></div><span class="rr-label">16px<br>Cards</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="rr-block" style="border-radius:20px;"></div><span class="rr-label">20px<br>Modals</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div class="rr-block" style="border-radius:9999px;"></div><span class="rr-label">100px<br>Pills</span></div>
+  </div>
+</div>
+
+<!-- ── FULL PREVIEW ── -->
+<div class="section" style="background:white;">
+  <div class="section-label">Full App Preview</div>
+  <div class="section-title">How it looks in production</div>
+  <div class="section-desc">The complete REKKOMO-aligned palette applied to the Apna Sheher feed screen.</div>
+
+  <div class="final-preview">
+    <div class="fp-navbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));color:white;font-size:11px;font-weight:800;padding:5px 9px;border-radius:8px;letter-spacing:0.04em;">R</div>
+        <div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:0.04em;">REKKOMO</div>
+        <div style="width:1px;height:16px;background:var(--fog);"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--slate);">Apna Sheher</div>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <div class="fp-nav-link active">📰 Feed</div>
+        <div class="fp-nav-link">💼 Jobs</div>
+        <div class="fp-nav-link">🎉 Events</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="background:var(--cloud);border:1px solid var(--fog);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:700;">हि/EN</div>
+        <div style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));color:white;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;">Join Free</div>
+      </div>
+    </div>
+    <div class="fp-body">
+      <div class="fp-sidebar">
+        <div class="fp-circle-card">
+          <div class="fp-circle-label">My Circle</div>
+          <div class="fp-circle-name">Bihar Circle</div>
+          <div class="fp-circle-city">📍 Pune</div>
+          <div class="fp-circle-count">4,218</div>
+          <div class="fp-circle-sub">members nearby</div>
+        </div>
+        <div class="fp-nav-link active">📰 Community Feed</div>
+        <div class="fp-nav-link">💼 Jobs <span style="background:var(--royal);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:auto;">12</span></div>
+        <div class="fp-nav-link">🔧 Services</div>
+        <div class="fp-nav-link">🎉 Events</div>
+        <div class="fp-nav-link">💬 Messages</div>
+      </div>
+      <div class="fp-main">
+        <div style="font-size:16px;font-weight:800;color:var(--ink);margin-bottom:4px;">Community Feed</div>
+        <div style="font-size:12px;color:var(--slate);margin-bottom:16px;">Bihar Circle · Pune · 4,218 members</div>
+        <div class="fp-feed-card">
+          <div class="fp-card-header">
+            <div class="fp-avatar" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));">R</div>
+            <div>
+              <div class="fp-card-name">Ramesh Kumar <span style="font-size:10px;font-weight:700;color:var(--emerald);">✅</span></div>
+              <div class="fp-card-meta"><span style="background:var(--amber-light);color:var(--amber-dark);font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px;">🌾 Bihar</span> · Contractor · 2hrs ago</div>
+            </div>
+            <span class="fp-card-type" style="background:var(--royal-light);color:var(--royal);">💼 Job</span>
+          </div>
+          <div class="fp-card-body">Looking for <strong>2 experienced Masons</strong> for a 3-month residential project in Hadapsar. Housing provided. Hindi-speaking employer.</div>
+          <div class="fp-card-info">
+            <div><div class="fp-ci-label">Pay</div><div class="fp-ci-val" style="color:var(--emerald);">₹18,000/mo</div></div>
+            <div><div class="fp-ci-label">Location</div><div class="fp-ci-val">Hadapsar</div></div>
+            <div><div class="fp-ci-label">Duration</div><div class="fp-ci-val">3 Months</div></div>
+          </div>
+          <div class="fp-card-actions">
+            <button class="fp-action ghost">👍 12</button>
+            <button class="fp-action ghost">💬 4</button>
+            <button class="fp-action cta">Apply Now →</button>
+          </div>
+        </div>
+        <div class="fp-feed-card">
+          <div class="fp-card-header">
+            <div class="fp-avatar" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));">S</div>
+            <div>
+              <div class="fp-card-name">Santosh Mahto</div>
+              <div class="fp-card-meta"><span style="background:var(--amber-light);color:var(--amber-dark);font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px;">🌾 Bihar</span> · Organizer · 5hrs ago</div>
+            </div>
+            <span class="fp-card-type" style="background:var(--emerald-light);color:var(--emerald-dark);">🎉 Event</span>
+          </div>
+          <div class="fp-card-body">Announcing <strong>Chhath Puja 2025</strong> at Khadakwasla Lake! Buses from Bibwewadi and Hadapsar. All Bihar community welcome. 🪔</div>
+          <div class="fp-card-actions">
+            <button class="fp-action ghost">❤️ 89</button>
+            <button class="fp-action ghost">💬 23</button>
+            <button class="fp-action cta" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));">RSVP Free →</button>
+          </div>
+        </div>
+      </div>
+      <div class="fp-right">
+        <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:12px;">📅 Upcoming Events</div>
+        <div class="fp-event-mini"><div class="fp-em-title">🪔 Chhath Puja 2025</div><div class="fp-em-date">Nov 7 · Khadakwasla · 240 going</div></div>
+        <div class="fp-event-mini"><div class="fp-em-title">💼 Construction Job Fair</div><div class="fp-em-date">Nov 22 · Hadapsar · 156 going</div></div>
+        <div style="font-size:12px;font-weight:800;color:var(--ink);margin:16px 0 12px;">👥 Bihar Members Nearby</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;"><div class="fp-avatar" style="background:linear-gradient(135deg,var(--royal),var(--royal-dark));width:30px;height:30px;font-size:11px;">M</div><div style="flex:1;font-size:12px;font-weight:600;">Mukesh Yadav<br><span style="color:var(--slate);font-weight:400;">Electrician</span></div><div style="font-size:11px;font-weight:700;color:var(--royal);border:1px solid rgba(43,79,212,0.3);padding:3px 8px;border-radius:6px;background:var(--royal-light);">+ Connect</div></div>
+          <div style="display:flex;align-items:center;gap:8px;"><div class="fp-avatar" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));width:30px;height:30px;font-size:11px;">P</div><div style="flex:1;font-size:12px;font-weight:600;">Poonam Devi<br><span style="color:var(--slate);font-weight:400;">Nurse</span></div><div style="font-size:11px;font-weight:700;color:var(--royal);border:1px solid rgba(43,79,212,0.3);padding:3px 8px;border-radius:6px;background:var(--royal-light);">+ Connect</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DO / DON'T ── -->
+<div class="section">
+  <div class="section-label">Usage Rules</div>
+  <div class="section-title">Do's and Don'ts</div>
+  <div class="do-dont">
+    <div class="dd-card">
+      <div class="dd-header do">✅ DO</div>
+      <div class="dd-body">
+        <div class="dd-item"><span class="dd-icon">✅</span>Use Royal Blue (#2B4FD4) for all primary CTAs, nav, and interactive elements</div>
+        <div class="dd-item"><span class="dd-icon">✅</span>Use Amber only for community badges, highlights, and events — not for primary buttons</div>
+        <div class="dd-item"><span class="dd-icon">✅</span>Use Emerald for pay amounts, hired status, success states</div>
+        <div class="dd-item"><span class="dd-icon">✅</span>Keep background as #F8FAFF (blue-tinted white) — feels like the logo's world</div>
+        <div class="dd-item"><span class="dd-icon">✅</span>Always use Deep Navy (#0F1F6B) for sidebar headers and dark surfaces</div>
+        <div class="dd-item"><span class="dd-icon">✅</span>Show REKKOMO brand name next to Apna Sheher in the navbar always</div>
+      </div>
+    </div>
+    <div class="dd-card">
+      <div class="dd-header dont">🚫 DON'T</div>
+      <div class="dd-body">
+        <div class="dd-item"><span class="dd-icon">🚫</span>Never use Saffron/Orange (#E8621A) as a primary color — it fights with your blue logo</div>
+        <div class="dd-item"><span class="dd-icon">🚫</span>Never use a warm cream/paper background — use blue-tinted #F8FAFF instead</div>
+        <div class="dd-item"><span class="dd-icon">🚫</span>Never mix Amber and Royal Blue on the same interactive element (button, link)</div>
+        <div class="dd-item"><span class="dd-icon">🚫</span>Never use Coral Red except for error states and urgent alerts</div>
+        <div class="dd-item"><span class="dd-icon">🚫</span>Never render Hindi text in Plus Jakarta Sans — always use Noto Sans Devanagari</div>
+        <div class="dd-item"><span class="dd-icon">🚫</span>Never use more than 3 colors in a single card component</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CSS VARIABLES ── -->
+<div class="section" style="background:var(--ink);color:white;">
+  <div class="section-label" style="color:var(--amber);">Developer Handoff</div>
+  <div class="section-title" style="color:white;">Copy these CSS variables directly into your globals.css</div>
+  <pre style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:24px;font-size:13px;line-height:2;overflow-x:auto;margin-top:20px;color:#C4D0FA;font-family:monospace;">:root {
+  <span style="color:#7B96F0;">/* ── PRIMARY: REKKOMO Royal Blue ── */</span>
+  --color-primary:       #2B4FD4;
+  --color-primary-dark:  #1A35A8;
+  --color-primary-deep:  #0F1F6B;
+  --color-primary-mid:   #4068E8;
+  --color-primary-light: #EEF2FF;
+  --color-primary-xlight:#F5F7FF;
+
+  <span style="color:#7B96F0;">/* ── ACCENT: Warm Amber (Indian warmth) ── */</span>
+  --color-accent:        #F59E0B;
+  --color-accent-dark:   #D97706;
+  --color-accent-light:  #FFFBEB;
+
+  <span style="color:#7B96F0;">/* ── SUCCESS ── */</span>
+  --color-success:       #059669;
+  --color-success-dark:  #047857;
+  --color-success-light: #ECFDF5;
+
+  <span style="color:#7B96F0;">/* ── DANGER ── */</span>
+  --color-danger:        #EF4444;
+  --color-danger-light:  #FEF2F2;
+
+  <span style="color:#7B96F0;">/* ── NEUTRALS ── */</span>
+  --color-ink:           #0D1340;
+  --color-slate:         #64748B;
+  --color-mist:          #94A3B8;
+  --color-fog:           #CBD5E1;
+  --color-cloud:         #F1F5F9;
+  --color-paper:         #F8FAFF;  /* blue-tinted bg */
+  --color-white:         #FFFFFF;
+
+  <span style="color:#7B96F0;">/* ── TYPOGRAPHY ── */</span>
+  --font-primary:        'Plus Jakarta Sans', sans-serif;
+  --font-hindi:          'Noto Sans Devanagari', sans-serif;
+
+  <span style="color:#7B96F0;">/* ── SHADOWS ── */</span>
+  --shadow-sm: 0 1px 3px rgba(43,79,212,0.08);
+  --shadow-md: 0 4px 16px rgba(43,79,212,0.12);
+  --shadow-lg: 0 16px 48px rgba(43,79,212,0.15);
+  --shadow-glow: 0 0 0 4px rgba(43,79,212,0.12);
+
+  <span style="color:#7B96F0;">/* ── BORDER RADIUS ── */</span>
+  --radius-sm:   6px;   /* tags, small elements */
+  --radius-md:   10px;  /* buttons, inputs */
+  --radius-lg:   16px;  /* cards */
+  --radius-xl:   20px;  /* modals, large cards */
+  --radius-full: 9999px;/* pills, avatars */
+}</pre>
+</div>
+
+</body>
+</html>

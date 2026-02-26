@@ -96,6 +96,7 @@ export const onboardingSchema = z.object({
   showNativePlace: z.boolean().default(true),
   showActivity: z.boolean().default(true),
   allowFollow: z.boolean().default(true),
+  platformRoles: z.array(z.enum(["JOB_SEEKER", "SERVICE_PROVIDER", "EVENT_ORGANIZER", "COMMUNITY_MEMBER"])).min(1).default(["COMMUNITY_MEMBER"]),
 });
 
 export const profileUpdateSchema = z.object({

@@ -5,6 +5,7 @@ import { onboardingSchema } from "@/lib/validators";
 import { sanitizeText } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { generateUniqueUsername } from "@/lib/username";
+import { updateTrustScore } from "@/lib/trust-score";
 
 const WINDOW_MS = 60_000;
 const LIMIT = 20;
@@ -69,7 +70,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid date of birth" }, { status: 400 });
   }
 
-  await prisma.user.update({
+  try {
+    // Update user and profile
+    await prisma.user.update({
     where: { id: session.user.id },
     data: {
       name: sanitizeText(safeName),
@@ -112,6 +115,7 @@ export async function POST(req: Request) {
             showNativePlace: data.showNativePlace,
             showActivity: data.showActivity,
             allowFollow: data.allowFollow,
+            platformRoles: data.platformRoles,
             onboardingCompleted: true,
           },
           update: {
@@ -150,6 +154,7 @@ export async function POST(req: Request) {
             showNativePlace: data.showNativePlace,
             showActivity: data.showActivity,
             allowFollow: data.allowFollow,
+            platformRoles: data.platformRoles,
             onboardingCompleted: true,
           },
         },
@@ -157,5 +162,36 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true });
+    // Auto-join State Circle based on native state + current city
+    const nativeState = data.nativePlaceState || data.originState;
+    const currentCity = data.currentCity;
+    if (nativeState && currentCity) {
+      try {
+        const { autoJoinStateCircle } = await import("@/lib/circle-utils");
+        await autoJoinStateCircle(session.user.id, nativeState, currentCity);
+      } catch (err) {
+        console.error("Error auto-joining state circle:", err);
+        // Don't fail onboarding if state circle join fails
+      }
+    }
+
+    // Update trust score after onboarding
+    try {
+      await updateTrustScore(session.user.id);
+    } catch (err) {
+      console.error("Error updating trust score:", err);
+      // Don't fail onboarding if trust score update fails
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error: any) {
+    console.error("Onboarding error:", error);
+    return NextResponse.json(
+      {
+        error: error?.message || "Failed to save profile. Please ensure database migrations are up to date.",
+        details: process.env.NODE_ENV === "development" ? error?.stack : undefined,
+      },
+      { status: 500 }
+    );
+  }
 }

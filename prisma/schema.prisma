@@ -50,6 +50,48 @@ enum ProfileVisibility {
 enum CommunityType {
   INTERSTATE
   GLOBAL
+  STATE_CIRCLE
+  DISTRICT_CIRCLE
+}
+
+enum CircleLevel {
+  STATE
+  DISTRICT
+  MOHALLA
+}
+
+enum PostType {
+  QUESTION
+  HELP
+  RESOURCE
+  GENERAL
+}
+
+enum CommunityPostType {
+  GENERAL
+  JOB_SHARE
+  EVENT_SHARE
+  SOS
+  MEETUP
+  GYAAN
+  WELCOME
+}
+
+enum SOSCategory {
+  HOUSING
+  PAYMENT
+  MEDICAL
+  SAFETY
+  LOAN
+  LEGAL
+  OTHER
+}
+
+enum SOSStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
 }
 
 enum CommunityVisibility {
@@ -67,13 +109,6 @@ enum MemberStatus {
   PENDING
   APPROVED
   BANNED
-}
-
-enum PostType {
-  QUESTION
-  HELP
-  RESOURCE
-  GENERAL
 }
 
 enum ReactionType {
@@ -97,6 +132,41 @@ enum RSVPStatus {
   NO
 }
 
+enum UserPlatformRole {
+  JOB_SEEKER
+  SERVICE_PROVIDER
+  EVENT_ORGANIZER
+  COMMUNITY_MEMBER
+}
+
+enum ApplicationStatus {
+  APPLIED
+  VIEWED
+  SHORTLISTED
+  HIRED
+  REJECTED
+}
+
+enum JobPostStatus {
+  OPEN
+  FILLED
+  CLOSED
+}
+
+enum ServiceCategory {
+  PLUMBER
+  DOCTOR
+  TUTOR
+  LAWYER
+  DRIVER
+  ELECTRICIAN
+  CARPENTER
+  PAINTER
+  COOK
+  CLEANER
+  OTHER
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -108,19 +178,41 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile       Profile?
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-  comments      Comment[]
-  reactions     Reaction[]
-  reports       Report[]
-  reportedIn    Report[]          @relation("UserReports")
-  memberships   CommunityMember[]
-  eventsCreated Event[]
-  rsvps         EventRSVP[]
-  following     Follow[]          @relation("Following")
-  followers     Follow[]          @relation("Followers")
+  profile             Profile?
+  accounts            Account[]
+  sessions            Session[]
+  posts               Post[]
+  comments            Comment[]
+  reactions           Reaction[]
+  reports             Report[]
+  reportedIn          Report[]           @relation("UserReports")
+  memberships         CommunityMember[]
+  eventsCreated       Event[]
+  rsvps               EventRSVP[]
+  following           Follow[]           @relation("Following")
+  followers           Follow[]           @relation("Followers")
+  vouchesGiven        TrustVouch[]       @relation("Voucher")
+  vouchesReceived     TrustVouch[]       @relation("Vouchee")
+  jobPosts            JobPost[]
+  applications        Application[]
+  serviceProvider     ServiceProvider?
+  serviceBookings     ServiceBooking[]   @relation("ServiceCustomer")
+  serviceReviews      ServiceReview[]    @relation("ServiceReviewer")
+  circleMemberships   CircleMembership[]
+  circleModerators    CircleModerator[]
+  communityPosts      CommunityPost[]
+  postReplies         PostReply[]
+  postLikes           PostLike[]
+  sosRequests         SOSRequest[]
+  sosResponses        SOSResponse[]
+  meetups             Meetup[]
+  meetupRsvps         MeetupRsvp[]
+  gyaanEntries        GyaanEntry[]
+  gyaanUpvotes        GyaanUpvote[]
+  parichayRequests    Parichay[]         @relation("ParichayRequester")
+  parichayConnections Parichay[]         @relation("ParichayConnector")
+  parichayTargets     Parichay[]         @relation("ParichayTarget")
+  leaderboardEntries  LeaderboardEntry[]
 }
 
 model Profile {
@@ -128,43 +220,54 @@ model Profile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  bio            String?
-  phone          String?
-  nativePlace    String?
-  nativePlaceCity String?
+  bio              String?
+  phone            String?
+  nativePlace      String?
+  nativePlaceCity  String?
   nativePlaceState String?
-  currentLocality String?
-  gender          Gender?
-  dateOfBirth     DateTime?
-  originCountry  String?
-  originState    String?
-  originCity     String?
-  currentCountry String?
-  currentState   String?
-  currentCity    String?
+  currentLocality  String?
+  gender           Gender?
+  dateOfBirth      DateTime?
+  originCountry    String?
+  originState      String?
+  originCity       String?
+  currentCountry   String?
+  currentState     String?
+  currentCity      String?
 
-  interests String[] @default([])
-  languages String[] @default([])
-  languagesSpoken String[] @default([])
-  communities String[] @default([])
-  needs       String[] @default([])
-  canOffer    String[] @default([])
-  profession  Profession?
+  interests       String[]       @default([])
+  languages       String[]       @default([])
+  languagesSpoken String[]       @default([])
+  communities     String[]       @default([])
+  needs           String[]       @default([])
+  canOffer        String[]       @default([])
+  profession      Profession?
   movedToCityWhen MoveTimeframe?
 
-  verificationLevel VerificationLevel @default(NONE)
+  verificationLevel VerificationLevel  @default(NONE)
+  trustScore        Int                @default(0)
+  platformRoles     UserPlatformRole[] @default([])
+  aadhaarVerified   Boolean            @default(false)
 
-  showEmail          Boolean @default(false)
-  showPhone          Boolean @default(false)
-  showApproxLocation Boolean @default(true)
-  profileVisibility  ProfileVisibility @default(PUBLIC)
-  showNativePlace    Boolean           @default(true)
-  showActivity       Boolean           @default(true)
-  allowFollow        Boolean           @default(true)
-  onboardingCompleted Boolean          @default(false)
+  showEmail           Boolean           @default(false)
+  showPhone           Boolean           @default(false)
+  showApproxLocation  Boolean           @default(true)
+  profileVisibility   ProfileVisibility @default(PUBLIC)
+  showNativePlace     Boolean           @default(true)
+  showActivity        Boolean           @default(true)
+  allowFollow         Boolean           @default(true)
+  onboardingCompleted Boolean           @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PhoneOtp {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  codeHash  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Follow {
@@ -307,15 +410,17 @@ model Report {
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  communityId String
-  creatorId   String
-  title       String
-  description String?
-  startsAt    DateTime
-  location    String?
-  onlineLink  String?
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  communityId   String
+  creatorId     String
+  title         String
+  description   String?
+  startsAt      DateTime
+  location      String?
+  onlineLink    String?
+  capacity      Int?
+  coverImageUrl String?
+  createdAt     DateTime @default(now())
 
   community Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
   creator   User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
@@ -370,4 +475,339 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model TrustVouch {
+  id        String   @id @default(cuid())
+  voucherId String
+  voucheeId String
+  note      String?
+  createdAt DateTime @default(now())
+
+  voucher User @relation("Voucher", fields: [voucherId], references: [id], onDelete: Cascade)
+  vouchee User @relation("Vouchee", fields: [voucheeId], references: [id], onDelete: Cascade)
+
+  @@unique([voucherId, voucheeId])
+  @@index([voucheeId])
+}
+
+model JobPost {
+  id               String        @id @default(cuid())
+  employerId       String
+  title            String
+  skillCategory    String
+  payMin           Int?
+  payMax           Int?
+  location         String
+  languagePref     String[]
+  statePref        String?
+  numberOfOpenings Int           @default(1)
+  deadline         DateTime?
+  status           JobPostStatus @default(OPEN)
+  description      String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  employer     User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@index([employerId, status])
+  @@index([status, createdAt])
+  @@index([statePref])
+}
+
+model Application {
+  id        String            @id @default(cuid())
+  jobId     String
+  seekerId  String
+  status    ApplicationStatus @default(APPLIED)
+  message   String?
+  appliedAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  job    JobPost @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  seeker User    @relation(fields: [seekerId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, seekerId])
+  @@index([seekerId, status])
+  @@index([jobId, status])
+}
+
+model ServiceProvider {
+  id          String          @id @default(cuid())
+  userId      String          @unique
+  category    ServiceCategory
+  languages   String[]
+  serviceArea String[]
+  rate        String?
+  ratingAvg   Float           @default(0)
+  reviewCount Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews  ServiceReview[]
+  bookings ServiceBooking[]
+
+  @@index([category, ratingAvg])
+  @@index([userId])
+}
+
+model ServiceBooking {
+  id          String    @id @default(cuid())
+  providerId  String
+  customerId  String
+  status      String    @default("PENDING")
+  notes       String?
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  provider ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  customer User            @relation("ServiceCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, status])
+  @@index([customerId])
+}
+
+model ServiceReview {
+  id         String   @id @default(cuid())
+  providerId String
+  reviewerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  provider ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  reviewer User            @relation("ServiceReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, reviewerId])
+  @@index([providerId])
+}
+
+model Circle {
+  id             String      @id @default(cuid())
+  name           String
+  level          CircleLevel
+  state          String
+  district       String?
+  mohalla        String?
+  city           String
+  memberCount    Int         @default(0)
+  isAutoFormed   Boolean     @default(true)
+  formThreshold  Int         @default(10)
+  isActive       Boolean     @default(false)
+  healthScore    Int         @default(0)
+  lastActivityAt DateTime    @default(now())
+  createdAt      DateTime    @default(now())
+
+  memberships  CircleMembership[]
+  posts        CommunityPost[]
+  moderators   CircleModerator[]
+  leaderboard  LeaderboardEntry[]
+  gyaanEntries GyaanEntry[]
+  meetups      Meetup[]
+
+  @@index([city, state])
+  @@index([city, level])
+}
+
+model CircleMembership {
+  id                 String   @id @default(cuid())
+  circle             Circle   @relation(fields: [circleId], references: [id])
+  circleId           String
+  user               User     @relation(fields: [userId], references: [id])
+  userId             String
+  isWelcomeCommittee Boolean  @default(false)
+  joinedAt           DateTime @default(now())
+  lastActiveAt       DateTime @default(now())
+  postCount          Int      @default(0)
+  helpCount          Int      @default(0)
+  introCount         Int      @default(0)
+
+  @@unique([circleId, userId])
+  @@index([circleId])
+}
+
+model CircleModerator {
+  id         String   @id @default(cuid())
+  circle     Circle   @relation(fields: [circleId], references: [id])
+  circleId   String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  electedAt  DateTime @default(now())
+  termEndsAt DateTime
+  voteCount  Int      @default(0)
+  isActive   Boolean  @default(true)
+
+  @@unique([circleId, userId])
+}
+
+model CommunityPost {
+  id         String            @id @default(cuid())
+  circle     Circle            @relation(fields: [circleId], references: [id])
+  circleId   String
+  author     User              @relation(fields: [authorId], references: [id])
+  authorId   String
+  type       CommunityPostType @default(GENERAL)
+  content    String
+  mediaUrls  String[]
+  isPinned   Boolean           @default(false)
+  isSOS      Boolean           @default(false)
+  likeCount  Int               @default(0)
+  replyCount Int               @default(0)
+  deletedAt  DateTime?
+  createdAt  DateTime          @default(now())
+
+  sos        SOSRequest?
+  meetup     Meetup?
+  gyaanEntry GyaanEntry?
+  replies    PostReply[]
+  likes      PostLike[]
+
+  @@index([circleId, createdAt])
+  @@index([circleId, isSOS])
+}
+
+model PostReply {
+  id        String        @id @default(cuid())
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  postId    String
+  author    User          @relation(fields: [authorId], references: [id])
+  authorId  String
+  content   String
+  createdAt DateTime      @default(now())
+
+  @@index([postId])
+}
+
+model PostLike {
+  id        String        @id @default(cuid())
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  postId    String
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime      @default(now())
+
+  @@unique([postId, userId])
+}
+
+model SOSRequest {
+  id          String        @id @default(cuid())
+  post        CommunityPost @relation(fields: [postId], references: [id])
+  postId      String        @unique
+  requester   User          @relation(fields: [requesterId], references: [id])
+  requesterId String
+  category    SOSCategory
+  urgency     Int           @default(3)
+  status      SOSStatus     @default(OPEN)
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime      @default(now())
+
+  responses SOSResponse[]
+
+  @@index([status])
+}
+
+model SOSResponse {
+  id            String     @id @default(cuid())
+  sos           SOSRequest @relation(fields: [sosId], references: [id])
+  sosId         String
+  responder     User       @relation(fields: [responderId], references: [id])
+  responderId   String
+  message       String
+  contactShared Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+
+  @@index([sosId])
+}
+
+model Meetup {
+  id          String        @id @default(cuid())
+  circle      Circle        @relation(fields: [circleId], references: [id])
+  circleId    String
+  post        CommunityPost @relation(fields: [postId], references: [id])
+  postId      String        @unique
+  organizer   User          @relation(fields: [organizerId], references: [id])
+  organizerId String
+  title       String
+  location    String
+  meetupDate  DateTime
+  rsvpCount   Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+
+  rsvps MeetupRsvp[]
+
+  @@index([circleId, meetupDate])
+}
+
+model MeetupRsvp {
+  id        String   @id @default(cuid())
+  meetup    Meetup   @relation(fields: [meetupId], references: [id])
+  meetupId  String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([meetupId, userId])
+}
+
+model GyaanEntry {
+  id          String        @id @default(cuid())
+  circle      Circle        @relation(fields: [circleId], references: [id])
+  circleId    String
+  post        CommunityPost @relation(fields: [postId], references: [id])
+  postId      String        @unique
+  author      User          @relation(fields: [authorId], references: [id])
+  authorId    String
+  title       String
+  category    String
+  upvoteCount Int           @default(0)
+  isPinned    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  upvotes GyaanUpvote[]
+
+  @@index([circleId, category])
+}
+
+model GyaanUpvote {
+  id        String     @id @default(cuid())
+  entry     GyaanEntry @relation(fields: [entryId], references: [id])
+  entryId   String
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime   @default(now())
+
+  @@unique([entryId, userId])
+}
+
+model Parichay {
+  id          String   @id @default(cuid())
+  requester   User     @relation("ParichayRequester", fields: [requesterId], references: [id])
+  requesterId String
+  connector   User     @relation("ParichayConnector", fields: [connectorId], references: [id])
+  connectorId String
+  target      User     @relation("ParichayTarget", fields: [targetId], references: [id])
+  targetId    String
+  note        String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  circle    Circle   @relation(fields: [circleId], references: [id])
+  circleId  String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  month     String
+  category  String
+  rank      Int
+  score     Int
+  createdAt DateTime @default(now())
+
+  @@unique([circleId, userId, month, category])
+  @@index([circleId, month])
 }

@@ -16,6 +16,10 @@ NEXTAUTH_SECRET=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```
+Generate a strong `NEXTAUTH_SECRET` (example):
+```
+openssl rand -base64 32
+```
 
 ## Local development
 1. Install deps
@@ -32,5 +36,5 @@ npm run dev
 
 ## Deployment notes
 - Works on Vercel/Fly/Render with managed Postgres
-- Ensure all env vars are set
+- Ensure all env vars are set in the hosting provider
 - Run `prisma migrate deploy` during release
