@@ -57,23 +57,31 @@ export default function Navbar() {
     >
       <Link href="/" className="flex items-center gap-2.5 no-underline">
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-[10px] text-white text-lg font-extrabold tracking-tight"
+          className="flex items-center gap-1.5 rounded-[10px] px-3 py-2"
           style={{
-            background: "linear-gradient(135deg, var(--saffron) 0%, var(--saffron-dark) 100%)",
+            background: "var(--saffron)",
             boxShadow: "0 2px 8px rgba(232,98,26,0.3)",
           }}
         >
-          AS
+          <div
+            className="flex h-7 w-7 items-center justify-center rounded-[7px] text-sm font-extrabold"
+            style={{
+              background: "white",
+              color: "var(--saffron)",
+            }}
+          >
+            R
+          </div>
+          <span
+            className="text-base font-extrabold tracking-tight"
+            style={{
+              color: "white",
+              letterSpacing: "0.06em",
+            }}
+          >
+            REKKOMO
+          </span>
         </div>
-        <span
-          className="text-lg font-bold tracking-tight"
-          style={{
-            color: "var(--ink)",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          Apna <span style={{ color: "var(--saffron)" }}>Sheher</span>
-        </span>
       </Link>
 
       <ul

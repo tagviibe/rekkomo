@@ -334,19 +334,32 @@ export default function SignInPage() {
           <div className="relative z-10">
             {/* Logo */}
             <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1.5 bg-white rounded-[10px] px-3 py-2">
+              <div
+                className="flex items-center gap-1.5 rounded-[10px] px-3 py-2"
+                style={{
+                  background: "var(--saffron)",
+                  boxShadow: "0 2px 8px rgba(232,98,26,0.3)",
+                }}
+              >
                 <div
-                  className="w-7 h-7 rounded-[7px] flex items-center justify-center text-white text-sm font-extrabold"
+                  className="w-7 h-7 rounded-[7px] flex items-center justify-center text-sm font-extrabold"
                   style={{
-                    background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))",
+                    background: "white",
+                    color: "var(--saffron)",
                   }}
                 >
                   R
                 </div>
-                <div className="text-base font-extrabold text-[var(--color-primary)] tracking-tight">REKKOMO</div>
+                <div
+                  className="text-base font-extrabold tracking-tight"
+                  style={{
+                    color: "white",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  REKKOMO
+                </div>
               </div>
-              <div className="w-px h-5 bg-white/20" />
-              <div className="text-sm font-semibold text-white/70 tracking-wide">Apna Sheher</div>
             </div>
           </div>
 
@@ -915,7 +928,7 @@ export default function SignInPage() {
                 ) : (
                   <>
                     <span>✅</span>
-                    Verify & Enter Apna Sheher
+                    Verify & Enter REKKOMO
                   </>
                 )}
               </button>
@@ -946,7 +959,7 @@ export default function SignInPage() {
               </div>
               <h2 className="text-2xl font-extrabold text-[var(--color-ink)] mb-2">You&apos;re in!</h2>
               <p className="text-sm text-[var(--color-slate)] mb-7 text-center leading-relaxed">
-                Welcome to Apna Sheher.
+                Welcome to REKKOMO.
                 <br />
                 Your Bihar Circle in Pune is waiting — <strong>4,218 members</strong> are already here.
               </p>
