@@ -84,42 +84,44 @@ export default function Navbar() {
         </div>
       </Link>
 
-      <ul
-        className="hidden md:flex items-center gap-1 list-none"
-        style={{ gap: "4px" }}
-      >
-        {NAV_LINKS.map((link) => {
-          const isActive = pathname?.startsWith(link.href);
-          return (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all no-underline"
-                style={{
-                  color: isActive ? "var(--saffron)" : "var(--muted)",
-                  background: isActive ? "var(--saffron-light)" : "transparent",
-                  fontWeight: isActive ? 600 : 500,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = "var(--saffron-light)";
-                    e.currentTarget.style.color = "var(--saffron)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "var(--muted)";
-                  }
-                }}
-              >
-                <span style={{ fontSize: "15px" }}>{link.icon}</span>
-                {link.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      {pathname !== "/" && (
+        <ul
+          className="hidden md:flex items-center gap-1 list-none"
+          style={{ gap: "4px" }}
+        >
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname?.startsWith(link.href);
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all no-underline"
+                  style={{
+                    color: isActive ? "var(--saffron)" : "var(--muted)",
+                    background: isActive ? "var(--saffron-light)" : "transparent",
+                    fontWeight: isActive ? 600 : 500,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = "var(--saffron-light)";
+                      e.currentTarget.style.color = "var(--saffron)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--muted)";
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: "15px" }}>{link.icon}</span>
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <div className="flex items-center gap-3">
         {session?.user ? (

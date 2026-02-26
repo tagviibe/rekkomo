@@ -167,11 +167,7 @@ export default function HomePage() {
       router.replace("/community");
       return;
     }
-    if (status === "unauthenticated") {
-      // Redirect unauthenticated users to sign in
-      router.replace("/auth/signin");
-      return;
-    }
+    // Unauthenticated users can view the landing page
   }, [status, router]);
 
   useEffect(() => {
@@ -201,106 +197,19 @@ export default function HomePage() {
     );
   }
 
-  if (status === "authenticated" || status === "unauthenticated") {
+  // Don't show landing page if authenticated (will redirect)
+  if (status === "authenticated") {
     return null;
   }
 
   return (
     <div className="min-h-screen" style={{ background: "var(--paper)", color: "var(--ink)" }}>
       <Navbar />
-
       <main>
         <Hero stats={stats} />
 
         <HowItWorks />
-
-        <section id="features" className="mt-16">
-          <SectionHeading
-            title="Everything you need to feel at home"
-            subtitle="Support that feels human — from people who have been there."
-          />
-          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {CATEGORIES.map((category) => (
-              <CategoryCard key={category.title} {...category} />
-            ))}
-          </div>
-        </section>
-
-        <section id="communities" className="mt-16">
-          <SectionHeading
-            title="Trusted voices across your city"
-            subtitle="Follow people, communities, and topics that matter to you."
-          />
-          <div className="mt-8 space-y-4">
-            <ul className="space-y-3 text-gray-600">
-              <li className="flex items-start gap-3">
-                <TbMessageCircle className="mt-1 text-gray-400" />
-                Ask for help and get replies from nearby members
-              </li>
-              <li className="flex items-start gap-3">
-                <TbHome className="mt-1 text-gray-400" />
-                Find housing, jobs, tiffin, movers, and local services
-              </li>
-              <li className="flex items-start gap-3">
-                <TbUsersGroup className="mt-1 text-gray-400" />
-                Follow people and communities to stay updated
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <section id="safety" className="mt-16">
-          <SectionHeading
-            title="Built for trust and safety"
-            subtitle="Your profile, activity, and connections stay in your control."
-          />
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <SafetyItem
-              title="Privacy-first profiles"
-              description="Control who can follow you and what details you share."
-            />
-            <SafetyItem
-              title="Report + block controls"
-              description="Instant reporting with community moderation."
-            />
-            <SafetyItem
-              title="Guided safety tips"
-              description="Know how to verify listings and avoid scams."
-            />
-          </div>
-        </section>
-
-        <section id="about" className="mt-16">
-          <SectionHeading
-            title="Community-first, always free"
-            subtitle="Rekkomo is built for migrants by migrants — no paywalls."
-          />
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {TESTIMONIALS.map((testimonial) => (
-              <TestimonialCard key={testimonial.name} {...testimonial} />
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-16 rounded-lg bg-gray-900 px-6 py-12 text-white">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold md:text-3xl">
-              Find your people in minutes.
-            </h2>
-            <p className="mt-3 text-gray-300">
-              Join your city community and get help, answers, and trusted connections.
-            </p>
-            <a
-              href="/onboarding"
-              className="mt-6 inline-flex items-center gap-2 rounded-md bg-white px-6 py-3 text-sm font-medium text-gray-900 hover:bg-gray-100"
-            >
-              Join Your City <TbBrandTelegram />
-            </a>
-          </div>
-        </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
@@ -937,23 +846,3 @@ function SafetyItem({
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-gray-200 bg-white mt-16">
-      <div className="mx-auto flex flex-col items-start justify-between gap-6 px-4 py-8 text-sm text-gray-600 max-w-4xl md:flex-row md:items-center">
-        <div>
-          <p className="text-base font-medium text-gray-900">Rekkomo</p>
-          <p className="mt-1 text-sm text-gray-500">
-            Community support for migrants — always free.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-4">
-          <a className="hover:text-gray-900" href="/privacy">Privacy</a>
-          <a className="hover:text-gray-900" href="/terms">Terms</a>
-          <a className="hover:text-gray-900" href="/community-guidelines">Guidelines</a>
-          <a className="hover:text-gray-900" href="/disclaimer">Disclaimer</a>
-        </div>
-      </div>
-    </footer>
-  );
-}
