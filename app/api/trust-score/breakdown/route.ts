@@ -3,6 +3,8 @@ import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateTrustScore } from "@/lib/trust-score";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const session = await getAuthSession();

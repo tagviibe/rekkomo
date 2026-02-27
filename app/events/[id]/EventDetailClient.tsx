@@ -50,9 +50,9 @@ export default function EventDetailClient({
         setRsvpStatus(status);
         
         if (willBeRSVPed && !wasRSVPed) {
-          setRsvpCount((prev) => prev + 1);
+          setRsvpCount((prev: number) => prev + 1);
         } else if (!willBeRSVPed && wasRSVPed) {
-          setRsvpCount((prev) => Math.max(0, prev - 1));
+          setRsvpCount((prev: number) => Math.max(0, prev - 1));
         }
         
         if (status === "YES") {

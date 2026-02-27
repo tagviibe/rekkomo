@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { paginationSchema } from "@/lib/validators";
 import { canViewProfile } from "@/lib/people";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
