@@ -55,6 +55,14 @@ export async function GET(
     ],
   });
 
+  // Category labels mapping
+  const categoryLabels: Record<string, string> = {
+    most_helpful: "Most Helpful",
+    job_connector: "Job Connector",
+    top_introducer: "Top Introducer",
+    organizer: "Top Organizer",
+  };
+
   // Group by category
   const grouped: Record<string, any[]> = {
     most_helpful: [],
@@ -65,7 +73,10 @@ export async function GET(
 
   entries.forEach((entry) => {
     if (grouped[entry.category]) {
-      grouped[entry.category].push(entry);
+      grouped[entry.category].push({
+        ...entry,
+        badgeLabel: categoryLabels[entry.category] || entry.category,
+      });
     }
   });
 

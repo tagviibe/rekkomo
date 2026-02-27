@@ -12,6 +12,23 @@ type EventItem = {
   type: CommunityPostType;
   content: string;
   createdAt: Date | string;
+  eventId?: string;
+  event?: {
+    id: string;
+    title?: string;
+    startsAt?: Date | string;
+    location?: string;
+    capacity?: number;
+    coverImageUrl?: string;
+    community?: {
+      id: string;
+      name: string;
+      type?: string;
+    } | null;
+    _count?: {
+      rsvps: number;
+    };
+  };
   meetup?: {
     id: string;
     title: string;
@@ -19,7 +36,15 @@ type EventItem = {
     meetupDate: Date | string;
     rsvpCount: number;
     isActive: boolean;
+    eventId?: string;
   };
+  circle?: {
+    id: string;
+    name: string;
+    level: string;
+    state?: string;
+    city?: string;
+  } | null;
   author: {
     name: string | null;
     profile?: {
@@ -30,6 +55,8 @@ type EventItem = {
     likes: number;
     replies: number;
   };
+  isGlobal?: boolean;
+  communityName?: string;
 };
 
 const CATEGORY_FILTERS = [
@@ -91,19 +118,122 @@ export default function EventsListPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/community/circles/${circleId}/feed?type=MEETUP`);
-      if (res.ok) {
-        const data = await res.json();
-        const items = (data.items || []).filter((item: any) => {
-          if (item.meetup?.meetupDate) {
-            return new Date(item.meetup.meetupDate) > new Date();
-          }
-          return false;
-        });
-        setEvents(items);
-      } else {
-        setError("Failed to load events");
+      const allEvents: EventItem[] = [];
+      
+      // Fetch events directly from Event model
+      try {
+        const eventsRes = await fetch("/api/events?limit=100");
+        if (eventsRes.ok) {
+          const eventsData = await eventsRes.json();
+          const now = new Date();
+          const eventItems = (eventsData.events || [])
+            .filter((evt: any) => new Date(evt.startsAt) > now)
+            .map((evt: any) => ({
+              id: evt.id,
+              type: "MEETUP" as CommunityPostType,
+              content: evt.description || evt.title,
+              createdAt: evt.createdAt || new Date(),
+              eventId: evt.id,
+              event: {
+                id: evt.id,
+                title: evt.title,
+                startsAt: evt.startsAt,
+                location: evt.location,
+                capacity: evt.capacity,
+                coverImageUrl: evt.coverImageUrl,
+                community: evt.community,
+              },
+              meetup: {
+                id: evt.id,
+                title: evt.title,
+                location: evt.location || "",
+                meetupDate: evt.startsAt,
+                rsvpCount: evt._count?.rsvps || 0,
+                isActive: true,
+                eventId: evt.id,
+              },
+              circle: evt.community ? {
+                id: evt.community.id,
+                name: evt.community.name,
+                level: "STATE",
+              } : null,
+              author: {
+                name: evt.creator?.name || null,
+                profile: null,
+              },
+              isGlobal: evt.community?.type === "GLOBAL",
+              communityName: evt.community?.name || "Global",
+            }));
+          allEvents.push(...eventItems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
       }
+      
+      // Fetch events from global feed (CommunityPost with MEETUP type)
+      try {
+        const globalRes = await fetch("/api/community/feed/global?type=MEETUP");
+        if (globalRes.ok) {
+          const globalData = await globalRes.json();
+          const globalItems = (globalData.items || []).filter((item: any) => {
+            if (item.meetup?.meetupDate) {
+              return new Date(item.meetup.meetupDate) > new Date();
+            }
+            if (item.event?.startsAt) {
+              return new Date(item.event.startsAt) > new Date();
+            }
+            return false;
+          }).map((item: any) => ({
+            ...item,
+            isGlobal: item.event?.community?.type === "GLOBAL" || item.circle?.level === "GLOBAL",
+            communityName: item.event?.community?.type === "GLOBAL" ? "Global" : item.circle?.name || "Global",
+          }));
+          allEvents.push(...globalItems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch global events:", err);
+      }
+      
+      // Fetch events from the specific circle
+      try {
+        const res = await fetch(`/api/community/circles/${circleId}/feed?type=MEETUP`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = (data.items || []).filter((item: any) => {
+            if (item.meetup?.meetupDate) {
+              return new Date(item.meetup.meetupDate) > new Date();
+            }
+            if (item.event?.startsAt) {
+              return new Date(item.event.startsAt) > new Date();
+            }
+            return false;
+          }).map((item: any) => ({
+            ...item,
+            isGlobal: false,
+            communityName: primaryCircle?.name || item.circle?.name || "Community",
+          }));
+          allEvents.push(...items);
+        }
+      } catch (err) {
+        console.error("Failed to fetch circle events:", err);
+      }
+      
+      // Remove duplicates based on event ID
+      const uniqueEvents = allEvents.filter((event, index, self) => {
+        const eventId = event.eventId || event.event?.id || event.meetup?.eventId || event.id;
+        return index === self.findIndex((e) => 
+          (e.eventId || e.event?.id || e.meetup?.eventId || e.id) === eventId
+        );
+      });
+      
+      // Sort by date (upcoming first)
+      uniqueEvents.sort((a, b) => {
+        const dateA = new Date(a.event?.startsAt || a.meetup?.meetupDate || 0).getTime();
+        const dateB = new Date(b.event?.startsAt || b.meetup?.meetupDate || 0).getTime();
+        return dateA - dateB;
+      });
+      
+      setEvents(uniqueEvents);
     } catch (error) {
       console.error("Failed to fetch events:", error);
       setError("Failed to load events. Please try again.");
@@ -116,7 +246,83 @@ export default function EventsListPage() {
     try {
       setLoading(true);
       setError(null);
-      // Fetch from all circles or use a global events endpoint
+      const allEvents: EventItem[] = [];
+      
+      // Fetch events directly from Event model
+      try {
+        const eventsRes = await fetch("/api/events?limit=100");
+        if (eventsRes.ok) {
+          const eventsData = await eventsRes.json();
+          const now = new Date();
+          const eventItems = (eventsData.events || [])
+            .filter((evt: any) => new Date(evt.startsAt) > now)
+            .map((evt: any) => ({
+              id: evt.id,
+              type: "MEETUP" as CommunityPostType,
+              content: evt.description || evt.title,
+              createdAt: evt.createdAt || new Date(),
+              eventId: evt.id,
+              event: {
+                id: evt.id,
+                title: evt.title,
+                startsAt: evt.startsAt,
+                location: evt.location,
+                capacity: evt.capacity,
+                coverImageUrl: evt.coverImageUrl,
+                community: evt.community,
+              },
+              meetup: {
+                id: evt.id,
+                title: evt.title,
+                location: evt.location || "",
+                meetupDate: evt.startsAt,
+                rsvpCount: evt._count?.rsvps || 0,
+                isActive: true,
+                eventId: evt.id,
+              },
+              circle: evt.community ? {
+                id: evt.community.id,
+                name: evt.community.name,
+                level: "STATE",
+              } : null,
+              author: {
+                name: evt.creator?.name || null,
+                profile: null,
+              },
+              isGlobal: evt.community?.type === "GLOBAL",
+              communityName: evt.community?.name || "Global",
+            }));
+          allEvents.push(...eventItems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      }
+      
+      // Fetch events from global feed (CommunityPost with MEETUP type)
+      try {
+        const globalRes = await fetch("/api/community/feed/global?type=MEETUP");
+        if (globalRes.ok) {
+          const globalData = await globalRes.json();
+          const globalItems = (globalData.items || []).filter((item: any) => {
+            if (item.meetup?.meetupDate) {
+              return new Date(item.meetup.meetupDate) > new Date();
+            }
+            if (item.event?.startsAt) {
+              return new Date(item.event.startsAt) > new Date();
+            }
+            return false;
+          }).map((item: any) => ({
+            ...item,
+            isGlobal: item.event?.community?.type === "GLOBAL" || item.circle?.level === "GLOBAL",
+            communityName: item.event?.community?.type === "GLOBAL" ? "Global" : item.circle?.name || "Global",
+          }));
+          allEvents.push(...globalItems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch global events:", err);
+      }
+      
+      // Fetch events from all member circles
       const res = await fetch("/api/community/circles");
       if (res.ok) {
         const data = await res.json();
@@ -127,9 +333,7 @@ export default function EventsListPage() {
         ];
         const memberCircles = all.filter((c: any) => c.isMember);
         
-        // Fetch events from all member circles
-        const allEvents: EventItem[] = [];
-        for (const circle of memberCircles.slice(0, 3)) {
+        for (const circle of memberCircles) {
           try {
             const eventRes = await fetch(`/api/community/circles/${circle.id}/feed?type=MEETUP`);
             if (eventRes.ok) {
@@ -138,16 +342,39 @@ export default function EventsListPage() {
                 if (item.meetup?.meetupDate) {
                   return new Date(item.meetup.meetupDate) > new Date();
                 }
+                if (item.event?.startsAt) {
+                  return new Date(item.event.startsAt) > new Date();
+                }
                 return false;
-              });
+              }).map((item: any) => ({
+                ...item,
+                isGlobal: false,
+                communityName: circle.name || item.circle?.name || "Community",
+              }));
               allEvents.push(...items);
             }
           } catch (err) {
             console.error(`Failed to fetch events from circle ${circle.id}:`, err);
           }
         }
-        setEvents(allEvents);
       }
+      
+      // Remove duplicates based on eventId or meetup.id
+      const uniqueEvents = allEvents.filter((event, index, self) => {
+        const eventId = event.eventId || event.event?.id || event.meetup?.eventId || event.id;
+        return index === self.findIndex((e) => 
+          (e.eventId || e.event?.id || e.meetup?.eventId || e.id) === eventId
+        );
+      });
+      
+      // Sort by date (upcoming first)
+      uniqueEvents.sort((a, b) => {
+        const dateA = new Date(a.event?.startsAt || a.meetup?.meetupDate || 0).getTime();
+        const dateB = new Date(b.event?.startsAt || b.meetup?.meetupDate || 0).getTime();
+        return dateA - dateB;
+      });
+      
+      setEvents(uniqueEvents);
     } catch (error) {
       console.error("Failed to fetch events:", error);
       setError("Failed to load events. Please try again.");
@@ -183,7 +410,7 @@ export default function EventsListPage() {
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     const day = d.getDate();
-    const month = d.toLocaleDateString("en-US", { month: "short" });
+    const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
     return { day, month };
   };
 
@@ -231,8 +458,12 @@ export default function EventsListPage() {
   };
 
   const getEventCapacity = (event: EventItem) => {
+    // Use actual capacity from event if available
+    if (event.event?.capacity) {
+      return event.event.capacity;
+    }
     // Default capacity based on event type
-    const title = event.meetup?.title?.toLowerCase() || "";
+    const title = event.meetup?.title?.toLowerCase() || event.event?.title?.toLowerCase() || "";
     if (title.includes("job fair")) return 300;
     if (title.includes("puja") || title.includes("chhath")) return 500;
     if (title.includes("food") || title.includes("festival")) return 200;
@@ -284,7 +515,7 @@ export default function EventsListPage() {
                 marginTop: "2px",
               }}
             >
-              Cultural celebrations, job fairs & community meetups in {primaryCircle?.city || "Pune"}
+              Cultural celebrations, job fairs & community meetups from all communities
             </div>
           </div>
           {session && (
@@ -369,17 +600,21 @@ export default function EventsListPage() {
             }}
           >
             {filteredEvents.map((event) => {
-              const eventDate = event.meetup?.meetupDate
+              const eventDate = event.event?.startsAt
+                ? formatDate(event.event.startsAt)
+                : event.meetup?.meetupDate
                 ? formatDate(event.meetup.meetupDate)
                 : null;
               const category = getEventCategory(event);
-              const rsvpCount = event.meetup?.rsvpCount || 0;
+              const rsvpCount = event.event?._count?.rsvps || event.meetup?.rsvpCount || 0;
               const capacity = getEventCapacity(event);
-              const rsvpPercentage = Math.round((rsvpCount / capacity) * 100);
+              const rsvpPercentage = capacity > 0 ? Math.round((rsvpCount / capacity) * 100) : 0;
               const bannerStyle = getEventBannerStyle(event);
               const emoji = getEventEmoji(event);
               const fee = getEventFee(event);
               const state = event.author.profile?.nativePlaceState || "";
+              const eventTitle = event.event?.title || event.meetup?.title || event.content?.slice(0, 50) + "...";
+              const eventLocation = event.event?.location || event.meetup?.location || "Location TBD";
 
               return (
                 <div
@@ -389,6 +624,16 @@ export default function EventsListPage() {
                     borderRadius: "16px",
                     border: "1px solid var(--border)",
                     boxShadow: "var(--shadow-sm)",
+                  }}
+                  onClick={() => {
+                    // Get event ID - could be from event.eventId, event.id, or meetup.eventId
+                    const eventId = event.eventId || event.event?.id || event.id || event.meetup?.eventId;
+                    if (eventId) {
+                      router.push(`/events/${eventId}`);
+                    } else {
+                      // Fallback: navigate to events page with search
+                      router.push(`/events?search=${encodeURIComponent(eventTitle)}`);
+                    }
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow = "var(--shadow-md)";
@@ -404,18 +649,24 @@ export default function EventsListPage() {
                     className="relative h-24 flex items-center justify-center"
                     style={{
                       height: "100px",
-                      ...bannerStyle,
+                      background: event.event?.coverImageUrl
+                        ? `url(${event.event.coverImageUrl})`
+                        : bannerStyle.background || "linear-gradient(135deg, #FDF0E8, #FCE7D3)",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
                   >
-                    <span
-                      style={{
-                        fontSize: "36px",
-                        position: "relative",
-                        zIndex: 1,
-                      }}
-                    >
-                      {emoji}
-                    </span>
+                    {!event.event?.coverImageUrl && (
+                      <span
+                        style={{
+                          fontSize: "36px",
+                          position: "relative",
+                          zIndex: 1,
+                        }}
+                      >
+                        {emoji}
+                      </span>
+                    )}
                     {eventDate && (
                       <div
                         className="absolute top-3 right-3 bg-white rounded-xl p-2 text-center shadow-sm"
@@ -475,7 +726,23 @@ export default function EventsListPage() {
                       >
                         {category.label}
                       </span>
-                      {state && (
+                      {/* Global or Community Badge */}
+                      {event.isGlobal ? (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                          style={{
+                            background: "var(--blue-light)",
+                            color: "var(--blue)",
+                            border: "1px solid rgba(59,130,246,0.2)",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                            borderRadius: "100px",
+                          }}
+                        >
+                          🌍 Global
+                        </span>
+                      ) : (
                         <span
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
                           style={{
@@ -489,7 +756,7 @@ export default function EventsListPage() {
                           }}
                         >
                           {state === "Bihar" ? "🌾" : state === "Uttar Pradesh" ? "🏛️" : "📍"}{" "}
-                          {state} Community
+                          {event.communityName || state || "Community"}
                         </span>
                       )}
                     </div>
@@ -503,7 +770,7 @@ export default function EventsListPage() {
                         color: "var(--ink)",
                       }}
                     >
-                      {event.meetup?.title || event.content?.slice(0, 50) + "..."}
+                      {eventTitle}
                     </div>
 
                     {/* Location & Entry */}
@@ -515,12 +782,25 @@ export default function EventsListPage() {
                         alignItems: "center",
                         gap: "8px",
                         marginBottom: "12px",
+                        flexWrap: "wrap",
                       }}
                     >
-                      <span>📍</span>
-                      <span>{event.meetup?.location || "Location TBD"}</span>
-                      <span>·</span>
-                      <span>{fee.includes("₹") ? "🎟️" : "🆓"} {fee}</span>
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span>📍</span>
+                        <span>{eventLocation}</span>
+                      </span>
+                      <span
+                        style={{
+                          background: "var(--muted)",
+                          color: "white",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {fee.includes("₹") ? "🎟️" : "FREE"}
+                      </span>
                     </div>
 
                     {/* RSVP Progress Bar */}

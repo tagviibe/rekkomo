@@ -220,7 +220,14 @@ export async function POST(req: Request) {
             title: sanitizeText(data.title),
             location: data.location ? sanitizeText(data.location) : (data.onlineLink || "Online Event"),
             meetupDate: new Date(data.startsAt),
+            eventId: event.id, // Link to the Event
           },
+        });
+        
+        // Also update the post to link to the event
+        await prisma.communityPost.update({
+          where: { id: post.id },
+          data: { eventId: event.id },
         });
       } catch (feedError) {
         // Log error but don't fail the event creation
@@ -253,15 +260,23 @@ export async function GET(req: Request) {
     where.communityId = communityId;
   }
 
+  const whereClause: any = {
+    ...where,
+    startsAt: {
+      gte: new Date(), // Only upcoming events
+    },
+  };
+
   const [events, total] = await Promise.all([
     prisma.event.findMany({
-      where,
+      where: whereClause,
       include: {
         community: {
           select: {
             id: true,
             name: true,
             slug: true,
+            type: true,
           },
         },
         creator: {
@@ -269,6 +284,11 @@ export async function GET(req: Request) {
             id: true,
             name: true,
             image: true,
+            profile: {
+              select: {
+                nativePlaceState: true,
+              },
+            },
           },
         },
         _count: {
@@ -281,7 +301,7 @@ export async function GET(req: Request) {
       skip,
       take: limit,
     }),
-    prisma.event.count({ where }),
+    prisma.event.count({ where: whereClause }),
   ]);
 
   return NextResponse.json({ events, total, page, limit });

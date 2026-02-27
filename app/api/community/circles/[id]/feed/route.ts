@@ -75,6 +75,33 @@ export async function GET(
           },
         },
       },
+      meetup: true,
+      event: {
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          location: true,
+          coverImageUrl: true,
+          community: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+      },
+      jobPost: {
+        select: {
+          id: true,
+          title: true,
+          payMin: true,
+          payMax: true,
+          location: true,
+          skillCategory: true,
+        },
+      },
       _count: {
         select: {
           likes: true,
@@ -103,6 +130,33 @@ export async function GET(
               nativePlaceState: true,
             },
           },
+        },
+      },
+      meetup: true,
+      event: {
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          location: true,
+          coverImageUrl: true,
+          community: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+      },
+      jobPost: {
+        select: {
+          id: true,
+          title: true,
+          payMin: true,
+          payMax: true,
+          location: true,
+          skillCategory: true,
         },
       },
       _count: {
@@ -136,6 +190,33 @@ export async function GET(
               nativePlaceState: true,
             },
           },
+        },
+      },
+      meetup: true,
+      event: {
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          location: true,
+          coverImageUrl: true,
+          community: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+      },
+      jobPost: {
+        select: {
+          id: true,
+          title: true,
+          payMin: true,
+          payMax: true,
+          location: true,
+          skillCategory: true,
         },
       },
       _count: {
@@ -172,8 +253,38 @@ export async function GET(
           },
         },
       },
-      meetup: true,
+      meetup: {
+        include: {
+          // Include event if linked
+        },
+      },
       gyaanEntry: true,
+      event: {
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          location: true,
+          coverImageUrl: true,
+          community: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+      },
+      jobPost: {
+        select: {
+          id: true,
+          title: true,
+          payMin: true,
+          payMax: true,
+          location: true,
+          skillCategory: true,
+        },
+      },
       _count: {
         select: {
           likes: true,

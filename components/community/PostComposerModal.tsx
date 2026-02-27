@@ -6,10 +6,11 @@ import { CommunityPostType, SOSCategory } from "@prisma/client";
 type PostComposerModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  circleId: string;
-  circleName: string;
+  circleId?: string;
+  circleName?: string;
   onPostCreated?: () => void;
   initialType?: CommunityPostType;
+  allowGlobal?: boolean;
 };
 
 export default function PostComposerModal({
@@ -19,6 +20,7 @@ export default function PostComposerModal({
   circleName,
   onPostCreated,
   initialType,
+  allowGlobal = true,
 }: PostComposerModalProps) {
   const [postType, setPostType] = useState<CommunityPostType>(
     initialType || CommunityPostType.GENERAL
@@ -33,7 +35,11 @@ export default function PostComposerModal({
   const [gyaanCategory, setGyaanCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isGlobal, setIsGlobal] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen && textareaRef.current) {
@@ -46,6 +52,60 @@ export default function PostComposerModal({
       setPostType(initialType);
     }
   }, [initialType]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset form when modal closes
+      setContent("");
+      setSosCategory("");
+      setSosUrgency(3);
+      setMeetupLocation("");
+      setMeetupDate("");
+      setMeetupTime("");
+      setGyaanTitle("");
+      setGyaanCategory("");
+      setImages([]);
+      setIsGlobal(false);
+      setError(null);
+    }
+  }, [isOpen]);
+
+  const handleImageUpload = async (files: FileList) => {
+    setUploadingImages(true);
+    setError(null);
+
+    try {
+      const uploadPromises = Array.from(files).slice(0, 5 - images.length).map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("kind", "post");
+
+        const res = await fetch("/api/uploads", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to upload image");
+        }
+
+        const data = await res.json();
+        return data.url;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setImages((prev) => [...prev, ...uploadedUrls]);
+    } catch (error) {
+      console.error("Failed to upload images:", error);
+      setError("Failed to upload images. Please try again.");
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -77,12 +137,24 @@ export default function PostComposerModal({
       }
     }
 
+    // Check if posting globally or to community
+    if (isGlobal && !circleId) {
+      setError("Cannot post globally without a circle");
+      return;
+    }
+
+    if (!isGlobal && !circleId) {
+      setError("Please select a community or enable global posting");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const payload: any = {
         type: postType,
         content: content.trim(),
+        mediaUrls: images,
       };
 
       if (postType === CommunityPostType.SOS) {
@@ -103,7 +175,12 @@ export default function PostComposerModal({
         payload.gyaanCategory = gyaanCategory;
       }
 
-      const res = await fetch(`/api/community/circles/${circleId}/post`, {
+      // Use global endpoint if isGlobal is true, otherwise use circle endpoint
+      const endpoint = isGlobal
+        ? "/api/community/posts/global"
+        : `/api/community/circles/${circleId}/post`;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -125,7 +202,9 @@ export default function PostComposerModal({
       setMeetupTime("");
       setGyaanTitle("");
       setGyaanCategory("");
+      setImages([]);
       setPostType(CommunityPostType.GENERAL);
+      setIsGlobal(false);
       setIsSubmitting(false);
       onPostCreated?.();
       onClose();
@@ -184,7 +263,7 @@ export default function PostComposerModal({
                 marginTop: "2px",
               }}
             >
-              Share with {circleName}
+              {isGlobal ? "Share globally" : circleName ? `Share with ${circleName}` : "Create post"}
             </div>
           </div>
           <button
@@ -209,6 +288,52 @@ export default function PostComposerModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-4" style={{ padding: "20px" }}>
+          {/* Global/Community Toggle */}
+          {allowGlobal && circleId && (
+            <div className="mb-4">
+              <div
+                className="flex gap-2 p-1 rounded-lg border"
+                style={{
+                  background: "var(--cream)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  padding: "4px",
+                }}
+              >
+                <button
+                  onClick={() => setIsGlobal(false)}
+                  className="flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all border-none"
+                  style={{
+                    background: !isGlobal ? "white" : "transparent",
+                    color: !isGlobal ? "var(--ink)" : "var(--muted)",
+                    fontWeight: !isGlobal ? 600 : 500,
+                    fontSize: "12px",
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    boxShadow: !isGlobal ? "var(--shadow-sm)" : "none",
+                  }}
+                >
+                  🌍 {circleName || "Community"}
+                </button>
+                <button
+                  onClick={() => setIsGlobal(true)}
+                  className="flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all border-none"
+                  style={{
+                    background: isGlobal ? "white" : "transparent",
+                    color: isGlobal ? "var(--ink)" : "var(--muted)",
+                    fontWeight: isGlobal ? 600 : 500,
+                    fontSize: "12px",
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    boxShadow: isGlobal ? "var(--shadow-sm)" : "none",
+                  }}
+                >
+                  🌐 Global
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Post Type Selector */}
           <div
             className="flex gap-2 mb-4 flex-wrap"
@@ -216,7 +341,6 @@ export default function PostComposerModal({
           >
             {[
               { type: CommunityPostType.GENERAL, icon: "💬", label: "Post" },
-              { type: CommunityPostType.JOB_SHARE, icon: "💼", label: "Job" },
               { type: CommunityPostType.MEETUP, icon: "📍", label: "Meetup" },
               { type: CommunityPostType.GYAAN, icon: "💡", label: "Tip" },
               { type: CommunityPostType.SOS, icon: "🚨", label: "SOS", sos: true },
@@ -569,6 +693,84 @@ export default function PostComposerModal({
             >
               {content.length} characters
             </div>
+          </div>
+
+          {/* Image Upload Section */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <label
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "var(--ink)",
+                }}
+              >
+                Images ({images.length}/5)
+              </label>
+              {images.length < 5 && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImages}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border-none"
+                  style={{
+                    background: "var(--cream)",
+                    color: "var(--saffron)",
+                    border: "1px solid var(--border)",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    cursor: uploadingImages ? "not-allowed" : "pointer",
+                    opacity: uploadingImages ? 0.6 : 1,
+                  }}
+                >
+                  {uploadingImages ? "Uploading..." : "+ Add Images"}
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: "none" }}
+              onChange={(e) => {
+                if (e.target.files) {
+                  handleImageUpload(e.target.files);
+                }
+              }}
+            />
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {images.map((url, index) => (
+                  <div
+                    key={index}
+                    className="relative rounded-lg overflow-hidden"
+                    style={{
+                      aspectRatio: "1",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    <img
+                      src={url}
+                      alt={`Upload ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center border-none"
+                      style={{
+                        background: "rgba(0,0,0,0.6)",
+                        color: "white",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

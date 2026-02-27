@@ -44,27 +44,26 @@ export default function Navbar() {
 
   return (
     <nav
-      className="sticky top-0 z-100 h-16"
+      className="sticky top-0 z-100 h-14 md:h-16 px-4 md:px-10"
       style={{
         background: "rgba(247,243,238,0.92)",
         backdropFilter: "blur(16px)",
         borderBottom: "1px solid var(--border)",
-        padding: "0 40px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
       }}
     >
-      <Link href="/" className="flex items-center gap-2.5 no-underline">
+      <Link href="/" className="flex items-center gap-1.5 md:gap-2.5 no-underline">
         <div
-          className="flex items-center gap-1.5 rounded-[10px] px-3 py-2"
+          className="flex items-center gap-1 md:gap-1.5 rounded-[8px] md:rounded-[10px] px-2 md:px-3 py-1.5 md:py-2"
           style={{
             background: "var(--saffron)",
             boxShadow: "0 2px 8px rgba(232,98,26,0.3)",
           }}
         >
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-[7px] text-sm font-extrabold"
+            className="flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-[6px] md:rounded-[7px] text-xs md:text-sm font-extrabold"
             style={{
               background: "white",
               color: "var(--saffron)",
@@ -73,7 +72,7 @@ export default function Navbar() {
             R
           </div>
           <span
-            className="text-base font-extrabold tracking-tight"
+            className="text-sm md:text-base font-extrabold tracking-tight hidden sm:inline"
             style={{
               color: "white",
               letterSpacing: "0.06em",
@@ -123,16 +122,15 @@ export default function Navbar() {
         </ul>
       )}
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
         {session?.user ? (
           <>
             <button
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+              className="hidden sm:flex px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs font-semibold border transition-all"
               style={{
                 background: "var(--cream)",
                 border: "1px solid var(--border)",
                 color: "var(--ink)",
-                display: "flex",
                 gap: "4px",
               }}
               onClick={() => setLanguage(language === "en" ? "hi" : "en")}
@@ -142,13 +140,13 @@ export default function Navbar() {
               </span>
               {language === "hi" ? " / EN" : " / हि"}
             </button>
-            <button className="relative p-2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors">
-              <span style={{ fontSize: "18px" }}>🔔</span>
+            <button className="relative p-1.5 md:p-2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors">
+              <span className="text-base md:text-lg">🔔</span>
             </button>
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-full text-white text-sm font-bold transition-transform hover:scale-105"
+                className="relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full text-white text-xs md:text-sm font-bold transition-transform hover:scale-105"
                 style={{
                   background: "linear-gradient(135deg, var(--blue-mid), var(--blue))",
                 }}
@@ -203,13 +201,13 @@ export default function Navbar() {
           <>
             <Link
               href="/auth/signin"
-              className="px-4 py-2 text-sm font-semibold text-[var(--muted)] hover:text-[var(--ink)] transition-colors no-underline"
+              className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-[var(--muted)] hover:text-[var(--ink)] transition-colors no-underline"
             >
               Login
             </Link>
             <Link
               href="/onboarding"
-              className="btn-primary text-sm px-5 py-2.5 no-underline"
+              className="btn-primary text-xs md:text-sm px-3 md:px-5 py-1.5 md:py-2.5 no-underline"
             >
               Join Free
             </Link>

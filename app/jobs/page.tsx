@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   HiOutlineMapPin,
   HiOutlineBriefcase,
@@ -54,12 +55,24 @@ const JOB_CATEGORIES = [
 
 export default function JobsPage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedState, setSelectedState] = useState("");
   const [userState, setUserState] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initialState = searchParams.get("state");
+    const initialQuery = searchParams.get("q");
+    if (initialState) {
+      setSelectedState(initialState);
+    }
+    if (initialQuery) {
+      setSearch(initialQuery);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchJobs = async () => {

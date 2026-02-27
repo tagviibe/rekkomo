@@ -3,6 +3,7 @@ import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
+import { updateTrustScore } from "@/lib/trust-score";
 import { z } from "zod";
 
 const WINDOW_MS = 60_000;
@@ -34,15 +35,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
-    // Check trust score (minimum 40 as per PRD)
-    const profile = await prisma.profile.findUnique({
+    // Check trust score (minimum 36 as per PRD)
+    let profile = await prisma.profile.findUnique({
       where: { userId: session.user.id },
       select: { trustScore: true },
     });
 
-    if (!profile || profile.trustScore < 40) {
+    // If profile doesn't exist, return error
+    if (!profile) {
       return NextResponse.json(
-        { error: "Minimum trust score of 40 required to post jobs" },
+        { 
+          error: "Profile not found. Please complete your onboarding first.",
+          code: "PROFILE_NOT_FOUND"
+        },
+        { status: 403 }
+      );
+    }
+
+    // Recalculate trust score if it's 0 or seems stale (might not have been calculated)
+    let trustScore = profile.trustScore;
+    if (trustScore === 0 || trustScore === null) {
+      console.log(`Recalculating trust score for user ${session.user.id} (current: ${trustScore})`);
+      trustScore = await updateTrustScore(session.user.id);
+    }
+
+    if (trustScore < 36) {
+      return NextResponse.json(
+        { 
+          error: "Minimum trust score of 36 required to post jobs",
+          code: "TRUST_SCORE_TOO_LOW",
+          currentScore: trustScore,
+          requiredScore: 36,
+          pointsNeeded: 36 - trustScore
+        },
         { status: 403 }
       );
     }

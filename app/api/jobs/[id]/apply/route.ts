@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { z } from "zod";
 
-const WINDOW_MS = 60_000;
-const LIMIT = 10;
-
 const applySchema = z.object({
-  message: z.string().max(500).optional(),
+  experience: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  message: z.string().max(1000).optional(),
 });
 
 export async function POST(
@@ -21,10 +19,11 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const limit = rateLimit(`job:apply:${ip}`, LIMIT, WINDOW_MS);
-  if (!limit.ok) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  const body = await req.json().catch(() => ({}));
+  const parsed = applySchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
   const job = await prisma.jobPost.findUnique({
@@ -36,28 +35,31 @@ export async function POST(
   }
 
   if (job.status !== "OPEN") {
-    return NextResponse.json({ error: "Job is not open for applications" }, { status: 400 });
+    return NextResponse.json(
+      { error: "This job is no longer accepting applications" },
+      { status: 400 }
+    );
   }
 
   // Check if already applied
-  const existing = await prisma.application.findFirst({
+  const existing = await prisma.application.findUnique({
     where: {
-      jobId: params.id,
-      seekerId: session.user.id,
+      jobId_seekerId: {
+        jobId: params.id,
+        seekerId: session.user.id,
+      },
     },
   });
 
   if (existing) {
-    return NextResponse.json({ error: "Already applied" }, { status: 409 });
+    return NextResponse.json(
+      { error: "You have already applied for this job" },
+      { status: 400 }
+    );
   }
 
-  const body = await req.json();
-  const parsed = applySchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
-  }
-
-  const application = await prisma.application.create({
+  // Create application
+  await prisma.application.create({
     data: {
       jobId: params.id,
       seekerId: session.user.id,
@@ -66,5 +68,5 @@ export async function POST(
     },
   });
 
-  return NextResponse.json({ application }, { status: 201 });
+  return NextResponse.json({ ok: true });
 }

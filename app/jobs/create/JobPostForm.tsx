@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import TrustScoreImprovement from "@/components/TrustScoreImprovement";
 
 const JOB_CATEGORIES = [
   "🏗️ Construction",
@@ -65,6 +66,10 @@ export default function JobPostForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [trustScore, setTrustScore] = useState<number | null>(null);
+  const [trustScoreLoading, setTrustScoreLoading] = useState(true);
+  const [showTrustScoreError, setShowTrustScoreError] = useState(false);
+  const [trustScoreBreakdown, setTrustScoreBreakdown] = useState<any[]>([]);
 
   // Step 1: Job Details
   const [title, setTitle] = useState("");
@@ -167,6 +172,43 @@ export default function JobPostForm() {
     setImagePreview(null);
   };
 
+  // Fetch trust score on mount
+  useEffect(() => {
+    const fetchTrustScore = async () => {
+      try {
+        const res = await fetch("/api/trust-score/breakdown");
+        if (res.ok) {
+          const data = await res.json();
+          const score = data.score ?? 0;
+          setTrustScore(score);
+          setTrustScoreBreakdown(data.breakdown || []);
+          if (score < 36) {
+            setShowTrustScoreError(true);
+          }
+        } else {
+          // Fallback to profile endpoint
+          const profileRes = await fetch("/api/profile/me");
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            const score = profileData.profile?.trustScore ?? 0;
+            setTrustScore(score);
+            if (score < 36) {
+              setShowTrustScoreError(true);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch trust score:", err);
+      } finally {
+        setTrustScoreLoading(false);
+      }
+    };
+
+    if (session?.user?.id) {
+      fetchTrustScore();
+    }
+  }, [session]);
+
   useEffect(() => {
     // Auto-populate location (only once on mount)
     if (navigator.geolocation) {
@@ -239,13 +281,44 @@ export default function JobPostForm() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to create job");
+        const errorMessage = data.error || "Failed to create job";
+        
+        // Check if it's a trust score error
+        if (errorMessage.includes("trust score") || errorMessage.includes("Minimum trust score")) {
+          setShowTrustScoreError(true);
+          // Fetch current trust score and breakdown if we don't have it
+          if (trustScore === null || trustScoreBreakdown.length === 0) {
+            try {
+              const breakdownRes = await fetch("/api/trust-score/breakdown");
+              if (breakdownRes.ok) {
+                const breakdownData = await breakdownRes.json();
+                setTrustScore(breakdownData.score ?? 0);
+                setTrustScoreBreakdown(breakdownData.breakdown || []);
+              } else {
+                // Fallback to profile endpoint
+                const profileRes = await fetch("/api/profile/me");
+                if (profileRes.ok) {
+                  const profileData = await profileRes.json();
+                  setTrustScore(profileData.profile?.trustScore ?? 0);
+                }
+              }
+            } catch (err) {
+              console.error("Failed to fetch trust score:", err);
+            }
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const { job } = await response.json();
       router.push(`/jobs?created=${job.id}`);
     } catch (err: any) {
-      setError(err.message || "Failed to create job");
+      const errorMessage = err.message || "Failed to create job";
+      // Don't set generic error for trust score issues - we show TrustScoreImprovement component
+      if (!errorMessage.includes("trust score") && !errorMessage.includes("Minimum trust score")) {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -253,6 +326,17 @@ export default function JobPostForm() {
 
   return (
     <div className="form-page-wrap">
+      {/* Trust Score Warning */}
+      {showTrustScoreError && trustScore !== null && (
+        <div style={{ marginBottom: "24px" }}>
+          <TrustScoreImprovement 
+            currentScore={trustScore} 
+            requiredScore={36}
+            breakdown={trustScoreBreakdown}
+          />
+        </div>
+      )}
+
       {/* Progress Bar */}
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${progress}%` }} />
@@ -859,7 +943,7 @@ export default function JobPostForm() {
           </div>
         )}
 
-        {error && (
+        {error && !showTrustScoreError && (
           <div
             style={{
               marginTop: "16px",

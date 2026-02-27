@@ -9,6 +9,9 @@ import FeedPost from "@/components/community/FeedPost";
 import PostComposerModal from "@/components/community/PostComposerModal";
 import { CircleLevel, CommunityPostType } from "@prisma/client";
 
+const TRUST_CIRCLE_RADIUS = 22;
+const TRUST_CIRCLE_CIRCUMFERENCE = 2 * Math.PI * TRUST_CIRCLE_RADIUS;
+
 export default function CommunityPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -24,6 +27,9 @@ export default function CommunityPage() {
   const [feedMode, setFeedMode] = useState<"community" | "global">("community");
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState<CommunityPostType | undefined>(undefined);
+  const [followingStatus, setFollowingStatus] = useState<Record<string, boolean>>({});
+  const [trustScore, setTrustScore] = useState<number | null>(null);
+  const [topHelpers, setTopHelpers] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -41,9 +47,20 @@ export default function CommunityPage() {
     } else if (primaryCircle) {
       fetchFeed(primaryCircle.id);
       fetchUpcomingEvents(primaryCircle.id);
-      fetchPeople(primaryCircle.id);
     }
   }, [primaryCircle, activeFilter, feedMode]);
+
+  useEffect(() => {
+    if (myCircles.length > 0) {
+      fetchPeople();
+    }
+  }, [myCircles]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchTrustScore();
+    }
+  }, [status]);
 
   const handlePostCreated = () => {
     if (feedMode === "global") {
@@ -73,6 +90,7 @@ export default function CommunityPage() {
         const primary = circles.find((c: any) => c.level === CircleLevel.STATE);
         if (primary) {
           setPrimaryCircle(primary);
+          fetchTopHelpers(primary.id);
         } else {
           setLoading(false);
         }
@@ -90,6 +108,8 @@ export default function CommunityPage() {
 
   const fetchFeed = async (circleId: string) => {
     try {
+      setLoading(true);
+      setError(null);
       const type = activeFilter === "all" ? null : activeFilter;
       const url = type && type !== "all"
         ? `/api/community/circles/${circleId}/feed?type=${type}`
@@ -98,9 +118,13 @@ export default function CommunityPage() {
       if (res.ok) {
         const data = await res.json();
         setFeed(data.items || []);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.error || "Failed to load feed");
       }
     } catch (error) {
       console.error("Failed to fetch feed:", error);
+      setError("Failed to load feed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -149,15 +173,169 @@ export default function CommunityPage() {
     }
   };
 
-  const fetchPeople = async (circleId: string) => {
+  const fetchTopHelpers = async (circleId: string) => {
     try {
-      const res = await fetch(`/api/community/circles/${circleId}/members?limit=3`);
+      const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+      const res = await fetch(`/api/community/circles/${circleId}/leaderboard?month=${month}`);
       if (res.ok) {
         const data = await res.json();
-        setPeopleFromBihar(data.members || []);
+        const leaderboard = data.leaderboard || {};
+        
+        // Combine top entries from all categories, prioritizing most_helpful
+        const allEntries: any[] = [];
+        
+        // Get top from most_helpful
+        if (leaderboard.most_helpful?.length > 0) {
+          const entry = leaderboard.most_helpful[0];
+          allEntries.push({
+            ...entry,
+            category: "Most Helpful",
+            rank: 1,
+            rankIcon: "🥇",
+            badgeLabel: entry.badgeLabel || "Most Helpful",
+            score: entry.score || 0,
+          });
+        }
+        
+        // Get top from job_connector
+        if (leaderboard.job_connector?.length > 0 && allEntries.length < 3) {
+          const entry = leaderboard.job_connector[0];
+          allEntries.push({
+            ...entry,
+            category: "Job Connector",
+            rank: 2,
+            rankIcon: "🥈",
+            badgeLabel: entry.badgeLabel || "Job Connector",
+            score: entry.score || 0,
+          });
+        }
+        
+        // Get top from organizer
+        if (leaderboard.organizer?.length > 0 && allEntries.length < 3) {
+          const entry = leaderboard.organizer[0];
+          allEntries.push({
+            ...entry,
+            category: "Top Organizer",
+            rank: 3,
+            rankIcon: "🥉",
+            badgeLabel: entry.badgeLabel || "Top Organizer",
+            score: entry.score || 0,
+          });
+        }
+        
+        setTopHelpers(allEntries.slice(0, 3));
+      } else {
+        setTopHelpers([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch top helpers:", error);
+      setTopHelpers([]);
+    }
+  };
+
+  const fetchPeople = async () => {
+    try {
+      // Fetch members from all connected circles
+      const allMembers: any[] = [];
+      const memberIds = new Set<string>(); // To avoid duplicates
+      
+      // Fetch from all circles the user is a member of
+      for (const circle of myCircles) {
+        try {
+          const res = await fetch(`/api/community/circles/${circle.id}/members?limit=5`);
+          if (res.ok) {
+            const data = await res.json();
+            const members = data.members || [];
+            
+            // Add members that haven't been added yet (avoid duplicates)
+            for (const member of members) {
+              const userId = member.user?.id;
+              if (userId && !memberIds.has(userId) && userId !== session?.user?.id) {
+                memberIds.add(userId);
+                allMembers.push(member);
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to fetch members from circle ${circle.id}:`, err);
+        }
+      }
+      
+      // Limit to top 3 for display
+      const topMembers = allMembers.slice(0, 3);
+      setPeopleFromBihar(topMembers);
+      
+      // Fetch follow status for each member
+      if (session?.user?.id && topMembers.length > 0) {
+        const statusPromises = topMembers.map(async (member: any) => {
+          if (member.user?.id && member.user.id !== session.user.id) {
+            try {
+              const statusRes = await fetch(`/api/follow/status/${member.user.id}`);
+              if (statusRes.ok) {
+                const statusData = await statusRes.json();
+                return { userId: member.user.id, isFollowing: statusData.isFollowing };
+              }
+            } catch (err) {
+              console.error(`Failed to fetch follow status for ${member.user.id}:`, err);
+            }
+          }
+          return null;
+        });
+        
+        const statuses = await Promise.all(statusPromises);
+        const statusMap: Record<string, boolean> = {};
+        statuses.forEach((status) => {
+          if (status) {
+            statusMap[status.userId] = status.isFollowing;
+          }
+        });
+        setFollowingStatus((prev) => ({ ...prev, ...statusMap }));
       }
     } catch (error) {
       console.error("Failed to fetch people:", error);
+    }
+  };
+
+  const handleConnect = async (userId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!session?.user?.id || userId === session.user.id) return;
+
+    const isCurrentlyFollowing = followingStatus[userId];
+    
+    try {
+      const res = await fetch(`/api/follow/${userId}`, {
+        method: isCurrentlyFollowing ? "DELETE" : "POST",
+      });
+      
+      if (res.ok) {
+        setFollowingStatus((prev) => ({
+          ...prev,
+          [userId]: !isCurrentlyFollowing,
+        }));
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Failed to connect:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Failed to connect:", error);
+    }
+  };
+
+  const fetchTrustScore = async () => {
+    try {
+      const res = await fetch("/api/trust-score/breakdown");
+      if (res.ok) {
+        const data = await res.json();
+        setTrustScore(data.score ?? 0);
+      } else {
+        const profileRes = await fetch("/api/profile/me");
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setTrustScore(profileData.profile?.trustScore ?? 0);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch trust score:", error);
     }
   };
 
@@ -166,6 +344,19 @@ export default function CommunityPage() {
     const day = d.getDate();
     const month = d.toLocaleDateString("en-US", { month: "short" });
     return { day, month };
+  };
+
+  const trustScoreMax = 200;
+  const safeTrustScore = Math.max(0, Math.min(trustScore ?? 0, trustScoreMax));
+  const trustPercentage = (safeTrustScore / trustScoreMax) * 100;
+  const trustStrokeDashoffset =
+    TRUST_CIRCLE_CIRCUMFERENCE -
+    (Math.min(100, trustPercentage) / 100) * TRUST_CIRCLE_CIRCUMFERENCE;
+
+  const getTrustLabel = (score: number) => {
+    if (score >= 100) return "🥈 Community Trusted";
+    if (score >= 40) return "⭐ Building Trust";
+    return "🌱 New Member";
   };
 
   if (status === "loading" || loading) {
@@ -382,9 +573,9 @@ export default function CommunityPage() {
               </nav>
             </div>
 
-            {/* Other Circles */}
-            {discoverCircles.length > 0 && (
-              <div>
+            {/* Other Circles - Secondary */}
+            {myCircles.filter((c: any) => c.level !== CircleLevel.STATE).length > 0 && (
+              <div style={{ marginTop: "24px" }}>
                 <div
                   style={{
                     fontSize: "10px",
@@ -394,9 +585,69 @@ export default function CommunityPage() {
                     color: "var(--muted)",
                     padding: "0 8px",
                     marginBottom: "6px",
+                    opacity: 0.7,
                   }}
                 >
                   OTHER CIRCLES
+                </div>
+                <nav
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "1px",
+                  }}
+                >
+                  {myCircles
+                    .filter((c: any) => c.level !== CircleLevel.STATE)
+                    .slice(0, 3)
+                    .map((circle) => (
+                      <Link
+                        key={circle.id}
+                        href={`/community/${circle.id}`}
+                        className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-semibold transition-all no-underline"
+                        style={{
+                          color: "var(--muted)",
+                          opacity: 0.8,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "var(--cream)";
+                          e.currentTarget.style.color = "var(--ink)";
+                          e.currentTarget.style.opacity = "1";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "var(--muted)";
+                          e.currentTarget.style.opacity = "0.8";
+                        }}
+                      >
+                        <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>
+                          {circle.level === CircleLevel.DISTRICT ? "🌊" : "🐯"}
+                        </span>
+                        <span className="flex-1">
+                          {circle.name} · {(circle.memberCount || 0).toLocaleString()}
+                        </span>
+                      </Link>
+                    ))}
+                </nav>
+              </div>
+            )}
+            
+            {/* Discover Circles - Secondary */}
+            {discoverCircles.length > 0 && (
+              <div style={{ marginTop: "24px" }}>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "var(--muted)",
+                    padding: "0 8px",
+                    marginBottom: "6px",
+                    opacity: 0.7,
+                  }}
+                >
+                  DISCOVER
                 </div>
                 <nav
                   style={{
@@ -412,14 +663,17 @@ export default function CommunityPage() {
                       className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-semibold transition-all no-underline"
                       style={{
                         color: "var(--muted)",
+                        opacity: 0.8,
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background = "var(--cream)";
                         e.currentTarget.style.color = "var(--ink)";
+                        e.currentTarget.style.opacity = "1";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = "transparent";
                         e.currentTarget.style.color = "var(--muted)";
+                        e.currentTarget.style.opacity = "0.8";
                       }}
                     >
                       <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>
@@ -602,7 +856,6 @@ export default function CommunityPage() {
                 </div>
                 <div className="flex gap-1.5">
                   {[
-                    { icon: "💼", label: "Job" },
                     { icon: "📍", label: "Meetup" },
                     { icon: "💡", label: "Tip" },
                     { icon: "🚨", label: "SOS", sos: true },
@@ -643,7 +896,6 @@ export default function CommunityPage() {
                       onClick={(e) => {
                         e.stopPropagation();
                         const typeMap: Record<string, CommunityPostType> = {
-                          Job: CommunityPostType.JOB_SHARE,
                           Meetup: CommunityPostType.MEETUP,
                           Tip: CommunityPostType.GYAAN,
                           SOS: CommunityPostType.SOS,
@@ -669,7 +921,6 @@ export default function CommunityPage() {
               {[
                 { id: "all", label: "🔥 All" },
                 { id: "SOS", label: "🚨 SOS" },
-                { id: "JOB_SHARE", label: "💼 Jobs" },
                 { id: "EVENT_SHARE", label: "🎉 Events" },
                 { id: "MEETUP", label: "📍 Meetups" },
                 { id: "GYAAN", label: "💡 Gyaan" },
@@ -788,8 +1039,8 @@ export default function CommunityPage() {
                     stroke="url(#trustGradient)"
                     strokeWidth="4"
                     strokeLinecap="round"
-                    strokeDasharray="138"
-                    strokeDashoffset="40"
+                    strokeDasharray={TRUST_CIRCLE_CIRCUMFERENCE}
+                    strokeDashoffset={trustStrokeDashoffset}
                     transform="rotate(-90 28 28)"
                   />
                   <text
@@ -801,7 +1052,7 @@ export default function CommunityPage() {
                     fill="var(--ink)"
                     fontFamily="Sora, sans-serif"
                   >
-                    142
+                    {safeTrustScore}
                   </text>
                 </svg>
                 <div style={{ flex: 1 }}>
@@ -825,7 +1076,7 @@ export default function CommunityPage() {
                       lineHeight: 1,
                     }}
                   >
-                    142
+                    {safeTrustScore}
                   </div>
                   <div
                     style={{
@@ -835,7 +1086,7 @@ export default function CommunityPage() {
                       marginTop: "2px",
                     }}
                   >
-                    🥈 Community Trusted
+                    {getTrustLabel(safeTrustScore)}
                   </div>
                   <div
                     style={{
@@ -851,7 +1102,7 @@ export default function CommunityPage() {
                         height: "100%",
                         borderRadius: "2px",
                         background: "linear-gradient(90deg, var(--saffron), var(--gold))",
-                        width: "71%",
+                        width: `${Math.max(0, Math.min(100, trustPercentage))}%`,
                       }}
                     />
                   </div>
@@ -890,70 +1141,120 @@ export default function CommunityPage() {
                 </Link>
               </div>
               <div className="space-y-0">
-                {[
-                  { rank: "🥇", name: "Arun Lal", category: "Most Helpful", score: "48 pts", bg: "var(--saffron)" },
-                  { rank: "🥈", name: "Poonam Devi", category: "Job Connector", score: "35 pts", bg: "var(--green)" },
-                  { rank: "🥉", name: "Santosh M.", category: "Top Organizer", score: "28 pts", bg: "var(--gold)" },
-                ].map((item, idx) => (
+                {topHelpers.length === 0 ? (
                   <div
-                    key={idx}
-                    className="flex items-center gap-2 py-1.5 border-b"
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      padding: "7px 0",
-                      borderBottom: "1px solid var(--border)",
+                      fontSize: "12px",
+                      color: "var(--muted)",
+                      padding: "8px 0",
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: 800,
-                        width: "20px",
-                        color: idx === 0 ? "#F59E0B" : idx === 1 ? "#94A3B8" : "#B45309",
-                      }}
-                    >
-                      {item.rank}
-                    </div>
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{
-                        background: `linear-gradient(135deg, ${item.bg}, ${item.bg})`,
-                      }}
-                    >
-                      {item.name[0]}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          color: "var(--ink)",
-                        }}
-                      >
-                        {item.name}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "10px",
-                          color: "var(--muted)",
-                        }}
-                      >
-                        {item.category}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: 800,
-                        color: "var(--saffron)",
-                      }}
-                    >
-                      {item.score}
-                    </div>
+                    No helpers this month
                   </div>
-                ))}
+                ) : (
+                  topHelpers.map((entry, idx) => {
+                    const user = entry.user || {};
+                    const profile = user.profile || {};
+                    const name = user.name || "Anonymous";
+                    const initials = name
+                      .split(" ")
+                      .map((n: string) => n[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase();
+                    
+                    // Avatar colors based on rank
+                    const bgColors = [
+                      "linear-gradient(135deg, var(--saffron), var(--saffron-dark))", // Gold for 1st
+                      "linear-gradient(135deg, var(--green), var(--green-dark))", // Green for 2nd
+                      "linear-gradient(135deg, var(--gold), var(--gold-dark))", // Amber for 3rd
+                    ];
+                    
+                    // Rank colors
+                    const rankColors = ["#F59E0B", "#94A3B8", "#B45309"]; // Gold, Silver, Bronze
+                    
+                    return (
+                      <div
+                        key={entry.id || idx}
+                        className="flex items-center gap-2 py-1.5 border-b"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "7px 0",
+                          borderBottom: "1px solid var(--border)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 800,
+                            width: "20px",
+                            color: rankColors[idx] || rankColors[0],
+                            flexShrink: 0,
+                          }}
+                        >
+                          {entry.rankIcon || (idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉")}
+                        </div>
+                        <Link
+                          href={`/profile/${user.id}`}
+                          className="flex items-center gap-2 flex-1 min-w-0"
+                          style={{
+                            textDecoration: "none",
+                            flex: 1,
+                            minWidth: 0,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.closest("div")!.style.background = "var(--cream)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.closest("div")!.style.background = "transparent";
+                          }}
+                        >
+                          <div
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                            style={{
+                              background: bgColors[idx] || bgColors[0],
+                              width: "28px",
+                              height: "28px",
+                            }}
+                          >
+                            {initials}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                color: "var(--ink)",
+                              }}
+                            >
+                              {name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "var(--muted)",
+                              }}
+                            >
+                              {entry.badgeLabel || entry.category || "Helper"}
+                            </div>
+                          </div>
+                        </Link>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 800,
+                            color: "var(--saffron)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {entry.score || 0} pts
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -970,7 +1271,7 @@ export default function CommunityPage() {
               >
                 <span>📅 Circle Events</span>
                 <Link
-                  href={primaryCircle ? `/community/${primaryCircle.id}?tab=events` : "/events"}
+                  href="/events"
                   style={{
                     fontSize: "11px",
                     color: "var(--saffron)",
@@ -1003,6 +1304,19 @@ export default function CommunityPage() {
                     const eventDate = event.meetup?.meetupDate
                       ? formatDate(event.meetup.meetupDate)
                       : null;
+                    // Get event ID - could be from event.id, event.eventId, or meetup.eventId
+                    // The feed returns CommunityPost items, which have event relation
+                    const eventId = event.event?.id || event.eventId || event.id || event.meetup?.eventId;
+                    
+                    const handleEventClick = () => {
+                      if (eventId) {
+                        router.push(`/events/${eventId}`);
+                      } else {
+                        // Fallback: navigate to events page with search
+                        router.push(`/events?search=${encodeURIComponent(event.meetup?.title || event.content?.slice(0, 30) || "")}`);
+                      }
+                    };
+                    
                     return (
                       <div
                         key={event.id}
@@ -1014,13 +1328,16 @@ export default function CommunityPage() {
                           marginBottom: "7px",
                           border: "1px solid var(--border)",
                         }}
+                        onClick={handleEventClick}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.borderColor = "var(--green)";
                           e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+                          e.currentTarget.style.transform = "translateY(-1px)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.borderColor = "var(--border)";
                           e.currentTarget.style.boxShadow = "none";
+                          e.currentTarget.style.transform = "translateY(0)";
                         }}
                       >
                         <div className="flex items-start justify-between mb-1">
@@ -1072,13 +1389,30 @@ export default function CommunityPage() {
               <div
                 className="flex items-center justify-between mb-3"
                 style={{
-                  fontSize: "12px",
-                  fontWeight: 800,
-                  color: "var(--ink)",
                   marginBottom: "12px",
                 }}
               >
-                <span>👥 {primaryCircle?.name?.replace(" Circle", "") || "Bihar"} Members Nearby</span>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 800,
+                      color: "var(--ink)",
+                    }}
+                  >
+                    {primaryCircle?.state || primaryCircle?.name?.replace(" Circle", "") || "All"} — {primaryCircle?.city || "Communities"}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--muted)",
+                      fontWeight: 500,
+                      marginTop: "2px",
+                    }}
+                  >
+                    Members Nearby
+                  </div>
+                </div>
                 <Link
                   href={primaryCircle ? `/community/${primaryCircle.id}/members` : "/people"}
                   style={{
@@ -1118,72 +1452,91 @@ export default function CommunityPage() {
                       .slice(0, 2)
                       .join("")
                       .toUpperCase();
+                    const isFollowing = followingStatus[user.id] || false;
+                    const isCurrentUser = user.id === session?.user?.id;
+                    
                     return (
                       <div
                         key={member.id}
-                        className="flex items-center gap-2.5 py-2 border-b cursor-pointer"
+                        className="flex items-center gap-2.5 py-2 border-b"
                         style={{
                           borderBottom: "1px solid var(--border)",
                           padding: "8px 0",
                         }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "var(--cream)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "transparent";
-                        }}
                       >
-                        <div
-                          className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                          style={{
-                            width: "34px",
-                            height: "34px",
-                            background: "linear-gradient(135deg, var(--blue-mid), var(--blue))",
-                          }}
-                        >
-                          {initials}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            {user.name || "Anonymous"}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "var(--muted)",
-                            }}
-                          >
-                            {profile.profession || "Member"} · {profile.currentCity || "Unknown"}
-                          </div>
-                        </div>
-                        <button
-                          className="text-xs font-semibold border rounded-md px-2.5 py-1 whitespace-nowrap"
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: 700,
-                            color: "var(--saffron)",
-                            border: "1px solid rgba(232,98,26,0.25)",
-                            background: "var(--saffron-light)",
-                            borderRadius: "7px",
-                            padding: "4px 10px",
-                            marginLeft: "auto",
-                          }}
+                        <Link
+                          href={`/profile/${user.id}`}
+                          className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
+                          style={{ textDecoration: "none" }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "var(--saffron)";
-                            e.currentTarget.style.color = "white";
+                            e.currentTarget.closest("div")!.style.background = "var(--cream)";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "var(--saffron-light)";
-                            e.currentTarget.style.color = "var(--saffron)";
+                            e.currentTarget.closest("div")!.style.background = "transparent";
                           }}
                         >
-                          + Connect
-                        </button>
+                          <div
+                            className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                            style={{
+                              width: "34px",
+                              height: "34px",
+                              background: "linear-gradient(135deg, var(--blue-mid), var(--blue))",
+                            }}
+                          >
+                            {initials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                color: "var(--ink)",
+                              }}
+                            >
+                              {user.name || user.username || "Anonymous"}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "var(--muted)",
+                              }}
+                            >
+                              {profile.profession || "Member"} · {profile.currentCity || "Unknown"}
+                            </div>
+                          </div>
+                        </Link>
+                        {!isCurrentUser && (
+                          <button
+                            onClick={(e) => handleConnect(user.id, e)}
+                            className="text-xs font-semibold border rounded-md px-2.5 py-1 whitespace-nowrap"
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              color: isFollowing ? "var(--green)" : "var(--saffron)",
+                              border: isFollowing 
+                                ? "1px solid rgba(27,107,69,0.25)" 
+                                : "1px solid rgba(232,98,26,0.25)",
+                              background: isFollowing ? "var(--green-light)" : "var(--saffron-light)",
+                              borderRadius: "7px",
+                              padding: "4px 10px",
+                              marginLeft: "auto",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isFollowing) {
+                                e.currentTarget.style.background = "var(--saffron)";
+                                e.currentTarget.style.color = "white";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isFollowing) {
+                                e.currentTarget.style.background = "var(--saffron-light)";
+                                e.currentTarget.style.color = "var(--saffron)";
+                              }
+                            }}
+                          >
+                            {isFollowing ? "✓ Connected" : "+ Connect"}
+                          </button>
+                        )}
                       </div>
                     );
                   })
@@ -1206,6 +1559,7 @@ export default function CommunityPage() {
           circleName={primaryCircle.name}
           onPostCreated={handlePostCreated}
           initialType={composerType}
+          allowGlobal={true}
         />
       )}
     </div>

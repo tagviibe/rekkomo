@@ -422,9 +422,10 @@ model Event {
   coverImageUrl String?
   createdAt     DateTime @default(now())
 
-  community Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  creator   User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  community Community        @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  creator   User             @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   rsvps     EventRSVP[]
+  posts     CommunityPost[]  // Posts that share this event
 
   @@index([communityId, startsAt])
 }
@@ -508,8 +509,9 @@ model JobPost {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  employer     User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employer     User            @relation(fields: [employerId], references: [id], onDelete: Cascade)
   applications Application[]
+  posts        CommunityPost[] // Posts that share this job
 
   @@index([employerId, status])
   @@index([status, createdAt])
@@ -657,12 +659,16 @@ model CommunityPost {
   replyCount Int               @default(0)
   deletedAt  DateTime?
   createdAt  DateTime          @default(now())
+  jobPostId  String?           // Link to JobPost if this is a job share
+  eventId    String?           // Link to Event if this is an event share
 
   sos        SOSRequest?
   meetup     Meetup?
   gyaanEntry GyaanEntry?
   replies    PostReply[]
   likes      PostLike[]
+  jobPost    JobPost?          @relation(fields: [jobPostId], references: [id])
+  event      Event?            @relation(fields: [eventId], references: [id])
 
   @@index([circleId, createdAt])
   @@index([circleId, isSOS])
@@ -736,6 +742,7 @@ model Meetup {
   rsvpCount   Int           @default(0)
   isActive    Boolean       @default(true)
   createdAt   DateTime      @default(now())
+  eventId     String?       // Link to Event if this meetup is from an event
 
   rsvps MeetupRsvp[]
 

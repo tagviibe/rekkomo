@@ -2,6 +2,7 @@
 
 import { CommunityPostType } from "@prisma/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SOSCard from "./SOSCard";
 import NewMemberWelcomeCard from "./NewMemberWelcomeCard";
 import MeetupCard from "./MeetupCard";
@@ -12,6 +13,7 @@ type FeedPostProps = {
     id: string;
     type: CommunityPostType;
     content: string;
+    mediaUrls?: string[];
     author: {
       name: string | null;
       image?: string | null;
@@ -27,6 +29,10 @@ type FeedPostProps = {
     sos?: any;
     meetup?: any;
     gyaanEntry?: any;
+    eventId?: string | null;
+    jobPostId?: string | null;
+    event?: any;
+    jobPost?: any;
     _count?: {
       likes: number;
       replies: number;
@@ -45,6 +51,7 @@ export default function FeedPost({
   onShare,
   onReport,
 }: FeedPostProps) {
+  const router = useRouter();
   // Delegate to specialized components
   if (post.type === CommunityPostType.SOS && post.sos) {
     return (
@@ -118,6 +125,23 @@ export default function FeedPost({
   const trustScore = post.author.profile?.trustScore || 0;
   const isVerified = trustScore >= 100;
 
+  const getStateEmoji = (state: string) => {
+    switch (state) {
+      case "Bihar":
+        return "🌾";
+      case "Uttar Pradesh":
+        return "🏛️";
+      case "Odisha":
+        return "🌊";
+      case "West Bengal":
+        return "🐯";
+      case "Rajasthan":
+        return "🏜️";
+      default:
+        return "📍";
+    }
+  };
+
   const getTimeAgo = (date: Date | string) => {
     const now = new Date();
     const then = new Date(date);
@@ -155,22 +179,79 @@ export default function FeedPost({
         if (lower.includes("marathi")) langs.push("Marathi");
         if (langs.length > 0) details.language = langs.join(" / ");
       }
+      if (
+        lower.includes("housing included") ||
+        lower.includes("housing provided") ||
+        lower.includes("room provided") ||
+        lower.includes("accommodation") ||
+        lower.includes("stay provided")
+      ) {
+        details.housingIncluded = true;
+      }
     });
     return details;
   };
 
   const jobDetails = post.type === CommunityPostType.JOB_SHARE ? extractJobDetails(post.content) : null;
 
+  const hasHousingIncluded = !!jobDetails?.housingIncluded;
+
+  // Get event/job ID for navigation
+  const getDetailLink = () => {
+    if (post.type === CommunityPostType.EVENT_SHARE && post.meetup) {
+      // For events, we need to find the Event by matching title/date
+      // For now, we'll use a search approach or store eventId in meetup
+      return null; // Will be handled by clicking the card
+    }
+    if (post.type === CommunityPostType.JOB_SHARE) {
+      // For jobs, we need to find the JobPost by matching title/content
+      // For now, we'll use a search approach
+      return null; // Will be handled by clicking the card
+    }
+    return null;
+  };
+
+  const handleCardClick = () => {
+    if (post.type === CommunityPostType.EVENT_SHARE || post.type === CommunityPostType.MEETUP) {
+      // Try multiple sources for event ID
+      const eventId = post.eventId || post.event?.id || post.meetup?.eventId;
+      
+      if (eventId) {
+        router.push(`/events/${eventId}`);
+      } else {
+        // Fallback: search by title
+        const title = post.meetup?.title || post.content?.split('\n')[0] || post.content?.slice(0, 30);
+        router.push(`/events?search=${encodeURIComponent(title || "")}`);
+      }
+    } else if (post.type === CommunityPostType.JOB_SHARE) {
+      if (post.jobPostId && post.jobPost) {
+        router.push(`/jobs/${post.jobPostId}`);
+      } else {
+        // Fallback: navigate to jobs page with filters
+        if (state || jobDetails?.location) {
+          const params = new URLSearchParams();
+          if (state) params.set("state", state);
+          if (jobDetails?.location) params.set("q", jobDetails.location);
+          router.push(`/jobs?${params.toString()}`);
+        } else {
+          router.push("/jobs");
+        }
+      }
+    }
+  };
+
   return (
     <div
-      className="bg-white rounded-2xl border p-4.5 mb-3 transition-all cursor-pointer"
+      className="bg-white rounded-2xl border p-4.5 mb-3 transition-all"
       style={{
         borderColor: "var(--border)",
         borderRadius: "16px",
         padding: "18px",
         marginBottom: "12px",
         boxShadow: "var(--shadow-sm)",
+        cursor: (post.type === CommunityPostType.EVENT_SHARE || post.type === CommunityPostType.MEETUP || post.type === CommunityPostType.JOB_SHARE) ? "pointer" : "default",
       }}
+      onClick={handleCardClick}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = "var(--shadow-md)";
         e.currentTarget.style.borderColor = "rgba(232,98,26,0.15)";
@@ -283,6 +364,59 @@ export default function FeedPost({
           );
         })}
       </div>
+
+      {/* Images */}
+      {post.mediaUrls && post.mediaUrls.length > 0 && (
+        <div
+          className="mt-3 mb-3"
+          style={{
+            marginTop: "12px",
+            marginBottom: "12px",
+          }}
+        >
+          <div
+            className="grid gap-2"
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                post.mediaUrls.length === 1
+                  ? "1fr"
+                  : post.mediaUrls.length === 2
+                  ? "1fr 1fr"
+                  : "repeat(3, 1fr)",
+              gap: "8px",
+            }}
+          >
+            {post.mediaUrls.slice(0, 9).map((url, index) => (
+              <div
+                key={index}
+                className="rounded-lg overflow-hidden"
+                style={{
+                  aspectRatio: "1",
+                  border: "1px solid var(--border)",
+                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Open image in new tab or modal
+                  window.open(url, "_blank");
+                }}
+              >
+                <img
+                  src={url}
+                  alt={`Post image ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Job Details Section */}
       {post.type === CommunityPostType.JOB_SHARE && jobDetails && (
@@ -417,39 +551,43 @@ export default function FeedPost({
               🗣️ {jobDetails.language}
             </span>
           )}
-          <span
-            className="px-2.5 py-1 rounded-md text-xs font-semibold"
-            style={{
-              padding: "3px 9px",
-              borderRadius: "6px",
-              fontSize: "11px",
-              fontWeight: 600,
-              background: "var(--green-light)",
-              color: "var(--green)",
-              border: "1px solid rgba(27,107,69,0.15)",
-            }}
-          >
-            🏠 Housing Included
-          </span>
-          <span
-            className="px-2.5 py-1 rounded-md text-xs font-semibold"
-            style={{
-              padding: "3px 9px",
-              borderRadius: "6px",
-              fontSize: "11px",
-              fontWeight: 600,
-              background: "var(--saffron)",
-              color: "white",
-              border: "1px solid var(--saffron)",
-            }}
-          >
-            🌾 Bihar Employer
-          </span>
+          {hasHousingIncluded && (
+            <span
+              className="px-2.5 py-1 rounded-md text-xs font-semibold"
+              style={{
+                padding: "3px 9px",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: 600,
+                background: "var(--green-light)",
+                color: "var(--green)",
+                border: "1px solid rgba(27,107,69,0.15)",
+              }}
+            >
+              🏠 Housing Included
+            </span>
+          )}
+          {state && (
+            <span
+              className="px-2.5 py-1 rounded-md text-xs font-semibold"
+              style={{
+                padding: "3px 9px",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: 600,
+                background: "var(--saffron)",
+                color: "white",
+                border: "1px solid var(--saffron)",
+              }}
+            >
+              {getStateEmoji(state)} {state} Employer
+            </span>
+          )}
         </div>
       )}
 
       {/* Footer Actions */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <button
           onClick={() => onLike?.(post.id)}
           className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all border-none"
@@ -527,7 +665,7 @@ export default function FeedPost({
         </button>
         {post.type === CommunityPostType.JOB_SHARE && (
           <button
-            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all border-none"
+            className="sm:ml-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all border-none w-full sm:w-auto"
             style={{
               background: "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
               fontSize: "12px",
@@ -535,6 +673,17 @@ export default function FeedPost({
               padding: "8px 16px",
               borderRadius: "9px",
               boxShadow: "0 2px 8px rgba(232,98,26,0.22)",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (state || jobDetails?.location) {
+                const params = new URLSearchParams();
+                if (state) params.set("state", state);
+                if (jobDetails?.location) params.set("q", jobDetails.location);
+                router.push(`/jobs?${params.toString()}`);
+              } else {
+                router.push("/jobs");
+              }
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-1px)";
@@ -550,9 +699,19 @@ export default function FeedPost({
         )}
         {post.type === CommunityPostType.EVENT_SHARE && (
           <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (post.eventId) {
+                router.push(`/events/${post.eventId}`);
+              } else if (post.meetup?.eventId) {
+                router.push(`/events/${post.meetup.eventId}`);
+              } else {
+                router.push(`/events?search=${encodeURIComponent(post.content.split('\n')[0])}`);
+              }
+            }}
             className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all border-none"
             style={{
-              background: "linear-gradient(135deg, var(--green), var(--green-light))",
+              background: "linear-gradient(135deg, var(--green), var(--green-dark))",
               fontSize: "12px",
               fontWeight: 700,
               padding: "8px 16px",
@@ -565,7 +724,7 @@ export default function FeedPost({
               e.currentTarget.style.transform = "translateY(0)";
             }}
           >
-            RSVP Free →
+            View Details →
           </button>
         )}
         {post.type === CommunityPostType.GENERAL && (

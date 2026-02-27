@@ -56,7 +56,7 @@ export default function SOSCard({ sos, onRespond }: SOSCardProps) {
   };
 
   return (
-    <div className={`rounded-2xl ${getUrgencyStyle()} p-5 shadow-md`}>
+    <div className={`rounded-2xl ${getUrgencyStyle()} p-4 sm:p-5 shadow-md w-full`}>
       {isResolved && (
         <div className="mb-3 rounded-lg bg-emerald-100 px-3 py-2 text-center text-sm font-medium text-emerald-700">
           ✅ Resolved
@@ -64,40 +64,40 @@ export default function SOSCard({ sos, onRespond }: SOSCardProps) {
       )}
 
       <div className="flex items-start gap-3">
-        <div className="rounded-full bg-red-100 p-2">
+        <div className="rounded-full bg-red-100 p-2 flex-shrink-0">
           <Icon className="h-5 w-5 text-red-600" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+            <span className="rounded-full bg-red-100 px-3 py-1 text-[11px] font-medium text-red-700">
               {categoryLabels[sos.category]}
             </span>
             {sos.urgency === 1 && (
-              <span className="flex items-center gap-1 rounded-full bg-red-200 px-2 py-0.5 text-xs font-bold text-red-800">
+              <span className="flex items-center gap-1 rounded-full bg-red-200 px-2 py-0.5 text-[11px] font-bold text-red-800">
                 🚨 CRITICAL
               </span>
             )}
           </div>
 
-          <p className="mt-2 text-gray-900">{sos.content}</p>
+          <p className="mt-2 text-sm text-gray-900">{sos.content}</p>
 
-          <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
+          <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-4 text-xs sm:text-sm text-gray-600">
             <span>
               {sos.requester.name || "Anonymous"} • {sos.requester.state}
             </span>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs">
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] mt-1 sm:mt-0">
               Trust: {sos.requester.trustScore}
             </span>
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+          <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+            <span className="text-xs sm:text-sm text-gray-600">
               {sos.responseCount} member{sos.responseCount !== 1 ? "s" : ""} responded
             </span>
             {!isResolved && (
               <button
                 onClick={() => onRespond(sos.id)}
-                className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 transition-colors"
+                className="w-full sm:w-auto rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors text-center"
               >
                 I Can Help
               </button>

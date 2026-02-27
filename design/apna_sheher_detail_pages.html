@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REKKOMO — Job & Event Details</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --royal:#2B4FD4;--royal-dark:#1A35A8;--royal-deep:#0F1F6B;
+  --royal-mid:#4068E8;--royal-light:#EEF2FF;--royal-xlight:#F5F7FF;
+  --amber:#F59E0B;--amber-dark:#D97706;--amber-light:#FFFBEB;
+  --emerald:#059669;--emerald-dark:#047857;--emerald-light:#ECFDF5;
+  --coral:#EF4444;--coral-light:#FEF2F2;
+  --purple:#7C3AED;--purple-light:#F3E8FF;
+  --ink:#0D1340;--slate:#64748B;--mist:#94A3B8;
+  --fog:#CBD5E1;--cloud:#F1F5F9;--paper:#F8FAFF;--white:#FFFFFF;
+  --shadow-sm:0 1px 3px rgba(43,79,212,0.08),0 1px 2px rgba(43,79,212,0.05);
+  --shadow-md:0 4px 16px rgba(43,79,212,0.12),0 2px 6px rgba(43,79,212,0.07);
+  --shadow-lg:0 16px 48px rgba(43,79,212,0.15),0 4px 16px rgba(43,79,212,0.08);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--paper);color:var(--ink);}
+
+/* DEMO BAR */
+.demo-bar{position:sticky;top:0;z-index:300;background:var(--royal-deep);height:46px;padding:0 24px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.demo-lbl{font-size:10px;font-weight:800;color:rgba(255,255,255,.35);letter-spacing:.16em;text-transform:uppercase;margin-right:6px;}
+.dbtab{padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,.1);font-family:'Plus Jakarta Sans',sans-serif;}
+.dbtab.active{background:var(--royal);color:white;border-color:var(--royal);}
+.dbtab:hover:not(.active){color:white;background:rgba(255,255,255,.08);}
+.view{display:none;}.view.active{display:block;}
+
+/* NAVBAR */
+.navbar{height:60px;background:rgba(248,250,255,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--fog);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:46px;z-index:200;}
+.nb-brand{display:flex;align-items:center;gap:10px;}
+.nb-logo{background:linear-gradient(135deg,var(--royal),var(--royal-dark));border-radius:9px;padding:6px 10px;font-size:13px;font-weight:800;color:white;}
+.nb-name{font-size:15px;font-weight:800;color:var(--ink);}
+.nb-sep{width:1px;height:18px;background:var(--fog);}
+.nb-bc{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mist);}
+.nb-bc a{color:var(--mist);text-decoration:none;transition:color .15s;}
+.nb-bc a:hover{color:var(--royal);}
+.nb-bc-cur{color:var(--ink);font-weight:700;}
+.nb-bc-sep{color:var(--fog);}
+.nb-right{display:flex;align-items:center;gap:10px;}
+.nb-back{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;border:1px solid var(--fog);background:white;font-size:13px;font-weight:600;color:var(--slate);cursor:pointer;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;}
+.nb-back:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+.nb-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--royal),var(--royal-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;}
+
+/* LAYOUT */
+.page-wrap{max-width:1120px;margin:0 auto;padding:32px 28px 80px;display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start;}
+
+/* ── JOB HERO ── */
+.job-hero{background:white;border-radius:20px;border:1px solid var(--fog);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:20px;}
+.jh-banner{height:156px;background:linear-gradient(135deg,var(--royal-deep),var(--royal) 55%,var(--royal-mid));position:relative;overflow:hidden;}
+.jh-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 50%,rgba(255,255,255,.07),transparent 55%),radial-gradient(circle at 85% 20%,rgba(255,255,255,.05),transparent 45%);}
+.jh-tag{position:absolute;top:16px;left:20px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:5px 14px;font-size:11px;font-weight:700;color:white;display:flex;align-items:center;gap:6px;}
+.jh-featured{position:absolute;top:16px;right:20px;background:var(--amber);border-radius:100px;padding:5px 13px;font-size:11px;font-weight:800;color:white;box-shadow:0 2px 8px rgba(245,158,11,.4);}
+.jh-body{padding:24px 28px 26px;position:relative;}
+.jh-logo{width:60px;height:60px;border-radius:14px;background:var(--royal-xlight);border:3px solid white;box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;font-size:26px;position:absolute;top:-30px;left:28px;}
+.jh-top{padding-top:38px;margin-bottom:16px;}
+.jh-title{font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.4px;margin-bottom:8px;}
+.jh-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.jh-ename{font-size:14px;font-weight:700;color:var(--slate);}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:100px;padding:3px 9px;font-size:10px;font-weight:700;}
+.badge-green{background:var(--emerald-light);color:var(--emerald-dark);}
+.badge-amber{background:var(--amber-light);color:var(--amber-dark);border:1px solid rgba(245,158,11,.2);}
+.badge-blue{background:var(--royal-light);color:var(--royal);}
+.badge-coral{background:var(--coral-light);color:var(--coral);}
+.jh-posted{font-size:11px;color:var(--mist);margin-left:auto;}
+.jh-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.jhs{background:var(--royal-xlight);border-radius:10px;padding:12px 13px;border:1px solid rgba(43,79,212,.07);}
+.jhs-lbl{font-size:9px;font-weight:800;color:var(--royal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;}
+.jhs-val{font-size:16px;font-weight:800;color:var(--ink);}
+.jhs-val.pay{color:var(--emerald);font-size:20px;}
+.jhs-sub{font-size:10px;color:var(--mist);margin-top:2px;}
+.benefits-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
+.benefit{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:100px;font-size:12px;font-weight:600;background:var(--emerald-light);color:var(--emerald-dark);border:1px solid rgba(5,150,105,.12);}
+.comm-reach{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--amber-light),#FEF3C7);border:1.5px solid rgba(245,158,11,.28);border-radius:10px;padding:11px 13px;margin-bottom:18px;}
+.cr-text{font-size:12px;font-weight:700;color:var(--amber-dark);line-height:1.5;flex:1;}
+.cr-badge-pill{background:var(--amber);color:white;font-size:10px;font-weight:800;padding:3px 9px;border-radius:100px;white-space:nowrap;}
+.jh-cta{display:flex;align-items:center;gap:10px;}
+.btn-apply{flex:1;padding:13px 18px;border-radius:12px;background:linear-gradient(135deg,var(--royal),var(--royal-dark));color:white;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 4px 14px rgba(43,79,212,.28);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-apply:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(43,79,212,.38);}
+.btn-apply.applied{background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));}
+.icon-btn{width:46px;height:46px;border-radius:11px;border:1.5px solid var(--fog);background:white;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .15s;}
+.icon-btn:hover{border-color:var(--royal);background:var(--royal-light);}
+.icon-btn.saved{border-color:var(--amber);background:var(--amber-light);}
+
+/* ── EVENT HERO ── */
+.event-hero{background:white;border-radius:20px;border:1px solid var(--fog);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:20px;}
+.eh-banner{height:220px;position:relative;overflow:hidden;background:linear-gradient(135deg,#FEF9C3,#FDE68A 50%,#FCD34D);display:flex;align-items:center;justify-content:center;}
+.eh-emoji{font-size:88px;filter:drop-shadow(0 8px 24px rgba(245,158,11,.3));animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.eh-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.38),transparent 55%);}
+.eh-banner-top{position:absolute;top:16px;left:20px;right:20px;display:flex;justify-content:space-between;}
+.eh-type-pill{background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:700;color:white;}
+.eh-feat-pill{background:var(--amber);border-radius:100px;padding:6px 13px;font-size:11px;font-weight:800;color:white;box-shadow:0 2px 8px rgba(245,158,11,.4);}
+.eh-banner-bot{position:absolute;bottom:0;left:0;right:0;padding:14px 24px;}
+.eh-date-pill{display:inline-flex;align-items:center;gap:12px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-radius:11px;padding:9px 15px;box-shadow:var(--shadow-md);margin-bottom:10px;}
+.edp-day{font-size:22px;font-weight:800;color:var(--ink);line-height:1;padding-right:12px;border-right:1px solid var(--fog);}
+.edp-mon{font-size:9px;font-weight:800;color:var(--mist);text-transform:uppercase;display:block;}
+.edp-time{font-size:13px;font-weight:800;color:var(--ink);}
+.edp-dur{font-size:11px;color:var(--slate);margin-top:1px;}
+.eh-title-txt{color:white;}
+.eh-t{font-size:21px;font-weight:800;letter-spacing:-.4px;text-shadow:0 2px 8px rgba(0,0,0,.3);}
+.eh-org{font-size:12px;opacity:.8;margin-top:3px;}
+.eh-body{padding:20px 26px 24px;}
+.eh-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.eh-mi{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--slate);}
+.eh-mi strong{color:var(--ink);}
+.eh-rsvp-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.eh-progress{flex:1;}
+.ep-track{height:6px;background:var(--fog);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.ep-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--emerald),#34D399);}
+.ep-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--mist);}
+.ep-count{font-weight:800;color:var(--emerald-dark);}
+.btn-rsvp{padding:13px 22px;border-radius:12px;background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));color:white;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 4px 14px rgba(5,150,105,.28);transition:all .2s;white-space:nowrap;}
+.btn-rsvp:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(5,150,105,.38);}
+.btn-rsvp.rsvped{background:linear-gradient(135deg,var(--royal),var(--royal-dark));}
+.eh-actions{display:flex;gap:8px;}
+.boost-banner{background:linear-gradient(135deg,var(--amber-light),#FEF3C7);border:1.5px solid rgba(245,158,11,.28);border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:10px;}
+.bb-text{font-size:12px;font-weight:700;color:var(--amber-dark);line-height:1.5;}
+.bb-link{color:var(--royal);text-decoration:underline;cursor:pointer;}
+
+/* ── SECTION CARDS ── */
+.sc{background:white;border-radius:14px;border:1px solid var(--fog);padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.sc-h{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.sc-icon{font-size:18px;}
+.desc-p{font-size:13px;color:var(--slate);line-height:1.75;margin-bottom:10px;}
+.desc-p strong{color:var(--ink);}
+.read-more-btn{font-size:12px;font-weight:700;color:var(--royal);cursor:pointer;display:inline-flex;align-items:center;gap:4px;margin-top:2px;}
+.read-more-btn:hover{text-decoration:underline;}
+
+/* Requirements */
+.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px;}
+.req-item{display:flex;align-items:flex-start;gap:9px;padding:11px 13px;background:var(--cloud);border-radius:10px;border:1px solid var(--fog);}
+.ri-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
+.ri-lbl{font-size:9px;font-weight:800;color:var(--mist);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
+.ri-val{font-size:13px;font-weight:700;color:var(--ink);}
+.chips-row{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{padding:6px 12px;border-radius:100px;font-size:12px;font-weight:700;}
+.chip-blue{background:var(--royal);color:white;}
+.chip-blue-lt{background:var(--royal-light);color:var(--royal);}
+.chip-amber{background:var(--amber-light);color:var(--amber-dark);border:1px solid rgba(245,158,11,.15);}
+.chip-gray{background:var(--cloud);color:var(--slate);border:1px solid var(--fog);}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;}
+.tl-item{display:flex;gap:13px;padding-bottom:16px;position:relative;}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:14px;top:28px;width:2px;bottom:0;background:var(--fog);}
+.tl-item.done:not(:last-child)::before{background:var(--emerald);}
+.tl-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid var(--fog);background:white;}
+.tl-item.done .tl-dot{background:var(--emerald-light);border-color:var(--emerald);}
+.tl-item.current .tl-dot{background:var(--royal-light);border-color:var(--royal);box-shadow:0 0 0 4px rgba(43,79,212,.1);}
+.tl-lbl{font-size:12px;font-weight:800;color:var(--ink);padding-top:4px;}
+.tl-sub{font-size:11px;color:var(--mist);margin-top:2px;}
+.tl-item.current .tl-lbl{color:var(--royal);}
+
+/* Map */
+.map-box{height:155px;background:linear-gradient(135deg,var(--royal-xlight),var(--cloud));border-radius:10px;border:1px solid var(--fog);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:all .15s;margin-bottom:11px;position:relative;overflow:hidden;}
+.map-box:hover{border-color:var(--royal);}
+.map-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(43,79,212,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(43,79,212,.04) 1px,transparent 1px);background-size:22px 22px;}
+.map-pin-emoji{font-size:32px;position:relative;z-index:1;filter:drop-shadow(0 3px 6px rgba(43,79,212,.2));}
+.map-name{font-size:12px;font-weight:700;color:var(--royal);position:relative;z-index:1;}
+.map-sub-txt{font-size:11px;color:var(--mist);position:relative;z-index:1;}
+.map-dir-btn{display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:10px;border:1.5px solid rgba(43,79,212,.2);background:var(--royal-light);color:var(--royal);font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;width:100%;transition:all .15s;}
+.map-dir-btn:hover{background:var(--royal);color:white;}
+.map-note{font-size:12px;color:var(--mist);margin-top:9px;display:flex;align-items:center;gap:6px;}
+
+/* People */
+.people-list{display:flex;flex-direction:column;gap:10px;}
+.person-row{display:flex;align-items:center;gap:11px;}
+.p-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0;}
+.p-name{font-size:13px;font-weight:700;color:var(--ink);}
+.p-meta{font-size:11px;color:var(--mist);margin-top:1px;}
+.p-action{margin-left:auto;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--fog);background:white;color:var(--slate);cursor:pointer;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;}
+.p-action:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+
+/* Av stack */
+.av-stack{display:flex;}
+.av-s{width:28px;height:28px;border-radius:50%;border:2px solid white;margin-left:-8px;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;}
+.av-s:first-child{margin-left:0;}
+.av-s-more{background:var(--cloud);color:var(--slate);font-size:10px;font-weight:800;}
+
+/* Tags */
+.tags-row{display:flex;flex-wrap:wrap;gap:7px;}
+.tag{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;background:var(--cloud);color:var(--slate);border:1px solid var(--fog);}
+.tag.b{background:var(--royal-light);color:var(--royal);}
+.tag.a{background:var(--amber-light);color:var(--amber-dark);}
+.tag.g{background:var(--emerald-light);color:var(--emerald-dark);}
+.tag.c{background:var(--royal);color:white;}
+
+/* Similar */
+.sim-list{display:flex;flex-direction:column;gap:10px;}
+.sim-card{border:1px solid var(--fog);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;background:white;display:flex;align-items:center;gap:11px;}
+.sim-card:hover{border-color:var(--royal);box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.sim-av{width:38px;height:38px;border-radius:10px;background:var(--royal-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sim-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.sim-meta{font-size:11px;color:var(--mist);}
+.sim-pay{font-size:13px;font-weight:800;color:var(--emerald-dark);white-space:nowrap;}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:16px;position:sticky;top:118px;}
+.side-card{background:white;border-radius:14px;border:1px solid var(--fog);padding:20px 22px;box-shadow:var(--shadow-md);}
+.side-card.light{box-shadow:var(--shadow-sm);}
+.sc-lbl{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:3px;}
+.sc-sub{font-size:11px;color:var(--mist);margin-bottom:14px;}
+.pay-big{font-size:26px;font-weight:800;color:var(--emerald-dark);letter-spacing:-.4px;margin-bottom:2px;}
+.pay-sub{font-size:11px;color:var(--mist);margin-bottom:14px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.stat-box{background:var(--cloud);border-radius:10px;padding:9px;text-align:center;}
+.stat-n{font-size:16px;font-weight:800;color:var(--ink);}
+.stat-l{font-size:9px;color:var(--mist);font-weight:600;margin-top:1px;}
+.btn-main{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:9px;transition:all .2s;}
+.btn-main.royal{background:linear-gradient(135deg,var(--royal),var(--royal-dark));color:white;box-shadow:0 4px 14px rgba(43,79,212,.28);}
+.btn-main.royal:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(43,79,212,.38);}
+.btn-main.royal.applied{background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));}
+.btn-main.green{background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));color:white;box-shadow:0 4px 14px rgba(5,150,105,.28);}
+.btn-main.green:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(5,150,105,.38);}
+.btn-main.green.rsvped{background:linear-gradient(135deg,var(--royal),var(--royal-dark));}
+.btn-wa{width:100%;padding:11px;border-radius:12px;background:white;color:#25D366;border:1.5px solid rgba(37,211,102,.3);font-size:13px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
+.btn-wa:hover{background:#E7FCF0;border-color:#25D366;}
+.deadline-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--coral);font-weight:700;margin-top:11px;padding:8px 10px;background:var(--coral-light);border-radius:8px;border:1px solid rgba(239,68,68,.15);}
+.spots-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--slate);margin-top:10px;padding:8px 10px;background:var(--cloud);border-radius:8px;}
+.spots-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);}
+
+/* Ticket options */
+.ticket-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.ticket-opt{border:1.5px solid var(--fog);border-radius:10px;padding:11px 13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between;}
+.ticket-opt:hover{border-color:var(--emerald);}
+.ticket-opt.sel{border-color:var(--emerald);background:var(--emerald-light);}
+.to-name{font-size:13px;font-weight:700;color:var(--ink);}
+.to-desc{font-size:11px;color:var(--mist);margin-top:1px;}
+.to-price{font-size:16px;font-weight:800;color:var(--emerald-dark);}
+.to-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--fog);flex-shrink:0;}
+.ticket-opt.sel .to-radio{border-color:var(--emerald);background:var(--emerald);}
+.ticket-opt.sel .to-radio::after{content:'';display:block;width:6px;height:6px;background:white;border-radius:50%;margin:4px auto;}
+
+/* Org card */
+.org-hdr{display:flex;align-items:center;gap:11px;margin-bottom:13px;}
+.org-logo{width:44px;height:44px;border-radius:12px;background:var(--royal-light);border:1px solid rgba(43,79,212,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.org-name{font-size:14px;font-weight:800;color:var(--ink);}
+.org-type{font-size:11px;color:var(--mist);margin-top:1px;}
+.org-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
+.os{text-align:center;padding:9px 5px;background:var(--cloud);border-radius:9px;}
+.os-n{font-size:15px;font-weight:800;color:var(--ink);}
+.os-l{font-size:9px;font-weight:600;color:var(--mist);margin-top:1px;}
+.btn-org{width:100%;padding:9px;border-radius:10px;border:1.5px solid var(--fog);background:white;font-size:12px;font-weight:700;color:var(--slate);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.btn-org:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+
+/* Trust */
+.trust-card{border-radius:14px;padding:16px 18px;}
+.trust-card.blue{background:var(--royal-xlight);border:1px solid rgba(43,79,212,.12);}
+.trust-card.green{background:var(--emerald-light);border:1px solid rgba(5,150,105,.15);}
+.t-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.t-icon{font-size:20px;}
+.t-title{font-size:13px;font-weight:800;}
+.blue .t-title{color:var(--royal);}
+.green .t-title{color:var(--emerald-dark);}
+.t-items{display:flex;flex-direction:column;gap:7px;}
+.t-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate);}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);flex-shrink:0;}
+
+/* Share */
+.share-card{background:white;border-radius:14px;border:1px solid var(--fog);padding:16px 18px;box-shadow:var(--shadow-sm);}
+.share-h{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;}
+.share-btns{display:flex;gap:7px;}
+.share-btn{flex:1;padding:8px 5px;border-radius:9px;border:1.5px solid var(--fog);background:white;font-size:11px;font-weight:700;color:var(--slate);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-align:center;transition:all .15s;}
+.share-btn:hover{border-color:var(--royal);color:var(--royal);background:var(--royal-light);}
+
+/* ── MODALS ── */
+.modal-ov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fdin .25s ease;}
+@keyframes fdin{from{opacity:0;}to{opacity:1;}}
+.modal-sheet{background:white;border-radius:20px 20px 0 0;width:100%;max-width:580px;padding:22px 26px 34px;animation:shup .33s cubic-bezier(.22,1,.36,1);max-height:88vh;overflow-y:auto;}
+.rsvp-sheet{background:white;border-radius:20px 20px 0 0;width:100%;max-width:580px;padding:22px 26px 34px;animation:shup .33s cubic-bezier(.22,1,.36,1);}
+@keyframes shup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.m-handle{width:38px;height:4px;background:var(--fog);border-radius:2px;margin:0 auto 18px;}
+.m-title{font-size:17px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.m-sub{font-size:12px;color:var(--mist);margin-bottom:18px;}
+.m-ctx{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--royal-xlight);border-radius:10px;border:1px solid rgba(43,79,212,.1);margin-bottom:18px;}
+.m-ctx-icon{font-size:22px;}
+.m-ctx-title{font-size:13px;font-weight:700;color:var(--ink);}
+.m-ctx-sub{font-size:11px;color:var(--slate);margin-top:1px;}
+.m-field{margin-bottom:15px;}
+.m-label{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.m-label span{font-size:10px;font-weight:600;color:var(--mist);}
+.m-input{width:100%;padding:10px 14px;border:1.5px solid var(--fog);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:all .15s;-webkit-appearance:none;}
+.m-input:focus{border-color:var(--royal);box-shadow:0 0 0 3px rgba(43,79,212,.1);}
+.m-input::placeholder{color:var(--mist);}
+.m-input.pre{background:var(--cloud);}
+.m-ta{resize:vertical;min-height:78px;line-height:1.65;}
+.m-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
+.skill-wrap{display:flex;flex-wrap:wrap;gap:7px;}
+.m-skill{padding:6px 12px;border-radius:100px;font-size:12px;font-weight:700;border:1.5px solid var(--fog);cursor:pointer;transition:all .15s;background:white;color:var(--slate);}
+.m-skill.sel{background:var(--royal);color:white;border-color:var(--royal);}
+.m-skill:hover:not(.sel){border-color:var(--royal);color:var(--royal);}
+.m-actions{display:flex;gap:10px;margin-top:18px;}
+.m-cancel{flex:1;padding:12px;border-radius:11px;border:1.5px solid var(--fog);background:white;font-size:13px;font-weight:700;color:var(--slate);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+.m-submit{flex:2;padding:12px;border-radius:11px;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+.m-submit.royal{background:linear-gradient(135deg,var(--royal),var(--royal-dark));color:white;box-shadow:0 3px 10px rgba(43,79,212,.25);}
+.m-submit.green{background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));color:white;box-shadow:0 3px 10px rgba(5,150,105,.25);}
+.rsvp-thumb{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--emerald-light);border-radius:10px;border:1px solid rgba(5,150,105,.15);margin-bottom:16px;}
+.rt-emoji{font-size:26px;}
+.rt-title{font-size:13px;font-weight:800;color:var(--ink);}
+.rt-sub{font-size:11px;color:var(--emerald-dark);margin-top:1px;}
+
+/* Success */
+.success-state{text-align:center;padding:24px 16px;}
+.ss-icon{font-size:54px;margin-bottom:14px;animation:popIn .5s cubic-bezier(.22,1,.36,1) both;}
+@keyframes popIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.ss-title{font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.4px;margin-bottom:7px;}
+.ss-sub{font-size:13px;color:var(--slate);line-height:1.65;margin-bottom:22px;}
+.ss-btns{display:flex;gap:10px;justify-content:center;}
+.ss-primary{padding:11px 22px;border-radius:11px;background:linear-gradient(135deg,var(--royal),var(--royal-dark));color:white;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+.ss-secondary{padding:10px 18px;border-radius:11px;border:1.5px solid var(--fog);background:white;font-size:13px;font-weight:700;color:var(--slate);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+
+.slide-up{animation:slideup .3s cubic-bezier(.22,1,.36,1) both;}
+@keyframes slideup{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<!-- Demo bar -->
+<div class="demo-bar">
+  <span class="demo-lbl">Page</span>
+  <div class="dbtab active" onclick="showView('job',this)">💼 Job Details</div>
+  <div class="dbtab" onclick="showView('event',this)">🎉 Event Details</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JOB DETAILS PAGE
+═══════════════════════════════════════════ -->
+<div class="view active" id="v-job">
+<nav class="navbar">
+  <div class="nb-brand">
+    <div class="nb-logo">R</div>
+    <div class="nb-name">REKKOMO</div>
+    <div class="nb-sep"></div>
+    <div class="nb-bc">
+      <a href="#">Jobs</a><span class="nb-bc-sep">›</span>
+      <a href="#">Manufacturing</a><span class="nb-bc-sep">›</span>
+      <span class="nb-bc-cur">Machine Operator</span>
+    </div>
+  </div>
+  <div class="nb-right">
+    <button class="nb-back">← Back to Jobs</button>
+    <div class="nb-av">R</div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+<div><!-- LEFT -->
+
+  <!-- Job Hero -->
+  <div class="job-hero slide-up">
+    <div class="jh-banner">
+      <div class="jh-tag">🏭 Manufacturing · Chakan, Pune</div>
+      <div class="jh-featured">⭐ Featured Listing</div>
+    </div>
+    <div class="jh-body">
+      <div class="jh-logo">🏭</div>
+      <div class="jh-top">
+        <div class="jh-title">Machine Operator — Packaging Unit</div>
+        <div class="jh-row">
+          <div class="jh-ename">Shiv Enterprises</div>
+          <div class="badge badge-green">✅ Verified Employer</div>
+          <div class="badge badge-amber">🌾 Prefers Bihar / UP Workers</div>
+          <div class="jh-posted">Posted 2 days ago · 38 applicants</div>
+        </div>
+      </div>
+      <div class="jh-stats">
+        <div class="jhs"><div class="jhs-lbl">Monthly Pay</div><div class="jhs-val pay">₹14,500</div><div class="jhs-sub">+ overtime pay</div></div>
+        <div class="jhs"><div class="jhs-lbl">Location</div><div class="jhs-val">Chakan</div><div class="jhs-sub">Pune, Maharashtra</div></div>
+        <div class="jhs"><div class="jhs-lbl">Job Type</div><div class="jhs-val">Full-time</div><div class="jhs-sub">Permanent</div></div>
+        <div class="jhs"><div class="jhs-lbl">Openings</div><div class="jhs-val">3 left</div><div class="jhs-sub">of 5 total</div></div>
+      </div>
+      <div class="benefits-row">
+        <div class="benefit">🏠 Housing</div>
+        <div class="benefit">🍱 Free Meals</div>
+        <div class="benefit">🚌 Transport</div>
+        <div class="benefit">⏰ Overtime Pay</div>
+        <div class="benefit">💳 PF / ESI</div>
+        <div class="benefit">📅 Weekly Off (Sun)</div>
+      </div>
+      <div class="comm-reach">
+        <div style="font-size:20px;">🌾</div>
+        <div class="cr-text">This employer recruits from <strong>Bihar &amp; UP Circle</strong>. Community members get priority callback within 24 hours.</div>
+        <div class="cr-badge-pill">Community Employer</div>
+      </div>
+      <div class="jh-cta">
+        <button class="btn-apply" id="jh-apply-btn" onclick="openApply()">📝 Apply Now — Free</button>
+        <div class="icon-btn" id="job-save" onclick="this.classList.toggle('saved')" title="Save">🔖</div>
+        <div class="icon-btn" title="Share">🔗</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">📋</span> About This Job</div>
+    <div class="desc-p">Shiv Enterprises is looking for experienced <strong>Machine Operators</strong> for our packaging unit in Chakan, Pune. We run a 3-shift operation producing packaged goods for retail and export.</div>
+    <div class="desc-p">You will operate automated and semi-automated packaging machines, maintain production targets, and ensure quality. <strong>No formal degree required</strong> — we value practical experience.</div>
+    <div class="desc-p" id="job-extra" style="display:none;">We have worked with Bihar and UP workers for over 8 years and have a strong community culture. Housing is provided in our on-site dormitory (shared 4 persons), free breakfast and lunch, Sunday weekly off. Overtime is paid at 1.5× the hourly rate.</div>
+    <div class="read-more-btn" onclick="toggleExtra('job-extra',this)">Read more ↓</div>
+  </div>
+
+  <!-- Requirements -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">📌</span> Requirements</div>
+    <div class="req-grid" style="margin-bottom:16px;">
+      <div class="req-item"><div class="ri-icon">🎓</div><div><div class="ri-lbl">Education</div><div class="ri-val">Class 10 pass (preferred)</div></div></div>
+      <div class="req-item"><div class="ri-icon">📅</div><div><div class="ri-lbl">Experience</div><div class="ri-val">1–3 years machine work</div></div></div>
+      <div class="req-item"><div class="ri-icon">👤</div><div><div class="ri-lbl">Gender</div><div class="ri-val">Male / Female</div></div></div>
+      <div class="req-item"><div class="ri-icon">🎂</div><div><div class="ri-lbl">Age Range</div><div class="ri-val">18 – 45 years</div></div></div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:800;color:var(--mist);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Required Skills</div>
+      <div class="chips-row">
+        <div class="chip chip-blue">Machine Operation</div>
+        <div class="chip chip-blue">Quality Checking</div>
+        <div class="chip chip-blue-lt">Packaging</div>
+        <div class="chip chip-blue-lt">Basic Maintenance</div>
+        <div class="chip chip-blue-lt">Shift Work</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:800;color:var(--mist);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Languages Accepted</div>
+      <div class="chips-row">
+        <div class="chip chip-amber">🗣️ Hindi</div>
+        <div class="chip chip-amber">Bhojpuri</div>
+        <div class="chip chip-amber">Marathi (basic ok)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hiring Process -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🔄</span> Hiring Process</div>
+    <div class="timeline">
+      <div class="tl-item done"><div class="tl-dot">✓</div><div><div class="tl-lbl">Apply on Platform</div><div class="tl-sub">Takes less than 2 minutes. No documents needed initially.</div></div></div>
+      <div class="tl-item current"><div class="tl-dot">2</div><div><div class="tl-lbl">Employer Reviews — within 24 hrs</div><div class="tl-sub">Shiv Enterprises checks your profile and application</div></div></div>
+      <div class="tl-item"><div class="tl-dot">3</div><div><div class="tl-lbl">Phone / WhatsApp Interview</div><div class="tl-sub">Quick 10-minute call in Hindi</div></div></div>
+      <div class="tl-item"><div class="tl-dot">4</div><div><div class="tl-lbl">Walk-in at Factory</div><div class="tl-sub">Come to Chakan site. Bring Aadhaar + passport photo.</div></div></div>
+      <div class="tl-item"><div class="tl-dot">🎉</div><div><div class="tl-lbl">Start Work!</div><div class="tl-sub">Join within 7 days of selection. Housing from Day 1.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Location -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">📍</span> Work Location</div>
+    <div class="map-box" onclick="alert('Opens Google Maps')">
+      <div class="map-grid-bg"></div>
+      <div class="map-pin-emoji">📍</div>
+      <div class="map-name">Shiv Enterprises — Plot 14, MIDC Chakan</div>
+      <div class="map-sub-txt">Chakan Industrial Area · 16 km from Pune city</div>
+    </div>
+    <button class="map-dir-btn">🗺️ Get Directions to Factory</button>
+    <div class="map-note">🚌 Transport pickup from Nigdi Bus Stand and Akurdi Station</div>
+  </div>
+
+  <!-- Community Applicants -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">👥</span> Community Members Also Applied</div>
+    <div style="font-size:12px;color:var(--mist);margin-bottom:13px;">These Bihar Circle members have applied for this job</div>
+    <div class="people-list">
+      <div class="person-row"><div class="p-av" style="background:linear-gradient(135deg,var(--royal-dark),var(--royal));">A</div><div><div class="p-name">Amit Kumar <span class="badge badge-blue" style="margin-left:5px;">🌾 Bihar</span></div><div class="p-meta">Machine Operator · 3 yrs · Applied 1h ago</div></div><button class="p-action">+ Connect</button></div>
+      <div class="person-row"><div class="p-av" style="background:linear-gradient(135deg,var(--emerald-dark),var(--emerald));">S</div><div><div class="p-name">Sunita Devi <span class="badge badge-amber" style="margin-left:5px;">🏛️ UP</span></div><div class="p-meta">Production Worker · 2 yrs · Applied 4h ago</div></div><button class="p-action">+ Connect</button></div>
+      <div class="person-row"><div class="p-av" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">P</div><div><div class="p-name">Prakash Singh <span class="badge badge-blue" style="margin-left:5px;">🌾 Bihar</span></div><div class="p-meta">Factory Hand · 5 yrs · Applied yesterday</div></div><button class="p-action">+ Connect</button></div>
+    </div>
+  </div>
+
+  <!-- Tags -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🏷️</span> Tags</div>
+    <div class="tags-row">
+      <div class="tag b">Machine Operation</div><div class="tag b">Manufacturing</div>
+      <div class="tag a">Bihar Workers</div><div class="tag a">UP Workers</div>
+      <div class="tag g">Housing Included</div><div class="tag g">Meals Provided</div>
+      <div class="tag c">Community Employer</div>
+      <div class="tag">Full-time</div><div class="tag">Chakan Pune</div><div class="tag">MIDC</div>
+    </div>
+  </div>
+
+  <!-- Similar -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🔍</span> Similar Jobs Near You</div>
+    <div class="sim-list">
+      <div class="sim-card"><div class="sim-av">🔧</div><div><div class="sim-title">Production Operator — Pimpri</div><div class="sim-meta">TechFab Industries · 8 km · Today</div></div><div class="sim-pay">₹12,000/mo</div></div>
+      <div class="sim-card"><div class="sim-av" style="background:var(--emerald-light);">🏭</div><div><div class="sim-title">Warehouse Packer — Hadapsar</div><div class="sim-meta">Metro Logistics · 6 km · 2 days ago</div></div><div class="sim-pay">₹10,500/mo</div></div>
+      <div class="sim-card"><div class="sim-av" style="background:var(--amber-light);">⚙️</div><div><div class="sim-title">CNC Machine Operator</div><div class="sim-meta">Precision Parts · Chakan · 3 days ago</div></div><div class="sim-pay">₹16,000/mo</div></div>
+    </div>
+  </div>
+
+</div><!-- end left -->
+
+<!-- RIGHT SIDEBAR -->
+<div class="sidebar">
+  <div class="side-card">
+    <div class="sc-lbl">Machine Operator</div>
+    <div class="pay-big">₹14,500 <span style="font-size:14px;color:var(--mist);font-weight:400;">/month</span></div>
+    <div class="pay-sub">+ ₹2,000–₹3,500 overtime · Housing &amp; meals included</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-n">38</div><div class="stat-l">Applicants</div></div>
+      <div class="stat-box"><div class="stat-n">3</div><div class="stat-l">Openings left</div></div>
+      <div class="stat-box"><div class="stat-n">24h</div><div class="stat-l">Avg. response</div></div>
+      <div class="stat-box"><div class="stat-n">89%</div><div class="stat-l">Hire rate</div></div>
+    </div>
+    <button class="btn-main royal" id="sb-apply-btn" onclick="openApply()">📝 Apply Now — Free</button>
+    <button class="btn-wa">💬 WhatsApp Employer</button>
+    <div class="deadline-row">⏰ Closes in 4 days — Nov 25, 2025</div>
+  </div>
+
+  <div class="side-card light">
+    <div class="org-hdr">
+      <div class="org-logo">🏭</div>
+      <div><div class="org-name">Shiv Enterprises</div><div class="org-type">Manufacturing · Chakan · Est. 2016</div></div>
+    </div>
+    <div class="org-stats">
+      <div class="os"><div class="os-n">142</div><div class="os-l">Hired</div></div>
+      <div class="os"><div class="os-n">4.8★</div><div class="os-l">Rating</div></div>
+      <div class="os"><div class="os-n">3 yrs</div><div class="os-l">Platform</div></div>
+    </div>
+    <button class="btn-org">View Employer Profile →</button>
+  </div>
+
+  <div class="trust-card blue">
+    <div class="t-hdr"><div class="t-icon">🛡️</div><div class="t-title">Why This Job Is Safe</div></div>
+    <div class="t-items">
+      <div class="t-item"><div class="t-dot"></div>Employer identity verified with GST + Aadhaar</div>
+      <div class="t-item"><div class="t-dot"></div>142 workers hired — all community-reviewed</div>
+      <div class="t-item"><div class="t-dot"></div>Pay disputes resolved in 48 hrs through platform</div>
+      <div class="t-item"><div class="t-dot"></div>Housing &amp; meals verified by on-site inspection</div>
+      <div class="t-item"><div class="t-dot"></div>Phone revealed only after mutual consent</div>
+    </div>
+  </div>
+
+  <div class="share-card">
+    <div class="share-h">📤 Share this job</div>
+    <div class="share-btns">
+      <div class="share-btn">💬 WhatsApp</div>
+      <div class="share-btn">📋 Copy Link</div>
+      <div class="share-btn">📣 Circle</div>
+    </div>
+  </div>
+</div>
+</div><!-- end page-wrap -->
+</div><!-- end v-job -->
+
+
+<!-- ═══════════════════════════════════════════
+     EVENT DETAILS PAGE
+═══════════════════════════════════════════ -->
+<div class="view" id="v-event">
+<nav class="navbar">
+  <div class="nb-brand">
+    <div class="nb-logo">R</div>
+    <div class="nb-name">REKKOMO</div>
+    <div class="nb-sep"></div>
+    <div class="nb-bc">
+      <a href="#">Events</a><span class="nb-bc-sep">›</span>
+      <a href="#">Cultural</a><span class="nb-bc-sep">›</span>
+      <span class="nb-bc-cur">Chhath Puja 2025</span>
+    </div>
+  </div>
+  <div class="nb-right">
+    <button class="nb-back">← Back to Events</button>
+    <div class="nb-av">R</div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+<div><!-- LEFT -->
+
+  <!-- Event Hero -->
+  <div class="event-hero slide-up">
+    <div class="eh-banner">
+      <div class="eh-emoji">🪔</div>
+      <div class="eh-overlay"></div>
+      <div class="eh-banner-top">
+        <div class="eh-type-pill">🪔 Cultural Festival</div>
+        <div class="eh-feat-pill">⭐ Featured Event</div>
+      </div>
+      <div class="eh-banner-bot">
+        <div class="eh-date-pill">
+          <div><div class="edp-day">07</div><div class="edp-mon">Nov</div></div>
+          <div><div class="edp-time">4:00 PM — 9:00 PM</div><div class="edp-dur">5 hours · Thursday</div></div>
+        </div>
+        <div class="eh-title-txt">
+          <div class="eh-t">Chhath Puja 2025 — Bihar Community Pune</div>
+          <div class="eh-org">Organised by Bihar Samaj Pune · Khadakwasla Lake</div>
+        </div>
+      </div>
+    </div>
+    <div class="eh-body">
+      <div class="eh-meta">
+        <div class="eh-mi">📍 <span>Khadakwasla Lake, <strong>Pune</strong></span></div>
+        <div class="eh-mi">🆓 <strong>Free Entry</strong></div>
+        <div class="eh-mi">👥 <strong>240 going</strong> · 500 capacity</div>
+        <div class="eh-mi">🌾 <strong>Bihar Circle</strong> event</div>
+      </div>
+      <div class="eh-rsvp-row">
+        <div class="eh-progress">
+          <div class="ep-track"><div class="ep-fill" style="width:48%;"></div></div>
+          <div class="ep-lbl"><span><span class="ep-count">240</span> people going</span><span>260 spots left</span></div>
+        </div>
+        <div class="eh-actions">
+          <button class="btn-rsvp" id="hero-rsvp-btn" onclick="openRSVP()">✅ RSVP Free</button>
+          <div class="icon-btn" onclick="this.classList.toggle('saved')">🔖</div>
+          <div class="icon-btn">🔗</div>
+        </div>
+      </div>
+      <div class="boost-banner">
+        <div style="font-size:20px;">🔔</div>
+        <div class="bb-text">Pinned to <strong>Bihar Circle, UP Circle &amp; Jharkhand Circle</strong> in Pune. <span class="bb-link">View in your circle feed →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🪔</span> About This Event</div>
+    <div class="desc-p">Bihar Samaj Pune invites all members of our community to celebrate <strong>Chhath Puja 2025</strong> at Khadakwasla Lake — one of Pune's most beautiful outdoor venues.</div>
+    <div class="desc-p">Chhath Puja is the most sacred festival for Bihar and Eastern UP communities, celebrated over 4 days. This year includes <strong>traditional rituals at sunrise and sunset</strong>, prasad distribution, and cultural performances.</div>
+    <div class="desc-p" id="event-extra" style="display:none;">Families are welcome. Children's activities will be arranged. Food stalls serving traditional Bihar dishes (litti-chokha, thekua, kaddu ki sabzi) will be set up. No alcohol. Please bring traditional attire. Free parking available at the lake entrance.</div>
+    <div class="read-more-btn" onclick="toggleExtra('event-extra',this)">Read more ↓</div>
+  </div>
+
+  <!-- Schedule -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">📅</span> Event Schedule</div>
+    <div class="timeline">
+      <div class="tl-item done"><div class="tl-dot">🌅</div><div><div class="tl-lbl">Day 1 — Nov 5 · Nahay Khay</div><div class="tl-sub">Community gathering and cooking prasad at home</div></div></div>
+      <div class="tl-item done"><div class="tl-dot">🌙</div><div><div class="tl-lbl">Day 2 — Nov 6 · Kharna</div><div class="tl-sub">Evening prayers and kheer distribution · 6:00 PM</div></div></div>
+      <div class="tl-item current"><div class="tl-dot">🪔</div><div><div class="tl-lbl">Day 3 — Nov 7 · Sandhya Arghya <span style="background:var(--royal);color:white;font-size:10px;padding:2px 8px;border-radius:100px;margin-left:6px;">MAIN EVENT</span></div><div class="tl-sub">Khadakwasla Lake · 4:00 PM – 9:00 PM · Sunset offering</div></div></div>
+      <div class="tl-item"><div class="tl-dot">🌄</div><div><div class="tl-lbl">Day 4 — Nov 8 · Usha Arghya</div><div class="tl-sub">Sunrise offering · Khadakwasla Lake · 5:30 AM – 8:00 AM</div></div></div>
+    </div>
+  </div>
+
+  <!-- Location -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">📍</span> Venue</div>
+    <div class="map-box" onclick="alert('Opens Google Maps')">
+      <div class="map-grid-bg"></div>
+      <div class="map-pin-emoji">📍</div>
+      <div class="map-name">Khadakwasla Lake, Pune</div>
+      <div class="map-sub-txt">Near Khadakwasla Dam · 22 km from Pune center</div>
+    </div>
+    <button class="map-dir-btn">🗺️ Get Directions to Khadakwasla Lake</button>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">
+      <div class="map-note">🚌 Community buses from Swargate &amp; Hadapsar — details after RSVP</div>
+      <div class="map-note">🅿️ Free parking at Dam Road entrance</div>
+    </div>
+  </div>
+
+  <!-- Who's Going -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🙋</span> Who's Going</div>
+    <div style="display:flex;align-items:center;gap:13px;margin-bottom:15px;">
+      <div class="av-stack">
+        <div class="av-s" style="background:linear-gradient(135deg,var(--royal-dark),var(--royal));">A</div>
+        <div class="av-s" style="background:linear-gradient(135deg,var(--emerald-dark),var(--emerald));">P</div>
+        <div class="av-s" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">S</div>
+        <div class="av-s" style="background:linear-gradient(135deg,var(--purple),#5B21B6);">R</div>
+        <div class="av-s" style="background:linear-gradient(135deg,var(--royal-deep),var(--royal));">M</div>
+        <div class="av-s av-s-more">+235</div>
+      </div>
+      <div style="font-size:13px;color:var(--slate);">Arun Lal, Poonam Devi and <strong>238 more</strong> from Bihar Circle are going</div>
+    </div>
+    <div class="people-list">
+      <div class="person-row"><div class="p-av" style="background:linear-gradient(135deg,var(--royal-dark),var(--royal));">A</div><div><div class="p-name">Arun Lal <span class="badge badge-green" style="margin-left:5px;">🌟 Top Helper</span></div><div class="p-meta">Bihar · Pune 10 years · Trust Score 148</div></div><button class="p-action">+ Connect</button></div>
+      <div class="person-row"><div class="p-av" style="background:linear-gradient(135deg,var(--emerald-dark),var(--emerald));">P</div><div><div class="p-name">Poonam Devi <span class="badge badge-blue" style="margin-left:5px;">👩‍⚕️ Nurse</span></div><div class="p-meta">Bihar · Warje, Pune · Going with family</div></div><button class="p-action">+ Connect</button></div>
+      <div class="person-row"><div class="p-av" style="background:linear-gradient(135deg,var(--amber-dark),var(--amber));">S</div><div><div class="p-name">Suresh Mahto</div><div class="p-meta">Bihar · Bibwewadi · Attending with team</div></div><button class="p-action">+ Connect</button></div>
+    </div>
+    <div style="margin-top:13px;text-align:center;font-size:12px;color:var(--royal);font-weight:700;cursor:pointer;">View all 240 attendees →</div>
+  </div>
+
+  <!-- Organiser -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🤝</span> Organiser</div>
+    <div class="org-hdr" style="margin-bottom:11px;">
+      <div class="org-logo" style="background:var(--amber-light);">🌾</div>
+      <div><div class="org-name">Bihar Samaj Pune</div><div class="org-type">Community Organisation · Est. 2012 · Pune</div></div>
+    </div>
+    <div class="desc-p" style="margin-bottom:13px;">Bihar Samaj Pune serves over 12,000 Bihar migrants in Pune. We organise cultural events, job fairs, and welfare drives throughout the year.</div>
+    <div class="org-stats" style="margin-bottom:11px;">
+      <div class="os"><div class="os-n">47</div><div class="os-l">Events</div></div>
+      <div class="os"><div class="os-n">12K+</div><div class="os-l">Community</div></div>
+      <div class="os"><div class="os-n">4.9★</div><div class="os-l">Rating</div></div>
+    </div>
+    <button class="btn-org">View Organiser Profile →</button>
+  </div>
+
+  <!-- Tags -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🏷️</span> Tags</div>
+    <div class="tags-row">
+      <div class="tag a">Chhath Puja</div><div class="tag a">Bihar Festival</div>
+      <div class="tag b">Community Event</div><div class="tag b">Pune Circle</div>
+      <div class="tag g">Free Entry</div><div class="tag g">Family Friendly</div>
+      <div class="tag c">Bihar Circle</div>
+      <div class="tag">Khadakwasla</div><div class="tag">Cultural</div><div class="tag">Traditional</div>
+    </div>
+  </div>
+
+  <!-- Similar -->
+  <div class="sc slide-up">
+    <div class="sc-h"><span class="sc-icon">🔍</span> More Events Near You</div>
+    <div class="sim-list">
+      <div class="sim-card"><div class="sim-av" style="background:var(--purple-light);">🎭</div><div><div class="sim-title">Bihar Meetup — Swargate</div><div class="sim-meta">Bihar Circle · Nov 24 · Swargate Bus Stand</div></div><div class="sim-pay" style="font-size:12px;color:var(--emerald);">Free</div></div>
+      <div class="sim-card"><div class="sim-av" style="background:var(--royal-light);">💼</div><div><div class="sim-title">Construction Job Fair Pune</div><div class="sim-meta">Open Event · Nov 22 · Shivajinagar</div></div><div class="sim-pay" style="font-size:12px;color:var(--emerald);">Free</div></div>
+      <div class="sim-card"><div class="sim-av" style="background:var(--emerald-light);">🎓</div><div><div class="sim-title">Free Electrical Training — Skill India</div><div class="sim-meta">NGO · Nov 28-30 · Pimpri</div></div><div class="sim-pay" style="font-size:12px;color:var(--emerald);">Free</div></div>
+    </div>
+  </div>
+
+</div><!-- end left -->
+
+<!-- RIGHT SIDEBAR -->
+<div class="sidebar">
+  <div class="side-card">
+    <div class="sc-lbl">RSVP for this Event</div>
+    <div class="sc-sub">Chhath Puja 2025 · Nov 7 · 4:00 PM</div>
+    <div class="ticket-opts">
+      <div class="ticket-opt sel" onclick="selectTicket(this)">
+        <div><div class="to-name">General Entry</div><div class="to-desc">All community members</div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><div class="to-price">Free</div><div class="to-radio"></div></div>
+      </div>
+      <div class="ticket-opt" onclick="selectTicket(this)">
+        <div><div class="to-name">Family Entry (4 persons)</div><div class="to-desc">For families attending</div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><div class="to-price">Free</div><div class="to-radio"></div></div>
+      </div>
+    </div>
+    <button class="btn-main green" id="sb-rsvp-btn" onclick="openRSVP()">✅ Confirm RSVP — Free</button>
+    <div class="spots-row"><div class="spots-dot"></div>260 spots remaining · 240 people going</div>
+  </div>
+
+  <div class="side-card light">
+    <div class="org-hdr">
+      <div class="org-logo" style="background:var(--amber-light);">🌾</div>
+      <div><div class="org-name">Bihar Samaj Pune</div><div class="org-type">Community Org · Est. 2012</div></div>
+    </div>
+    <div class="org-stats">
+      <div class="os"><div class="os-n">47</div><div class="os-l">Events</div></div>
+      <div class="os"><div class="os-n">4.9★</div><div class="os-l">Rating</div></div>
+      <div class="os"><div class="os-n">12K</div><div class="os-l">Members</div></div>
+    </div>
+    <button class="btn-org">View Profile →</button>
+  </div>
+
+  <div class="trust-card green">
+    <div class="t-hdr"><div class="t-icon">✅</div><div class="t-title">Community-Verified Event</div></div>
+    <div class="t-items">
+      <div class="t-item"><div class="t-dot"></div>Organiser verified by Bihar Circle moderators</div>
+      <div class="t-item"><div class="t-dot"></div>Venue confirmed — lake access permitted</div>
+      <div class="t-item"><div class="t-dot"></div>47 previous events with 4.9★ average rating</div>
+      <div class="t-item"><div class="t-dot"></div>Community buses arranged from city</div>
+      <div class="t-item"><div class="t-dot"></div>Reminder notification 24 hrs before event</div>
+    </div>
+  </div>
+
+  <div class="share-card">
+    <div class="share-h">📤 Spread the word</div>
+    <div class="share-btns">
+      <div class="share-btn">💬 WhatsApp</div>
+      <div class="share-btn">📋 Copy Link</div>
+      <div class="share-btn">📣 Circle</div>
+    </div>
+  </div>
+</div>
+</div><!-- end page-wrap -->
+</div><!-- end v-event -->
+
+
+<!-- APPLY MODAL -->
+<div class="modal-ov" id="apply-modal" style="display:none;" onclick="closeIfBg(event,'apply-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" id="apply-sheet">
+    <div id="apply-body">
+      <div class="m-handle"></div>
+      <div class="m-title">Apply for Machine Operator</div>
+      <div class="m-sub">Takes less than 2 minutes · Employer responds within 24 hours</div>
+      <div class="m-ctx"><div class="m-ctx-icon">🏭</div><div><div class="m-ctx-title">Machine Operator — Packaging Unit</div><div class="m-ctx-sub">Shiv Enterprises · ₹14,500/mo · Chakan, Pune</div></div></div>
+      <div class="m-field"><div class="m-label">Your Name <span>Pre-filled from profile</span></div><input class="m-input m-pre" value="Rajan Kumar" readonly></div>
+      <div class="m-field"><div class="m-label">Phone <span>Hidden until employer responds</span></div><input class="m-input m-pre" value="+91 98765 ●●●●●" readonly></div>
+      <div class="m-field"><div class="m-label">Years of Experience</div><select class="m-input m-select"><option>Select...</option><option selected>3–5 years</option><option>1–3 years</option><option>5+ years</option></select></div>
+      <div class="m-field">
+        <div class="m-label">Your relevant skills <span>Optional</span></div>
+        <div class="skill-wrap">
+          <div class="m-skill sel" onclick="this.classList.toggle('sel')">Machine Operation</div>
+          <div class="m-skill sel" onclick="this.classList.toggle('sel')">Quality Checking</div>
+          <div class="m-skill" onclick="this.classList.toggle('sel')">Packaging</div>
+          <div class="m-skill" onclick="this.classList.toggle('sel')">Basic Maintenance</div>
+          <div class="m-skill" onclick="this.classList.toggle('sel')">Forklift</div>
+        </div>
+      </div>
+      <div class="m-field"><div class="m-label">Why are you a good fit? <span>Optional — helps get shortlisted</span></div><textarea class="m-input m-ta" placeholder="Tell the employer briefly about your experience and why you want this job..."></textarea></div>
+      <div class="m-actions">
+        <button class="m-cancel" onclick="closeModal('apply-modal')">Cancel</button>
+        <button class="m-submit royal" onclick="submitApply()">📝 Send Application</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RSVP MODAL -->
+<div class="modal-ov" id="rsvp-modal" style="display:none;" onclick="closeIfBg(event,'rsvp-modal')">
+  <div class="rsvp-sheet" onclick="event.stopPropagation()" id="rsvp-sheet">
+    <div id="rsvp-body">
+      <div class="m-handle"></div>
+      <div class="m-title">Confirm Your RSVP</div>
+      <div class="m-sub">You'll receive a reminder 24 hours before the event</div>
+      <div class="rsvp-thumb"><div class="rt-emoji">🪔</div><div><div class="rt-title">Chhath Puja 2025 — Bihar Community Pune</div><div class="rt-sub">Nov 7 · 4:00 PM – 9:00 PM · Khadakwasla Lake</div></div></div>
+      <div class="m-field"><div class="m-label">Your Name</div><input class="m-input m-pre" value="Rajan Kumar" readonly></div>
+      <div class="m-field"><div class="m-label">Number of people attending</div><select class="m-input m-select"><option>Just me (1 person)</option><option selected>Me + 1 guest (2 people)</option><option>Family (3–4 people)</option></select></div>
+      <div class="m-field"><div class="m-label">Need community bus? <span>Optional</span></div><select class="m-input m-select"><option>No, arranging own transport</option><option>Yes — from Swargate</option><option>Yes — from Hadapsar</option></select></div>
+      <div class="m-actions">
+        <button class="m-cancel" onclick="closeModal('rsvp-modal')">Cancel</button>
+        <button class="m-submit green" onclick="submitRSVP()">✅ Confirm RSVP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  document.querySelectorAll('.dbtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleExtra(id,btn){
+  const el=document.getElementById(id);
+  if(el.style.display==='none'){el.style.display='block';btn.textContent='Show less ↑';}
+  else{el.style.display='none';btn.textContent='Read more ↓';}
+}
+
+function selectTicket(el){
+  el.closest('.ticket-opts').querySelectorAll('.ticket-opt').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function openApply(){document.getElementById('apply-modal').style.display='flex';document.body.style.overflow='hidden';}
+function openRSVP(){document.getElementById('rsvp-modal').style.display='flex';document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).style.display='none';document.body.style.overflow='';}
+function closeIfBg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+function submitApply(){
+  document.getElementById('apply-body').innerHTML=`
+    <div class="success-state">
+      <div class="ss-icon">✅</div>
+      <div class="ss-title">Application Sent!</div>
+      <div class="ss-sub">Shiv Enterprises received your application. They typically respond within <strong>24 hours</strong>. You'll get a notification when they view it.</div>
+      <div class="ss-btns">
+        <button class="ss-primary" onclick="closeModal('apply-modal');markApplied()">View in Messages →</button>
+        <button class="ss-secondary" onclick="closeModal('apply-modal');markApplied()">Done</button>
+      </div>
+    </div>`;
+}
+function markApplied(){
+  ['jh-apply-btn','sb-apply-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.textContent='✅ Application Sent';b.classList.add('applied');b.onclick=null;}
+  });
+}
+
+function submitRSVP(){
+  document.getElementById('rsvp-body').innerHTML=`
+    <div class="success-state">
+      <div class="ss-icon">🎉</div>
+      <div class="ss-title">You're Going!</div>
+      <div class="ss-sub">RSVP confirmed for <strong>Chhath Puja 2025</strong>. You'll get a reminder on Nov 6 at 6:00 PM. Bus pickup details will be shared after confirmation.</div>
+      <div class="ss-btns">
+        <button class="ss-primary" onclick="closeModal('rsvp-modal');markRSVPed()">📅 Add to Calendar</button>
+        <button class="ss-secondary" onclick="closeModal('rsvp-modal');markRSVPed()">Done</button>
+      </div>
+    </div>`;
+}
+function markRSVPed(){
+  ['hero-rsvp-btn','sb-rsvp-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.textContent='✅ You\'re Going!';b.classList.add('rsvped');b.onclick=null;}
+  });
+  const cnt=document.querySelector('.ep-count');
+  if(cnt)cnt.textContent='241';
+  const fill=document.querySelector('.ep-fill');
+  if(fill)fill.style.width='48.2%';
+}
+</script>
+</body>
+</html>

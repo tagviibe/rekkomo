@@ -221,50 +221,40 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
 
   return (
     <section
-      className="py-20"
+      className="py-8 md:py-10 lg:py-20 px-4 sm:px-6 md:px-10 lg:px-20"
       style={{
-        padding: "80px 40px",
         borderBottom: "1px solid var(--border)",
       }}
     >
       <div
-        className="mx-auto max-w-6xl"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "60px",
-          alignItems: "center",
-        }}
+        className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-[60px] items-center"
       >
         {/* Left Column */}
         <div>
           <div
-            className="inline-flex items-center gap-2 mb-6"
+            className="inline-flex items-center gap-2 mb-4 md:mb-6 text-[10px] md:text-xs px-3 md:px-3.5 py-1 md:py-1.5"
             style={{
               background: "var(--saffron-light)",
               border: "1px solid rgba(232,98,26,0.2)",
               borderRadius: "100px",
-              padding: "6px 14px",
-              fontSize: "12px",
               fontWeight: 600,
               color: "var(--saffron)",
               letterSpacing: "0.02em",
             }}
           >
             <div
-              className="w-1.5 h-1.5 rounded-full"
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
               style={{
                 background: "var(--saffron)",
                 animation: "pulse-dot 2s ease-in-out infinite",
               }}
             />
-            India&apos;s Migrant Community Platform
+            <span className="whitespace-nowrap">India&apos;s Migrant Community Platform</span>
           </div>
 
           <h1
-            className="mb-2"
+            className="mb-2 text-3xl md:text-[56px]"
             style={{
-              fontSize: "56px",
               fontWeight: 800,
               lineHeight: 1.08,
               letterSpacing: "-2px",
@@ -272,9 +262,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             }}
           >
             <span
-              className="font-devanagari block mb-2"
+              className="font-devanagari block mb-2 text-2xl md:text-[42px]"
               style={{
-                fontSize: "42px",
                 fontWeight: 700,
                 color: "var(--saffron)",
                 letterSpacing: 0,
@@ -287,9 +276,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             <br />
             Find your place.
             <span
-              className="block mt-3"
+              className="block mt-3 text-base md:text-[22px]"
               style={{
-                fontSize: "22px",
                 fontWeight: 400,
                 color: "var(--muted)",
                 letterSpacing: "-0.5px",
@@ -300,9 +288,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
           </h1>
 
           <p
-            className="mt-6 mb-9"
+            className="mt-4 mb-6 md:mt-6 md:mb-9 text-sm md:text-base"
             style={{
-              fontSize: "16px",
               lineHeight: 1.7,
               color: "var(--muted)",
               maxWidth: "440px",
@@ -312,17 +299,17 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             and celebrate your culture — wherever you are in India.
           </p>
 
-          <div className="flex gap-3 flex-wrap items-center">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <a
               href="/onboarding"
-              className="btn-primary"
+              className="btn-primary text-center justify-center text-sm md:text-base px-4 md:px-7 py-2.5 md:py-3.5"
               style={{ textDecoration: "none" }}
             >
               🚀 Join Your Circle <span>→</span>
             </a>
             <a
               href="/jobs"
-              className="btn-secondary"
+              className="btn-secondary text-center justify-center text-sm md:text-base px-4 md:px-6 py-2.5 md:py-3"
               style={{ textDecoration: "none" }}
             >
               🔍 Browse Jobs
@@ -330,15 +317,15 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
           </div>
 
           <div
-            className="flex gap-8 mt-10 pt-10"
+            className="flex flex-wrap gap-4 md:gap-8 mt-6 md:mt-10 pt-6 md:pt-10"
             style={{
               borderTop: "1px solid var(--border)",
             }}
           >
             <div className="flex flex-col gap-0.5">
               <div
+                className="text-xl md:text-[26px]"
                 style={{
-                  fontSize: "26px",
                   fontWeight: 800,
                   color: "var(--ink)",
                   letterSpacing: "-1px",
@@ -348,8 +335,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
                 600<span style={{ color: "var(--saffron)" }}>M+</span>
               </div>
               <div
+                className="text-xs md:text-xs"
                 style={{
-                  fontSize: "12px",
                   color: "var(--muted)",
                   fontWeight: 500,
                 }}
@@ -359,8 +346,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             </div>
             <div className="flex flex-col gap-0.5">
               <div
+                className="text-xl md:text-[26px]"
                 style={{
-                  fontSize: "26px",
                   fontWeight: 800,
                   color: "var(--ink)",
                   letterSpacing: "-1px",
@@ -370,8 +357,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
                 <span style={{ color: "var(--saffron)" }}>{totalCommunities}</span>
               </div>
               <div
+                className="text-xs md:text-xs"
                 style={{
-                  fontSize: "12px",
                   color: "var(--muted)",
                   fontWeight: 500,
                 }}
@@ -381,8 +368,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             </div>
             <div className="flex flex-col gap-0.5">
               <div
+                className="text-xl md:text-[26px]"
                 style={{
-                  fontSize: "26px",
                   fontWeight: 800,
                   color: "var(--ink)",
                   letterSpacing: "-1px",
@@ -393,8 +380,8 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
                 <span style={{ color: "var(--saffron)" }}>+</span>
               </div>
               <div
+                className="text-xs md:text-xs"
                 style={{
-                  fontSize: "12px",
                   color: "var(--muted)",
                   fontWeight: 500,
                 }}
@@ -406,7 +393,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
         </div>
 
         {/* Right Column - Visual */}
-        <div className="relative">
+        <div className="relative hidden md:block">
           {/* Floating Success Card */}
           <div
             className="absolute -top-5 -right-5 z-10"
@@ -440,7 +427,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
 
           {/* Map Card */}
           <div
-            className="bg-white rounded-2xl p-6"
+            className="bg-white rounded-2xl p-4 md:p-6"
             style={{
               boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--border)",
@@ -522,14 +509,13 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
 
           {/* Floating Event Card */}
           <div
-            className="absolute -bottom-16 -left-8 z-10"
+            className="absolute -bottom-16 -left-8 z-10 hidden lg:flex"
             style={{
               background: "white",
               borderRadius: "14px",
               padding: "12px 16px",
               boxShadow: "var(--shadow-md)",
               border: "1px solid var(--border)",
-              display: "flex",
               alignItems: "center",
               gap: "10px",
               fontSize: "13px",
@@ -647,17 +633,16 @@ function HowItWorks() {
   return (
     <section
       id="how"
-      className="py-15"
+      className="py-10 md:py-15 px-4 sm:px-6 md:px-10 lg:px-20"
       style={{
-        padding: "60px 40px",
         maxWidth: "1200px",
         margin: "0 auto",
       }}
     >
-      <div className="text-center mb-10">
+      <div className="text-center mb-6 md:mb-10">
         <div
+          className="text-[10px] md:text-[11px]"
           style={{
-            fontSize: "11px",
             fontWeight: 700,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
@@ -668,8 +653,8 @@ function HowItWorks() {
           How It Works
         </div>
         <h2
+          className="text-2xl md:text-[32px]"
           style={{
-            fontSize: "32px",
             fontWeight: 800,
             letterSpacing: "-1px",
             color: "var(--ink)",
@@ -679,10 +664,7 @@ function HowItWorks() {
         </h2>
       </div>
       <div
-        className="grid gap-6"
-        style={{
-          gridTemplateColumns: "repeat(3, 1fr)",
-        }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         {[
           {
@@ -713,28 +695,27 @@ function HowItWorks() {
         ].map((step, idx) => (
           <div
             key={idx}
-            className="text-center rounded-2xl p-7 border"
+            className="text-center rounded-2xl p-5 md:p-7 border"
             style={{
               background: step.highlighted
                 ? "linear-gradient(135deg, var(--saffron), var(--saffron-dark))"
                 : "white",
               border: "1px solid var(--border)",
               color: step.highlighted ? "white" : "var(--ink)",
-              transform: step.highlighted ? "translateY(-8px)" : "none",
+              transform: step.highlighted ? "translateY(-4px) md:translateY(-8px)" : "none",
               boxShadow: step.highlighted
                 ? "0 16px 48px rgba(232,98,26,0.25)"
                 : "none",
             }}
           >
             <div
-              className="text-5xl mb-4"
-              style={{ marginBottom: "16px" }}
+              className="text-4xl md:text-5xl mb-3 md:mb-4"
             >
               {step.emoji}
             </div>
             <div
+              className="text-xs md:text-sm"
               style={{
-                fontSize: "14px",
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -745,8 +726,8 @@ function HowItWorks() {
               {step.step}
             </div>
             <h3
+              className="text-base md:text-lg"
               style={{
-                fontSize: "18px",
                 fontWeight: 700,
                 marginBottom: "10px",
               }}
@@ -754,8 +735,8 @@ function HowItWorks() {
               {step.title}
             </h3>
             <p
+              className="text-xs md:text-sm"
               style={{
-                fontSize: "13px",
                 lineHeight: 1.7,
                 opacity: step.highlighted ? 0.85 : 1,
               }}
