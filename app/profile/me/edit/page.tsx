@@ -63,7 +63,7 @@ export default async function EditProfilePage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--paper)" }}>
       <Navbar />
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <main className="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
         <ProfileClient initial={initialData} startEditing={true} />
       </main>
     </div>

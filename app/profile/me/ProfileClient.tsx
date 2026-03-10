@@ -156,11 +156,11 @@ export default function ProfileClient({
   };
 
   return (
-    <div className="rounded-2xl border bg-white p-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Edit profile</h2>
+    <div className="rounded-2xl border bg-white p-4 sm:p-5 md:p-6">
+      <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 xs:gap-0">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold">Edit profile</h2>
         <button
-          className="rounded-lg border px-3 py-1 text-sm"
+          className="rounded-lg border px-3 py-1.5 sm:py-2 text-xs sm:text-sm min-h-[44px] xs:min-h-0"
           onClick={() => setEditing((prev) => !prev)}
         >
           {editing ? "Cancel" : "Edit"}
@@ -168,8 +168,8 @@ export default function ProfileClient({
       </div>
 
       {editing && (
-        <div className="mt-4 space-y-4">
-          <div className="flex items-center gap-4">
+        <div className="mt-4 sm:mt-5 md:mt-6 space-y-4 sm:space-y-5">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center gap-4">
             {initial.image ? (
               <Image
                 src={initial.image}
@@ -194,7 +194,7 @@ export default function ProfileClient({
             </label>
           </div>
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Full name"
             value={form.name}
             onChange={(event) =>
@@ -202,7 +202,7 @@ export default function ProfileClient({
             }
           />
           <textarea
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[88px]"
             rows={3}
             placeholder="Bio"
             value={form.bio}
@@ -211,7 +211,7 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Phone number"
             value={form.phone}
             onChange={(event) =>
@@ -219,16 +219,16 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Native place"
             value={form.nativePlace}
             onChange={(event) =>
               setForm((prev) => ({ ...prev, nativePlace: event.target.value }))
             }
           />
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             <input
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               placeholder="Origin country"
               value={form.originCountry}
               onChange={(event) =>
@@ -239,7 +239,7 @@ export default function ProfileClient({
               }
             />
             <input
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               placeholder="Origin state"
               value={form.originState}
               onChange={(event) =>
@@ -247,7 +247,7 @@ export default function ProfileClient({
               }
             />
             <input
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               placeholder="Origin city"
               value={form.originCity}
               onChange={(event) =>
@@ -255,9 +255,9 @@ export default function ProfileClient({
               }
             />
           </div>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             <input
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               placeholder="Current country"
               value={form.currentCountry}
               onChange={(event) =>
@@ -268,7 +268,7 @@ export default function ProfileClient({
               }
             />
             <input
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               placeholder="Current state"
               value={form.currentState}
               onChange={(event) =>
@@ -279,7 +279,7 @@ export default function ProfileClient({
               }
             />
             <input
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               placeholder="Current city"
               value={form.currentCity}
               onChange={(event) =>
@@ -288,16 +288,16 @@ export default function ProfileClient({
             />
           </div>
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Current locality"
             value={form.currentLocality}
             onChange={(event) =>
               setForm((prev) => ({ ...prev, currentLocality: event.target.value }))
             }
           />
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <select
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               value={form.gender}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, gender: event.target.value }))
@@ -311,7 +311,7 @@ export default function ProfileClient({
             </select>
             <input
               type="date"
-              className="rounded border p-2 text-sm"
+              className="rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
               value={form.dateOfBirth}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, dateOfBirth: event.target.value }))
@@ -319,7 +319,7 @@ export default function ProfileClient({
             />
           </div>
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Profession"
             value={form.profession}
             onChange={(event) =>
@@ -327,7 +327,7 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Interests (comma separated)"
             value={form.interests}
             onChange={(event) =>
@@ -335,7 +335,7 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Languages (comma separated)"
             value={form.languages}
             onChange={(event) =>
@@ -343,7 +343,7 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Community tags (comma separated)"
             value={form.communities}
             onChange={(event) =>
@@ -351,7 +351,7 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Needs (comma separated)"
             value={form.needs}
             onChange={(event) =>
@@ -359,7 +359,7 @@ export default function ProfileClient({
             }
           />
           <input
-            className="w-full rounded border p-2 text-sm"
+            className="w-full rounded border p-2.5 sm:p-3 text-sm min-h-[44px]"
             placeholder="Can offer (comma separated)"
             value={form.canOffer}
             onChange={(event) =>
@@ -481,9 +481,9 @@ export default function ProfileClient({
               Allow follow
             </label>
           </div>
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs sm:text-sm text-red-600">{error}</p>}
           <button
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
+            className="rounded-lg bg-blue-600 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base text-white min-h-[44px] font-semibold w-full sm:w-auto"
             onClick={save}
             disabled={saving}
           >

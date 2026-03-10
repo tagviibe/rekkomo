@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body 
-        className={`min-h-screen ${sora.variable} font-sans`} 
+        className={`min-h-screen overflow-x-hidden antialiased ${sora.variable} font-sans`} 
         style={{ 
           fontFamily: 'var(--font-primary)',
           background: 'var(--paper)',

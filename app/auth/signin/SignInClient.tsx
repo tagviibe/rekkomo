@@ -252,9 +252,9 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen overflow-hidden" style={{ background: "var(--color-primary-deep)" }}>
-      <div className="grid h-screen" style={{ gridTemplateColumns: "1fr 480px" }}>
+      <div className="grid h-screen grid-cols-1 lg:grid-cols-[1fr_480px]">
         {/* LEFT PANEL — Brand Story */}
-        <div className="relative flex flex-col justify-between p-10 overflow-hidden" style={{ background: "var(--color-primary-deep)" }}>
+        <div className="hidden lg:flex relative flex-col justify-between p-8 xl:p-10 overflow-hidden" style={{ background: "var(--color-primary-deep)" }}>
           {/* Animated background mesh */}
           <div className="absolute inset-0 overflow-hidden">
             <div
@@ -370,31 +370,31 @@ export default function SignInPage() {
               India&apos;s Migrant Community Platform
             </div>
 
-            <h1 className="font-devanagari text-5xl font-extrabold text-white leading-tight mb-1.5">
+            <h1 className="font-devanagari text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-1.5">
               अपना शहर<br />
               <span style={{ color: "var(--color-accent)" }}>अपने लोग</span>
             </h1>
-            <p className="text-xl font-medium text-white/55 mb-8">Your City. Your People. Your Community.</p>
+            <p className="text-base sm:text-lg md:text-xl font-medium text-white/55 mb-6 sm:mb-8">Your City. Your People. Your Community.</p>
 
             {/* Stats */}
             <div className="flex gap-0 border-t border-b border-white/10">
-              <div className="px-6 py-4 text-center border-r border-white/10">
-                <div className="text-3xl font-extrabold text-white leading-none">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 text-center border-r border-white/10">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
                   600<span style={{ color: "var(--color-accent)" }}>M+</span>
                 </div>
-                <div className="text-[11px] text-white/45 font-medium mt-1">Indian Migrants</div>
+                <div className="text-[10px] sm:text-[11px] text-white/45 font-medium mt-1">Indian Migrants</div>
               </div>
-              <div className="px-6 py-4 text-center border-r border-white/10">
-                <div className="text-3xl font-extrabold text-white leading-none">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 text-center border-r border-white/10">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
                   <span style={{ color: "var(--color-accent)" }}>28</span>
                 </div>
-                <div className="text-[11px] text-white/45 font-medium mt-1">State Circles</div>
+                <div className="text-[10px] sm:text-[11px] text-white/45 font-medium mt-1">State Circles</div>
               </div>
-              <div className="px-6 py-4 text-center">
-                <div className="text-3xl font-extrabold text-white leading-none">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
                   50<span style={{ color: "var(--color-accent)" }}>+</span>
                 </div>
-                <div className="text-[11px] text-white/45 font-medium mt-1">Cities</div>
+                <div className="text-[10px] sm:text-[11px] text-white/45 font-medium mt-1">Cities</div>
               </div>
             </div>
           </div>
@@ -403,7 +403,7 @@ export default function SignInPage() {
             {/* Social Proof */}
             <div className="bg-white/6 border border-white/12 rounded-2xl p-5 backdrop-blur-xl">
               <p className="text-sm leading-relaxed text-white/80 mb-3.5 italic">
-                &quot;Apna Sheher ne mujhe Pune mein Bihar ke 200 logon se milaya. Pehle hafte hi naukri mil gayi.&quot;
+                &quot;Apna Sheher ne mujhe Pune mein Odisha ke 200 logon se milaya. Pehle hafte hi naukri mil gayi.&quot;
               </p>
               <div className="flex items-center gap-2.5">
                 <div
@@ -438,7 +438,7 @@ export default function SignInPage() {
         </div>
 
         {/* RIGHT PANEL — Login Form */}
-        <div className="bg-[var(--color-paper)] flex flex-col justify-center p-11 relative overflow-y-auto">
+        <div className="bg-[var(--color-paper)] flex flex-col justify-center p-4 sm:p-6 md:p-8 lg:p-11 relative overflow-y-auto">
           {/* Top pattern */}
           <div
             className="absolute top-0 left-0 right-0 h-0.5"
@@ -446,6 +446,38 @@ export default function SignInPage() {
               background: "linear-gradient(90deg, var(--color-primary-deep), var(--color-primary), var(--color-accent))",
             }}
           />
+
+          {/* Mobile Logo */}
+          <div className="lg:hidden mb-6 sm:mb-8">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex items-center gap-1.5 rounded-[10px] px-3 py-2"
+                style={{
+                  background: "var(--saffron)",
+                  boxShadow: "0 2px 8px rgba(232,98,26,0.3)",
+                }}
+              >
+                <div
+                  className="w-7 h-7 rounded-[7px] flex items-center justify-center text-sm font-extrabold"
+                  style={{
+                    background: "white",
+                    color: "var(--saffron)",
+                  }}
+                >
+                  R
+                </div>
+                <div
+                  className="text-base font-extrabold tracking-tight"
+                  style={{
+                    color: "white",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  REKKOMO
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Step Indicator */}
           <div className="flex items-center gap-2 mb-10">
@@ -474,11 +506,11 @@ export default function SignInPage() {
           {/* EMAIL SCREEN */}
           {screen === "email" && (
             <div className="animate-in fade-in slide-in-from-right-6 duration-500">
-              <h2 className="text-3xl font-extrabold text-[var(--color-ink)] leading-tight mb-1.5 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-ink)] leading-tight mb-1.5 tracking-tight">
                 Welcome back 👋<br />
                 Sign in with email
               </h2>
-              <p className="text-sm text-[var(--color-slate)] mb-9 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[var(--color-slate)] mb-6 sm:mb-9 leading-relaxed">
                 Enter your email and password to continue.
               </p>
 
@@ -587,7 +619,7 @@ export default function SignInPage() {
               <button
                 onClick={handleEmailSignIn}
                 disabled={emailLoggingIn || !email || !password || password.length < 8}
-                className="w-full py-3.5 rounded-xl text-white font-bold text-[15px] flex items-center justify-center gap-2.5 mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                className="w-full py-3 sm:py-3.5 rounded-xl text-white font-bold text-sm sm:text-[15px] flex items-center justify-center gap-2.5 mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden min-h-[44px]"
                 style={{
                   background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)",
                   boxShadow: "0 4px 16px rgba(43,79,212,0.3)",
@@ -637,15 +669,15 @@ export default function SignInPage() {
               </div>
 
               {/* Alternative Login */}
-              <div className="flex gap-2.5 mb-8">
+              <div className="flex flex-col xs:flex-row gap-2 sm:gap-2.5 mb-6 sm:mb-8">
                 <button
                   onClick={switchToPhone}
-                  className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+                  className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-xs sm:text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] min-h-[44px]"
                 >
                   <span className="text-base">📱</span>
                   Phone / OTP
                 </button>
-                <button className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)]">
+                <button className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-xs sm:text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] min-h-[44px]">
                   <span className="text-base">🔗</span>
                   Google
                 </button>
@@ -656,11 +688,11 @@ export default function SignInPage() {
           {/* PHONE SCREEN */}
           {screen === "phone" && (
             <div className="animate-in fade-in slide-in-from-right-6 duration-500">
-              <h2 className="text-3xl font-extrabold text-[var(--color-ink)] leading-tight mb-1.5 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-ink)] leading-tight mb-1.5 tracking-tight">
                 Welcome back 👋<br />
                 or join free today
               </h2>
-              <p className="text-sm text-[var(--color-slate)] mb-9 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[var(--color-slate)] mb-6 sm:mb-9 leading-relaxed">
                 Enter your mobile number to get started. No password needed — ever.
               </p>
 
@@ -736,7 +768,7 @@ export default function SignInPage() {
                   <span className="text-[var(--color-mist)]">(optional — helps us find your community)</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {["🌾 Bihar", "🏛️ UP", "🌊 Odisha", "🐯 Bengal", "🏜️ Rajasthan", "🌿 Jharkhand"].map((state) => (
+                  {["🌊 Odisha", "🏛️ UP", "🌾 Bihar", "🐯 Bengal", "🏜️ Rajasthan", "🌿 Jharkhand"].map((state) => (
                     <button
                       key={state}
                       onClick={() => setSelectedState(state)}
@@ -759,7 +791,7 @@ export default function SignInPage() {
               <button
                 onClick={requestOtp}
                 disabled={otpSending || phone.length < 10}
-                className="w-full py-3.5 rounded-xl text-white font-bold text-[15px] flex items-center justify-center gap-2.5 mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                className="w-full py-3 sm:py-3.5 rounded-xl text-white font-bold text-sm sm:text-[15px] flex items-center justify-center gap-2.5 mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden min-h-[44px]"
                 style={{
                   background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)",
                   boxShadow: "0 4px 16px rgba(43,79,212,0.3)",
@@ -809,17 +841,17 @@ export default function SignInPage() {
               </div>
 
               {/* Alternative Login */}
-              <div className="flex gap-2.5 mb-8">
+              <div className="flex flex-col xs:flex-row gap-2 sm:gap-2.5 mb-6 sm:mb-8">
                 <button
                   onClick={handleEmailLogin}
-                  className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+                  className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-xs sm:text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] min-h-[44px]"
                 >
                   <span className="text-base">📧</span>
                   Email
                 </button>
                 <button
                   onClick={() => signIn("google", { callbackUrl: callback })}
-                  className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+                  className="flex-1 py-3 bg-white border-2 border-[var(--color-fog)] rounded-[10px] text-xs sm:text-[13px] font-semibold text-[var(--color-slate)] flex items-center justify-center gap-2 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] min-h-[44px]"
                 >
                   <span className="text-base">🔗</span>
                   Google
@@ -831,10 +863,10 @@ export default function SignInPage() {
           {/* OTP SCREEN */}
           {screen === "otp" && (
             <div className="animate-in fade-in slide-in-from-right-6 duration-500">
-              <h2 className="text-3xl font-extrabold text-[var(--color-ink)] leading-tight mb-1.5 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-ink)] leading-tight mb-1.5 tracking-tight">
                 Check your phone ✉️
               </h2>
-              <p className="text-sm text-[var(--color-slate)] mb-7 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[var(--color-slate)] mb-5 sm:mb-7 leading-relaxed">
                 We sent a 6-digit code to your number. It expires in 10 minutes.
               </p>
 
@@ -850,9 +882,9 @@ export default function SignInPage() {
               </div>
 
               {/* OTP Boxes */}
-              <div className="mb-6">
-                <label className="block text-xs font-bold text-[var(--color-ink)] mb-3">Enter 6-digit OTP</label>
-                <div className="flex gap-2.5">
+              <div className="mb-5 sm:mb-6">
+                <label className="block text-xs font-bold text-[var(--color-ink)] mb-2 sm:mb-3">Enter 6-digit OTP</label>
+                <div className="flex gap-2 sm:gap-2.5">
                   {[0, 1, 2, 3, 4, 5].map((index) => (
                     <input
                       key={index}
@@ -864,7 +896,7 @@ export default function SignInPage() {
                       value={otpCode[index]}
                       onChange={(e) => handleOtpInput(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className={`flex-1 aspect-square max-w-[56px] bg-white border-2 rounded-xl text-2xl font-extrabold text-[var(--color-ink)] text-center outline-none transition-all ${
+                      className={`flex-1 aspect-square max-w-[48px] sm:max-w-[56px] bg-white border-2 rounded-xl text-xl sm:text-2xl font-extrabold text-[var(--color-ink)] text-center outline-none transition-all min-h-[48px] sm:min-h-[56px] ${
                         otpCode[index]
                           ? "border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]"
                           : error
@@ -904,7 +936,7 @@ export default function SignInPage() {
               <button
                 onClick={verifyOtp}
                 disabled={otpVerifying || otpCode.join("").length < 6}
-                className="w-full py-3.5 rounded-xl text-white font-bold text-[15px] flex items-center justify-center gap-2.5 mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 sm:py-3.5 rounded-xl text-white font-bold text-sm sm:text-[15px] flex items-center justify-center gap-2.5 mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                 style={{
                   background: "linear-gradient(135deg, var(--color-success) 0%, #047857 100%)",
                   boxShadow: "0 4px 16px rgba(5,150,105,0.3)",
@@ -961,7 +993,7 @@ export default function SignInPage() {
               <p className="text-sm text-[var(--color-slate)] mb-7 text-center leading-relaxed">
                 Welcome to REKKOMO.
                 <br />
-                Your Bihar Circle in Pune is waiting — <strong>4,218 members</strong> are already here.
+                Your Odisha Circle in Pune is waiting — <strong>4,218 members</strong> are already here.
               </p>
               <div className="flex items-center gap-2.5 text-[13px] text-[var(--color-mist)]">
                 <span>Taking you to your community</span>

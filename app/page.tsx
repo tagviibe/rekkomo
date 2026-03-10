@@ -221,13 +221,13 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
 
   return (
     <section
-      className="py-8 md:py-10 lg:py-20 px-4 sm:px-6 md:px-10 lg:px-20"
+      className="py-8 md:py-12 lg:py-16 xl:py-20 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20"
       style={{
         borderBottom: "1px solid var(--border)",
       }}
     >
       <div
-        className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-[60px] items-center"
+        className="mx-auto max-w-screen-xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 xl:gap-[60px] items-center"
       >
         {/* Left Column */}
         <div>
@@ -253,7 +253,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
           </div>
 
           <h1
-            className="mb-2 text-3xl md:text-[56px]"
+            className="mb-2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[56px]"
             style={{
               fontWeight: 800,
               lineHeight: 1.08,
@@ -262,7 +262,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             }}
           >
             <span
-              className="font-devanagari block mb-2 text-2xl md:text-[42px]"
+              className="font-devanagari block mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[42px]"
               style={{
                 fontWeight: 700,
                 color: "var(--saffron)",
@@ -276,7 +276,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             <br />
             Find your place.
             <span
-              className="block mt-3 text-base md:text-[22px]"
+              className="block mt-3 text-sm sm:text-base md:text-lg lg:text-xl xl:text-[22px]"
               style={{
                 fontWeight: 400,
                 color: "var(--muted)",
@@ -288,7 +288,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
           </h1>
 
           <p
-            className="mt-4 mb-6 md:mt-6 md:mb-9 text-sm md:text-base"
+            className="mt-4 mb-6 md:mt-6 md:mb-8 lg:mb-9 text-sm sm:text-base md:text-lg"
             style={{
               lineHeight: 1.7,
               color: "var(--muted)",
@@ -299,17 +299,17 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             and celebrate your culture — wherever you are in India.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div className="flex flex-col xs:flex-row gap-3 sm:gap-4 items-stretch xs:items-center">
             <a
               href="/onboarding"
-              className="btn-primary text-center justify-center text-sm md:text-base px-4 md:px-7 py-2.5 md:py-3.5"
+              className="btn-primary text-center justify-center text-sm sm:text-base px-4 sm:px-6 md:px-7 py-2.5 sm:py-3 md:py-3.5 min-h-11 sm:min-h-12"
               style={{ textDecoration: "none" }}
             >
               🚀 Join Your Circle <span>→</span>
             </a>
             <a
               href="/jobs"
-              className="btn-secondary text-center justify-center text-sm md:text-base px-4 md:px-6 py-2.5 md:py-3"
+              className="btn-secondary text-center justify-center text-sm sm:text-base px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 min-h-11 sm:min-h-12"
               style={{ textDecoration: "none" }}
             >
               🔍 Browse Jobs
@@ -317,7 +317,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
           </div>
 
           <div
-            className="flex flex-wrap gap-4 md:gap-8 mt-6 md:mt-10 pt-6 md:pt-10"
+            className="flex flex-wrap gap-4 sm:gap-6 md:gap-8 mt-6 sm:mt-8 md:mt-10 pt-6 sm:pt-8 md:pt-10"
             style={{
               borderTop: "1px solid var(--border)",
             }}
@@ -393,7 +393,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
         </div>
 
         {/* Right Column - Visual */}
-        <div className="relative hidden md:block">
+        <div className="relative hidden md:block order-first md:order-last">
           {/* Floating Success Card */}
           <div
             className="absolute -top-5 -right-5 z-10"
@@ -483,7 +483,7 @@ function Hero({ stats }: { stats: CommunityStats | null }) {
             </div>
             <div className="flex flex-wrap gap-2 mb-2">
               {[
-                { emoji: "🌾", name: "Bihar Circle", count: "4.2K", color: "var(--gold-light)", border: "var(--gold)", text: "#7A5800" },
+                { emoji: "🌊", name: "Odisha Circle", count: "4.2K", color: "var(--gold-light)", border: "var(--gold)", text: "#7A5800" },
                 { emoji: "🏛️", name: "UP Circle", count: "6.8K", color: "var(--green-light)", border: "var(--green)", text: "#0F4028" },
                 { emoji: "🌊", name: "Odisha Circle", count: "2.1K", color: "var(--blue-light)", border: "var(--blue)", text: "#0D2E52" },
                 { emoji: "🐯", name: "Bengal Circle", count: "3.4K", color: "#FDE8E8", border: "#C43A3A", text: "#6B1414" },

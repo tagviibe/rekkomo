@@ -119,7 +119,7 @@ export default function EventDetailClient({
 
   const getStateEmoji = (state: string) => {
     switch (state) {
-      case "Bihar": return "🌾";
+      case "Odisha": return "🌊";
       case "Uttar Pradesh": return "🏛️";
       case "Odisha": return "🌊";
       case "West Bengal": return "🐯";
@@ -137,20 +137,20 @@ export default function EventDetailClient({
       <div className="min-h-screen" style={{ background: "var(--paper)" }}>
         {/* Navbar with breadcrumb */}
         <div
-          className="sticky top-0 z-50 border-b"
+          className="sticky top-0 z-50 border-b px-4 sm:px-6 md:px-8"
           style={{
             background: "rgba(247,243,238,0.97)",
             backdropFilter: "blur(16px)",
             borderColor: "var(--border)",
-            padding: "0 32px",
             height: "60px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div
+              className="flex-shrink-0"
               style={{
                 background: "linear-gradient(135deg, var(--blue), var(--blue-mid))",
                 borderRadius: "9px",
@@ -162,85 +162,79 @@ export default function EventDetailClient({
             >
               R
             </div>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--ink)" }}>
+            <div className="hidden xs:block text-sm sm:text-base font-extrabold" style={{ color: "var(--ink)" }}>
               REKKOMO
             </div>
-            <div style={{ width: "1px", height: "18px", background: "var(--border)" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--muted)" }}>
-              <Link href="/events" style={{ color: "var(--muted)", textDecoration: "none" }}>
+            <div className="hidden sm:block" style={{ width: "1px", height: "18px", background: "var(--border)" }} />
+            <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm min-w-0" style={{ color: "var(--muted)" }}>
+              <Link href="/events" className="truncate" style={{ color: "var(--muted)", textDecoration: "none" }}>
                 Events
               </Link>
               <span style={{ color: "var(--border)" }}>›</span>
-              <span style={{ color: "var(--ink)", fontWeight: 700 }}>{getEventCategory().split(" ").slice(1).join(" ")}</span>
+              <span className="truncate" style={{ color: "var(--ink)", fontWeight: 700 }}>{getEventCategory().split(" ").slice(1).join(" ")}</span>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => router.push("/events")}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm font-semibold min-h-11 whitespace-nowrap"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "7px 14px",
-                borderRadius: "9px",
-                border: "1px solid var(--border)",
+                borderColor: "var(--border)",
                 background: "white",
-                fontSize: "13px",
-                fontWeight: 600,
                 color: "var(--muted)",
                 cursor: "pointer",
                 fontFamily: "var(--font-primary)",
               }}
             >
-              ← Back to Events
+              <span className="hidden sm:inline">← Back to Events</span>
+              <span className="sm:hidden">← Back</span>
             </button>
           </div>
         </div>
 
         <div
+          className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 lg:px-12"
           style={{
-            maxWidth: "1120px",
-            margin: "0 auto",
-            padding: "32px 28px 80px",
             display: "grid",
-            gridTemplateColumns: "1fr 360px",
-            gap: "28px",
+            gridTemplateColumns: "1fr",
+            gap: "24px",
             alignItems: "start",
           }}
         >
+          <style jsx>{`
+            @media (min-width: 1024px) {
+              .event-detail-grid {
+                grid-template-columns: 1fr 360px !important;
+                gap: 28px !important;
+              }
+            }
+          `}</style>
+          <div className="event-detail-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}>
           {/* LEFT COLUMN */}
           <div>
             {/* Event Hero */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border overflow-hidden shadow-md mb-4 sm:mb-5 md:mb-6"
               style={{
-                background: "white",
-                borderRadius: "20px",
-                border: "1px solid var(--border)",
-                overflow: "hidden",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-md)",
-                marginBottom: "20px",
               }}
             >
               {/* Banner */}
               <div
+                className="h-48 sm:h-56 md:h-[220px] relative overflow-hidden flex items-center justify-center"
                 style={{
-                  height: "220px",
-                  position: "relative",
-                  overflow: "hidden",
                   background: event.coverImageUrl
                     ? `url(${event.coverImageUrl})`
                     : "linear-gradient(135deg, #FEF9C3, #FDE68A 50%, #FCD34D)",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                 }}
               >
                 {!event.coverImageUrl && (
                   <div
+                    className="text-5xl sm:text-6xl md:text-7xl lg:text-[88px]"
                     style={{
-                      fontSize: "88px",
                       filter: "drop-shadow(0 8px 24px rgba(201,146,10,.3))",
                       animation: "float 4s ease-in-out infinite",
                     }}
@@ -249,50 +243,36 @@ export default function EventDetailClient({
                   </div>
                 )}
                 <div
+                  className="absolute inset-0"
                   style={{
-                    position: "absolute",
-                    inset: 0,
                     background: event.coverImageUrl
                       ? "linear-gradient(to top, rgba(0,0,0,.6), transparent 55%)"
                       : "linear-gradient(to top, rgba(0,0,0,.38), transparent 55%)",
                   }}
                 />
                 <div
-                  style={{
-                    position: "absolute",
-                    top: "16px",
-                    left: "20px",
-                    right: "20px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
+                  className="absolute top-3 sm:top-4 left-3 sm:left-4 md:left-5 right-3 sm:right-4 md:right-5 flex justify-between"
                 >
                   <div
+                    className="px-2 sm:px-3 md:px-3.5 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-xs md:text-sm font-bold"
                     style={{
                       background: "rgba(255,255,255,.2)",
                       backdropFilter: "blur(8px)",
                       border: "1px solid rgba(255,255,255,.3)",
-                      borderRadius: "100px",
-                      padding: "6px 14px",
-                      fontSize: "12px",
-                      fontWeight: 700,
                       color: "white",
                     }}
                   >
                     {getEventCategory()}
                   </div>
                   <div
+                    className="px-2 sm:px-3 md:px-3.5 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-xs md:text-[11px] font-extrabold whitespace-nowrap"
                     style={{
                       background: "var(--gold)",
-                      borderRadius: "100px",
-                      padding: "6px 13px",
-                      fontSize: "11px",
-                      fontWeight: 800,
                       color: "white",
                       boxShadow: "0 2px 8px rgba(201,146,10,.4)",
                     }}
                   >
-                    ⭐ Featured Event
+                    ⭐ Featured
                   </div>
                 </div>
                 <div
@@ -351,34 +331,27 @@ export default function EventDetailClient({
                       </div>
                     </div>
                   </div>
-                  <div style={{ color: "white" }}>
-                    <div
+                  <div className="text-white">
+                    <h1
+                      className="text-lg sm:text-xl md:text-2xl font-extrabold mb-1 sm:mb-2"
                       style={{
-                        fontSize: "21px",
-                        fontWeight: 800,
                         letterSpacing: "-0.4px",
                         textShadow: "0 2px 8px rgba(0,0,0,.3)",
                       }}
                     >
                       {event.title}
-                    </div>
-                    <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "3px" }}>
+                    </h1>
+                    <p className="text-xs sm:text-sm opacity-80">
                       Organised by {event.community?.name || creator.name || "Community"} · {event.location || "Location TBD"}
-                    </div>
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Body */}
-              <div style={{ padding: "20px 26px 24px" }}>
+              <div className="p-4 sm:p-5 md:p-6 lg:p-7">
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    flexWrap: "wrap",
-                    marginBottom: "18px",
-                  }}
+                  className="flex items-center gap-3 sm:gap-4 md:gap-4 flex-wrap mb-4 sm:mb-5 md:mb-6"
                 >
                   {event.location && (
                     <div style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "13px", color: "var(--muted)" }}>
@@ -403,51 +376,40 @@ export default function EventDetailClient({
                   )}
                 </div>
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "14px",
-                    marginBottom: "16px",
-                  }}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6"
                 >
-                  <div style={{ flex: 1 }}>
+                  <div className="flex-1 min-w-0">
                     {event.capacity && (
                       <>
                         <div
+                          className="h-1.5 sm:h-1.5 md:h-[6px] rounded-full overflow-hidden mb-1.5 sm:mb-2"
                           style={{
-                            height: "6px",
                             background: "var(--border)",
-                            borderRadius: "3px",
-                            overflow: "hidden",
-                            marginBottom: "6px",
                           }}
                         >
                           <div
+                            className="h-full rounded-full"
                             style={{
-                              height: "100%",
-                              borderRadius: "3px",
                               background: "linear-gradient(90deg, var(--green), #34D399)",
                               width: `${rsvpPercentage}%`,
                             }}
                           />
                         </div>
                         <div
+                          className="flex justify-between text-xs sm:text-xs md:text-[11px]"
                           style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            fontSize: "11px",
                             color: "var(--muted)",
                           }}
                         >
                           <span>
-                            <span style={{ fontWeight: 800, color: "var(--green)" }}>{rsvpCount}</span> people going
+                            <span className="font-extrabold" style={{ color: "var(--green)" }}>{rsvpCount}</span> people going
                           </span>
                           <span>{remainingSpots} spots left</span>
                         </div>
                       </>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div className="flex gap-2 sm:gap-2 md:gap-2 flex-shrink-0">
                     {isAuthenticated ? (
                       <>
                         {rsvpStatus === "YES" ? (
@@ -455,19 +417,14 @@ export default function EventDetailClient({
                             <button
                               onClick={() => handleRSVP("NO")}
                               disabled={loading}
+                              className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm md:text-base font-extrabold border-none min-h-11 sm:min-h-12 whitespace-nowrap"
                               style={{
-                                padding: "13px 22px",
-                                borderRadius: "12px",
                                 background: "linear-gradient(135deg, var(--blue), var(--blue-mid))",
                                 color: "white",
-                                fontSize: "14px",
-                                fontWeight: 800,
-                                border: "none",
                                 cursor: loading ? "not-allowed" : "pointer",
                                 fontFamily: "var(--font-primary)",
                                 boxShadow: "0 4px 14px rgba(27,79,138,.28)",
                                 transition: "all .2s",
-                                whiteSpace: "nowrap",
                                 opacity: loading ? 0.7 : 1,
                               }}
                             >
@@ -476,16 +433,14 @@ export default function EventDetailClient({
                             <button
                               onClick={() => handleRSVP("NO")}
                               disabled={loading}
+                              className="px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm border min-h-11 sm:min-h-12"
                               style={{
-                                padding: "13px 18px",
-                                borderRadius: "12px",
-                                border: "1.5px solid var(--border)",
+                                borderColor: "var(--border)",
                                 background: "white",
-                                fontSize: "13px",
-                                fontWeight: 700,
                                 color: "var(--muted)",
                                 cursor: loading ? "not-allowed" : "pointer",
                                 fontFamily: "var(--font-primary)",
+                                fontWeight: 700,
                               }}
                             >
                               Cancel
@@ -495,19 +450,14 @@ export default function EventDetailClient({
                           <button
                             onClick={() => setShowRSVPModal(true)}
                             disabled={loading}
+                            className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm md:text-base font-extrabold border-none min-h-11 sm:min-h-12 whitespace-nowrap"
                             style={{
-                              padding: "13px 22px",
-                              borderRadius: "12px",
                               background: "linear-gradient(135deg, var(--green), var(--green-dark))",
                               color: "white",
-                              fontSize: "14px",
-                              fontWeight: 800,
-                              border: "none",
                               cursor: loading ? "not-allowed" : "pointer",
                               fontFamily: "var(--font-primary)",
                               boxShadow: "0 4px 14px rgba(27,107,69,.28)",
                               transition: "all .2s",
-                              whiteSpace: "nowrap",
                               opacity: loading ? 0.7 : 1,
                             }}
                           >
@@ -518,60 +468,43 @@ export default function EventDetailClient({
                     ) : (
                       <button
                         onClick={() => router.push("/auth/signin?callback=" + encodeURIComponent(window.location.pathname))}
+                        className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm md:text-base font-extrabold border-none min-h-11 sm:min-h-12 whitespace-nowrap"
                         style={{
-                          padding: "13px 22px",
-                          borderRadius: "12px",
                           background: "linear-gradient(135deg, var(--green), var(--green-dark))",
                           color: "white",
-                          fontSize: "14px",
-                          fontWeight: 800,
-                          border: "none",
                           cursor: "pointer",
                           fontFamily: "var(--font-primary)",
                           boxShadow: "0 4px 14px rgba(27,107,69,.28)",
                           transition: "all .2s",
-                          whiteSpace: "nowrap",
                         }}
                       >
                         Sign in to RSVP
                       </button>
                     )}
-                    <div
+                    <button
+                      className="w-10 h-10 sm:w-11 sm:h-11 md:w-[46px] md:h-[46px] rounded-lg sm:rounded-xl border flex items-center justify-center text-base sm:text-lg md:text-lg min-h-11 sm:min-h-12 flex-shrink-0"
                       style={{
-                        width: "46px",
-                        height: "46px",
-                        borderRadius: "11px",
-                        border: "1.5px solid var(--border)",
+                        borderColor: "var(--border)",
                         background: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "18px",
                         cursor: "pointer",
                         transition: "all .15s",
                       }}
                       title="Save"
                     >
                       🔖
-                    </div>
-                    <div
+                    </button>
+                    <button
+                      className="w-10 h-10 sm:w-11 sm:h-11 md:w-[46px] md:h-[46px] rounded-lg sm:rounded-xl border flex items-center justify-center text-base sm:text-lg md:text-lg min-h-11 sm:min-h-12 flex-shrink-0"
                       style={{
-                        width: "46px",
-                        height: "46px",
-                        borderRadius: "11px",
-                        border: "1.5px solid var(--border)",
+                        borderColor: "var(--border)",
                         background: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "18px",
                         cursor: "pointer",
                         transition: "all .15s",
                       }}
                       title="Share"
                     >
                       🔗
-                    </div>
+                    </button>
                   </div>
                 </div>
                 {!isGlobal && (
@@ -614,12 +547,9 @@ export default function EventDetailClient({
             {/* About Section */}
             {event.description && (
               <div
+                className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
                 style={{
-                  background: "white",
-                  borderRadius: "14px",
-                  border: "1px solid var(--border)",
-                  padding: "22px 24px",
-                  marginBottom: "16px",
+                  borderColor: "var(--border)",
                   boxShadow: "var(--shadow-sm)",
                 }}
               >
@@ -651,12 +581,9 @@ export default function EventDetailClient({
 
             {/* Schedule */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -713,12 +640,9 @@ export default function EventDetailClient({
             {/* Location */}
             {event.location && (
               <div
+                className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
                 style={{
-                  background: "white",
-                  borderRadius: "14px",
-                  border: "1px solid var(--border)",
-                  padding: "22px 24px",
-                  marginBottom: "16px",
+                  borderColor: "var(--border)",
                   boxShadow: "var(--shadow-sm)",
                 }}
               >
@@ -841,12 +765,9 @@ export default function EventDetailClient({
             {/* Who's Going */}
             {event.rsvps && event.rsvps.length > 0 && (
               <div
+                className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
                 style={{
-                  background: "white",
-                  borderRadius: "14px",
-                  border: "1px solid var(--border)",
-                  padding: "22px 24px",
-                  marginBottom: "16px",
+                  borderColor: "var(--border)",
                   boxShadow: "var(--shadow-sm)",
                 }}
               >
@@ -977,12 +898,9 @@ export default function EventDetailClient({
 
             {/* Organizer */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -1062,12 +980,9 @@ export default function EventDetailClient({
 
             {/* Tags */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -1190,12 +1105,9 @@ export default function EventDetailClient({
             {/* Similar Events */}
             {similarEvents.length > 0 && (
               <div
+                className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
                 style={{
-                  background: "white",
-                  borderRadius: "14px",
-                  border: "1px solid var(--border)",
-                  padding: "22px 24px",
-                  marginBottom: "16px",
+                  borderColor: "var(--border)",
                   boxShadow: "var(--shadow-sm)",
                 }}
               >
@@ -1290,7 +1202,7 @@ export default function EventDetailClient({
           </div>
 
           {/* RIGHT SIDEBAR */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "118px" }}>
+          <div className="hidden lg:flex flex-col gap-4 lg:gap-4" style={{ position: "sticky", top: "118px" }}>
             <div
               style={{
                 background: "white",
@@ -1661,6 +1573,7 @@ export default function EventDetailClient({
                 </button>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

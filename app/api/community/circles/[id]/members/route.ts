@@ -98,5 +98,43 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({ members: filtered });
+  // Get friend request statuses for all members
+  const userIds = filtered.map((m) => m.user.id);
+  const friendRequests = await prisma.friendRequest.findMany({
+    where: {
+      OR: [
+        {
+          senderId: session.user.id,
+          receiverId: { in: userIds },
+        },
+        {
+          senderId: { in: userIds },
+          receiverId: session.user.id,
+        },
+      ],
+    },
+  });
+
+  const friendRequestMap = new Map<string, { status: string; isSender: boolean }>();
+  friendRequests.forEach((req) => {
+    if (req.senderId === session.user.id) {
+      friendRequestMap.set(req.receiverId, { status: req.status, isSender: true });
+    } else {
+      friendRequestMap.set(req.senderId, { status: req.status, isSender: false });
+    }
+  });
+
+  // Transform members with friend request status
+  const membersWithStatus = filtered.map((m) => {
+    const frStatus = friendRequestMap.get(m.user.id);
+    return {
+      id: m.user.id,
+      name: m.user.name,
+      image: m.user.image,
+      profile: m.user.profile,
+      connectionStatus: frStatus?.status === "ACCEPTED" ? "CONNECTED" : frStatus?.status === "PENDING" ? "PENDING" : null,
+    };
+  });
+
+  return NextResponse.json({ members: membersWithStatus });
 }

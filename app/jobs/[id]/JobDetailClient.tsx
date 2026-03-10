@@ -72,7 +72,7 @@ export default function JobDetailClient({
 
   const getStateEmoji = (state: string) => {
     switch (state) {
-      case "Bihar": return "🌾";
+      case "Odisha": return "🌊";
       case "Uttar Pradesh": return "🏛️";
       case "Odisha": return "🌊";
       case "West Bengal": return "🐯";
@@ -124,20 +124,20 @@ export default function JobDetailClient({
       <div className="min-h-screen" style={{ background: "var(--paper)" }}>
         {/* Navbar with breadcrumb */}
         <div
-          className="sticky top-0 z-50 border-b"
+          className="sticky top-0 z-50 border-b px-4 sm:px-6 md:px-8"
           style={{
             background: "rgba(247,243,238,0.97)",
             backdropFilter: "blur(16px)",
             borderColor: "var(--border)",
-            padding: "0 32px",
             height: "60px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div
+              className="flex-shrink-0"
               style={{
                 background: "linear-gradient(135deg, var(--blue), var(--blue-mid))",
                 borderRadius: "9px",
@@ -149,52 +149,54 @@ export default function JobDetailClient({
             >
               R
             </div>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--ink)" }}>
+            <div className="hidden xs:block text-sm sm:text-base font-extrabold" style={{ color: "var(--ink)" }}>
               REKKOMO
             </div>
-            <div style={{ width: "1px", height: "18px", background: "var(--border)" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--muted)" }}>
-              <Link href="/jobs" style={{ color: "var(--muted)", textDecoration: "none" }}>
+            <div className="hidden sm:block" style={{ width: "1px", height: "18px", background: "var(--border)" }} />
+            <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm min-w-0" style={{ color: "var(--muted)" }}>
+              <Link href="/jobs" className="truncate" style={{ color: "var(--muted)", textDecoration: "none" }}>
                 Jobs
               </Link>
               <span style={{ color: "var(--border)" }}>›</span>
-              <span style={{ color: "var(--ink)", fontWeight: 700 }}>{job.skillCategory}</span>
+              <span className="truncate" style={{ color: "var(--ink)", fontWeight: 700 }}>{job.skillCategory}</span>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => router.push("/jobs")}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm font-semibold min-h-11 whitespace-nowrap"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "7px 14px",
-                borderRadius: "9px",
-                border: "1px solid var(--border)",
+                borderColor: "var(--border)",
                 background: "white",
-                fontSize: "13px",
-                fontWeight: 600,
                 color: "var(--muted)",
                 cursor: "pointer",
                 fontFamily: "var(--font-primary)",
               }}
             >
-              ← Back to Jobs
+              <span className="hidden sm:inline">← Back to Jobs</span>
+              <span className="sm:hidden">← Back</span>
             </button>
           </div>
         </div>
 
         <div
+          className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 lg:px-12"
           style={{
-            maxWidth: "1120px",
-            margin: "0 auto",
-            padding: "32px 28px 80px",
             display: "grid",
-            gridTemplateColumns: "1fr 360px",
-            gap: "28px",
+            gridTemplateColumns: "1fr",
+            gap: "24px",
             alignItems: "start",
           }}
         >
+          <style jsx>{`
+            @media (min-width: 1024px) {
+              .job-detail-grid {
+                grid-template-columns: 1fr 360px !important;
+                gap: 28px !important;
+              }
+            }
+          `}</style>
+          <div className="job-detail-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}>
           {/* LEFT COLUMN */}
           <div>
             {/* Job Hero */}
@@ -210,95 +212,68 @@ export default function JobDetailClient({
             >
               {/* Banner */}
               <div
+                className="h-32 sm:h-36 md:h-[156px] relative overflow-hidden"
                 style={{
-                  height: "156px",
                   background: "linear-gradient(135deg, var(--blue-mid), var(--blue) 55%, var(--blue))",
-                  position: "relative",
-                  overflow: "hidden",
                 }}
               >
                 <div
+                  className="absolute inset-0"
                   style={{
-                    position: "absolute",
-                    inset: 0,
                     background: "radial-gradient(circle at 15% 50%, rgba(255,255,255,.07), transparent 55%), radial-gradient(circle at 85% 20%, rgba(255,255,255,.05), transparent 45%)",
                   }}
                 />
                 <div
+                  className="absolute top-3 sm:top-4 left-3 sm:left-4 md:left-5 px-2 sm:px-3 md:px-3.5 py-1 sm:py-1.5 rounded-full text-xs sm:text-xs md:text-[11px] font-bold flex items-center gap-1 sm:gap-1.5 md:gap-2"
                   style={{
-                    position: "absolute",
-                    top: "16px",
-                    left: "20px",
                     background: "rgba(255,255,255,.15)",
                     backdropFilter: "blur(8px)",
                     border: "1px solid rgba(255,255,255,.2)",
-                    borderRadius: "100px",
-                    padding: "5px 14px",
-                    fontSize: "11px",
-                    fontWeight: 700,
                     color: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
                   }}
                 >
-                  {job.skillCategory} · {job.location}
+                  <span className="truncate max-w-[120px] sm:max-w-none">{job.skillCategory}</span>
+                  <span className="hidden sm:inline">·</span>
+                  <span className="hidden sm:inline truncate">{job.location.split(",")[0]}</span>
                 </div>
                 {job.status === "OPEN" && (
                   <div
+                    className="absolute top-3 sm:top-4 right-3 sm:right-4 md:right-5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-xs md:text-[11px] font-extrabold whitespace-nowrap"
                     style={{
-                      position: "absolute",
-                      top: "16px",
-                      right: "20px",
                       background: "var(--gold)",
-                      borderRadius: "100px",
-                      padding: "5px 13px",
-                      fontSize: "11px",
-                      fontWeight: 800,
                       color: "white",
                       boxShadow: "0 2px 8px rgba(201,146,10,.4)",
                     }}
                   >
-                    ⭐ Featured Listing
+                    ⭐ Featured
                   </div>
                 )}
               </div>
 
               {/* Body */}
-              <div style={{ padding: "24px 28px 26px", position: "relative" }}>
+              <div className="p-4 sm:p-6 md:p-7 relative">
                 {/* Logo */}
                 <div
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-[60px] md:h-[60px] rounded-xl md:rounded-[14px] flex items-center justify-center text-xl sm:text-2xl md:text-[26px] absolute -top-6 left-4 sm:left-6 md:left-7"
                   style={{
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "14px",
                     background: "var(--blue-light)",
                     border: "3px solid white",
                     boxShadow: "var(--shadow-md)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "26px",
-                    position: "absolute",
-                    top: "-30px",
-                    left: "28px",
                   }}
                 >
                   {job.skillCategory === "Manufacturing" ? "🏭" : "💼"}
                 </div>
 
-                <div style={{ paddingTop: "38px", marginBottom: "16px" }}>
-                  <div
+                <div className="pt-8 sm:pt-10 md:pt-[38px] mb-4 sm:mb-6">
+                  <h1
+                    className="text-lg sm:text-xl md:text-2xl font-extrabold mb-2 sm:mb-3"
                     style={{
-                      fontSize: "21px",
-                      fontWeight: 800,
                       color: "var(--ink)",
                       letterSpacing: "-0.4px",
-                      marginBottom: "8px",
                     }}
                   >
                     {job.title}
-                  </div>
+                  </h1>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
                     <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--muted)" }}>
                       {employer.name || "Employer"}
@@ -346,125 +321,103 @@ export default function JobDetailClient({
 
                 {/* Stats Grid */}
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(4, 1fr)",
-                    gap: "11px",
-                    marginBottom: "18px",
-                  }}
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6"
                 >
                   <div
+                    className="rounded-lg sm:rounded-[10px] p-2 sm:p-3"
                     style={{
                       background: "var(--blue-light)",
-                      borderRadius: "10px",
-                      padding: "12px 13px",
                       border: "1px solid rgba(27,79,138,.07)",
                     }}
                   >
                     <div
+                      className="text-[8px] sm:text-[9px] font-extrabold uppercase mb-1 sm:mb-2"
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 800,
                         color: "var(--blue)",
-                        textTransform: "uppercase",
                         letterSpacing: ".12em",
-                        marginBottom: "4px",
                       }}
                     >
                       Monthly Pay
                     </div>
                     <div
+                      className="text-base sm:text-lg md:text-xl font-extrabold"
                       style={{
-                        fontSize: "20px",
-                        fontWeight: 800,
                         color: "var(--green)",
                       }}
                     >
                       ₹{job.payMin?.toLocaleString() || "N/A"}
                       {job.payMax && ` - ₹${job.payMax.toLocaleString()}`}
                     </div>
-                    <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "2px" }}>
+                    <div className="text-[9px] sm:text-[10px] mt-0.5 sm:mt-1" style={{ color: "var(--muted)" }}>
                       + overtime pay
                     </div>
                   </div>
                   <div
+                    className="rounded-lg sm:rounded-[10px] p-2 sm:p-3"
                     style={{
                       background: "var(--blue-light)",
-                      borderRadius: "10px",
-                      padding: "12px 13px",
                       border: "1px solid rgba(27,79,138,.07)",
                     }}
                   >
                     <div
+                      className="text-[8px] sm:text-[9px] font-extrabold uppercase mb-1 sm:mb-2"
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 800,
                         color: "var(--blue)",
-                        textTransform: "uppercase",
                         letterSpacing: ".12em",
-                        marginBottom: "4px",
                       }}
                     >
                       Location
                     </div>
-                    <div style={{ fontSize: "16px", fontWeight: 800, color: "var(--ink)" }}>
+                    <div className="text-sm sm:text-base md:text-base font-extrabold" style={{ color: "var(--ink)" }}>
                       {job.location.split(",")[0]}
                     </div>
-                    <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "2px" }}>
+                    <div className="text-[9px] sm:text-[10px] mt-0.5 sm:mt-1" style={{ color: "var(--muted)" }}>
                       {job.location.split(",").slice(1).join(",").trim() || "Location"}
                     </div>
                   </div>
                   <div
+                    className="rounded-lg sm:rounded-[10px] p-2 sm:p-3"
                     style={{
                       background: "var(--blue-light)",
-                      borderRadius: "10px",
-                      padding: "12px 13px",
                       border: "1px solid rgba(27,79,138,.07)",
                     }}
                   >
                     <div
+                      className="text-[8px] sm:text-[9px] font-extrabold uppercase mb-1 sm:mb-2"
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 800,
                         color: "var(--blue)",
-                        textTransform: "uppercase",
                         letterSpacing: ".12em",
-                        marginBottom: "4px",
                       }}
                     >
                       Job Type
                     </div>
-                    <div style={{ fontSize: "16px", fontWeight: 800, color: "var(--ink)" }}>
+                    <div className="text-sm sm:text-base md:text-base font-extrabold" style={{ color: "var(--ink)" }}>
                       Full-time
                     </div>
-                    <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "2px" }}>
+                    <div className="text-[9px] sm:text-[10px] mt-0.5 sm:mt-1" style={{ color: "var(--muted)" }}>
                       Permanent
                     </div>
                   </div>
                   <div
+                    className="rounded-lg sm:rounded-[10px] p-2 sm:p-3"
                     style={{
                       background: "var(--blue-light)",
-                      borderRadius: "10px",
-                      padding: "12px 13px",
                       border: "1px solid rgba(27,79,138,.07)",
                     }}
                   >
                     <div
+                      className="text-[8px] sm:text-[9px] font-extrabold uppercase mb-1 sm:mb-2"
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 800,
                         color: "var(--blue)",
-                        textTransform: "uppercase",
                         letterSpacing: ".12em",
-                        marginBottom: "4px",
                       }}
                     >
                       Openings
                     </div>
-                    <div style={{ fontSize: "16px", fontWeight: 800, color: "var(--ink)" }}>
+                    <div className="text-sm sm:text-base md:text-base font-extrabold" style={{ color: "var(--ink)" }}>
                       {remainingOpenings > 0 ? `${remainingOpenings} left` : "Filled"}
                     </div>
-                    <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "2px" }}>
+                    <div className="text-[9px] sm:text-[10px] mt-0.5 sm:mt-1" style={{ color: "var(--muted)" }}>
                       of {job.numberOfOpenings} total
                     </div>
                   </div>
@@ -696,12 +649,9 @@ export default function JobDetailClient({
 
             {/* About Section */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -732,12 +682,9 @@ export default function JobDetailClient({
 
             {/* Requirements Section */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -755,12 +702,7 @@ export default function JobDetailClient({
                 <span style={{ fontSize: "18px" }}>📌</span> Requirements
               </div>
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "11px",
-                  marginBottom: "16px",
-                }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3 md:gap-3 mb-4 sm:mb-5 md:mb-6"
               >
                 <div
                   style={{
@@ -921,12 +863,9 @@ export default function JobDetailClient({
 
             {/* Hiring Process */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -1144,12 +1083,9 @@ export default function JobDetailClient({
 
             {/* Location */}
             <div
+              className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
               style={{
-                background: "white",
-                borderRadius: "14px",
-                border: "1px solid var(--border)",
-                padding: "22px 24px",
-                marginBottom: "16px",
+                borderColor: "var(--border)",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -1271,12 +1207,9 @@ export default function JobDetailClient({
             {/* Community Applicants */}
             {job.applications && job.applications.length > 0 && (
               <div
+                className="bg-white rounded-xl sm:rounded-2xl border p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 md:mb-6 shadow-sm"
                 style={{
-                  background: "white",
-                  borderRadius: "14px",
-                  border: "1px solid var(--border)",
-                  padding: "22px 24px",
-                  marginBottom: "16px",
+                  borderColor: "var(--border)",
                   boxShadow: "var(--shadow-sm)",
                 }}
               >
@@ -1625,7 +1558,7 @@ export default function JobDetailClient({
           </div>
 
           {/* RIGHT SIDEBAR */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "118px" }}>
+          <div className="hidden lg:flex flex-col gap-4 lg:gap-4" style={{ position: "sticky", top: "118px" }}>
             <div
               style={{
                 background: "white",
@@ -2023,6 +1956,7 @@ export default function JobDetailClient({
                 </button>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

@@ -139,8 +139,8 @@ function JobsPageContent() {
 
   return (
     <>
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6 bg-warm-paper min-h-screen">
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <main className="mx-auto max-w-screen-xl px-4 py-4 sm:py-6 md:py-8 md:px-6 lg:px-8 bg-warm-paper min-h-screen">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[280px_1fr]">
         {/* Left Sidebar - Filters */}
         <aside className="hidden lg:block">
           <div className="card-warm sticky top-4">
@@ -200,16 +200,16 @@ function JobsPageContent() {
         <section>
           {/* Header with Banner */}
           {userState && (
-            <div className="mb-6 rounded-2xl bg-gradient-to-r from-saffron/20 to-gold/20 border-2 border-saffron/30 p-6">
+            <div className="mb-4 sm:mb-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-saffron/20 to-gold/20 border-2 border-saffron/30 p-4 sm:p-6">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-saffron flex items-center justify-center text-white font-bold text-lg">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-saffron flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
                   {userState[0]}
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-warm-gray-dark">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-warm-gray-dark">
                     {userState} Community Jobs
                   </h2>
-                  <p className="text-sm text-warm-gray">
+                  <p className="text-xs sm:text-sm text-warm-gray">
                     Jobs posted by people from your state community
                   </p>
                 </div>
@@ -217,26 +217,26 @@ function JobsPageContent() {
             </div>
           )}
 
-          <header className="mb-6">
-            <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-3xl font-bold text-warm-gray-dark">Jobs</h1>
+          <header className="mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-warm-gray-dark">Jobs</h1>
               <Link
                 href="/jobs/create"
-                className="btn-primary text-sm"
+                className="btn-primary text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 min-h-11 whitespace-nowrap self-start sm:self-auto"
               >
                 Post a Job
               </Link>
             </div>
 
             {/* Search Bar */}
-            <div className="flex items-center gap-2 rounded-xl border border-warm-paper-dark bg-white px-4 py-3">
-              <HiOutlineMagnifyingGlass className="text-warm-gray" />
+            <div className="flex items-center gap-2 rounded-lg sm:rounded-xl border border-warm-paper-dark bg-white px-3 sm:px-4 py-2.5 sm:py-3">
+              <HiOutlineMagnifyingGlass className="text-warm-gray flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Search jobs by title, skill, or description..."
+                placeholder="Search jobs..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent outline-none text-warm-gray-dark placeholder-warm-gray"
+                className="flex-1 bg-transparent outline-none text-sm sm:text-base text-warm-gray-dark placeholder-warm-gray min-w-0"
               />
             </div>
           </header>
@@ -261,18 +261,18 @@ function JobsPageContent() {
                 <article key={job.id} className="card-warm hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="text-xl font-bold text-warm-gray-dark">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <h2 className="text-lg sm:text-xl font-bold text-warm-gray-dark flex-1 min-w-0">
                           {job.title}
                         </h2>
                         {hasCommunityBadge(job) && (
-                          <span className="badge-community text-xs">
+                          <span className="badge-community text-xs whitespace-nowrap">
                             {job.employer.profile?.nativePlaceState} Community
                           </span>
                         )}
                         {job.employer.profile?.trustScore && job.employer.profile.trustScore >= 40 && (
-                          <span className="flex items-center gap-1 text-xs text-forest-green">
-                            <HiOutlineShieldCheck className="h-4 w-4" />
+                          <span className="flex items-center gap-1 text-xs text-forest-green whitespace-nowrap">
+                            <HiOutlineShieldCheck className="h-4 w-4 flex-shrink-0" />
                             Verified
                           </span>
                         )}
@@ -314,23 +314,23 @@ function JobsPageContent() {
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between pt-3 border-t border-warm-paper-dark">
-                        <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-warm-paper-dark">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                           {job.employer.image ? (
                             <Image
                               src={job.employer.image}
                               alt={job.employer.name || "Employer"}
                               width={32}
                               height={32}
-                              className="rounded-full"
+                              className="rounded-full flex-shrink-0"
                             />
                           ) : (
-                            <div className="h-8 w-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron-dark font-semibold text-xs">
+                            <div className="h-8 w-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron-dark font-semibold text-xs flex-shrink-0">
                               {(job.employer.name || "E")[0].toUpperCase()}
                             </div>
                           )}
-                          <div>
-                            <p className="text-sm font-medium text-warm-gray-dark">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-warm-gray-dark truncate">
                               {job.employer.name || "Employer"}
                             </p>
                             <p className="text-xs text-warm-gray">
@@ -340,7 +340,7 @@ function JobsPageContent() {
                         </div>
                         <Link
                           href={`/jobs/${job.id}`}
-                          className="btn-primary text-sm px-6"
+                          className="btn-primary text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 min-h-11 whitespace-nowrap self-start sm:self-auto"
                         >
                           Apply Now
                         </Link>

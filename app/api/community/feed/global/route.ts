@@ -99,6 +99,14 @@ export async function GET(req: Request) {
           replies: true,
         },
       },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 10, // Limit SOS posts
@@ -163,6 +171,14 @@ export async function GET(req: Request) {
         select: {
           likes: true,
           replies: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
         },
       },
     },
@@ -234,6 +250,14 @@ export async function GET(req: Request) {
           replies: true,
         },
       },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 20,
@@ -303,6 +327,14 @@ export async function GET(req: Request) {
         select: {
           likes: true,
           replies: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
         },
       },
     },

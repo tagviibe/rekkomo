@@ -198,6 +198,8 @@ model User {
   serviceProvider     ServiceProvider?
   serviceBookings     ServiceBooking[]   @relation("ServiceCustomer")
   serviceReviews      ServiceReview[]    @relation("ServiceReviewer")
+  serviceInquiries    ServiceInquiry[]   @relation("ServiceInquirer")
+  serviceMessages     ServiceMessage[]   @relation("ServiceMessageSender")
   circleMemberships   CircleMembership[]
   circleModerators    CircleModerator[]
   communityPosts      CommunityPost[]
@@ -213,6 +215,11 @@ model User {
   parichayConnections Parichay[]         @relation("ParichayConnector")
   parichayTargets     Parichay[]         @relation("ParichayTarget")
   leaderboardEntries  LeaderboardEntry[]
+  conversations1      Conversation[]      @relation("ConversationUser1")
+  conversations2      Conversation[]      @relation("ConversationUser2")
+  conversationMessages Message[]
+  friendRequestsSent     FriendRequest[]   @relation("FriendRequestSender")
+  friendRequestsReceived FriendRequest[]   @relation("FriendRequestReceiver")
 }
 
 model Profile {
@@ -539,17 +546,23 @@ model ServiceProvider {
   id          String          @id @default(cuid())
   userId      String          @unique
   category    ServiceCategory
+  categoryName String?        // For "OTHER" category
   languages   String[]
   serviceArea String[]
+  services   Json?            // Array of services with name, price, communityPrice, isUrgent
+  serviceScope String?        // "community", "global", or "both"
   rate        String?
   ratingAvg   Float           @default(0)
   reviewCount Int             @default(0)
+  acceptsUrgent Boolean       @default(false)
+  communityDiscount Boolean   @default(false)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
   user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviews  ServiceReview[]
   bookings ServiceBooking[]
+  inquiries ServiceInquiry[]
 
   @@index([category, ratingAvg])
   @@index([userId])
@@ -584,6 +597,42 @@ model ServiceReview {
 
   @@unique([providerId, reviewerId])
   @@index([providerId])
+}
+
+model ServiceInquiry {
+  id          String   @id @default(cuid())
+  providerId  String
+  customerId  String
+  status      String   @default("NEW") // NEW, AGREED, COMPLETED, CANCELLED
+  serviceType String?  // Which service from the provider's services list
+  agreedPrice String?
+  agreedTime  String?
+  agreedLocation String?
+  phoneRevealed Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  provider ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  customer User            @relation("ServiceInquirer", fields: [customerId], references: [id], onDelete: Cascade)
+  messages ServiceMessage[]
+
+  @@unique([providerId, customerId])
+  @@index([providerId, status])
+  @@index([customerId])
+}
+
+model ServiceMessage {
+  id         String   @id @default(cuid())
+  inquiryId  String
+  senderId   String
+  content    String
+  isSystem   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  inquiry ServiceInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  sender  User           @relation("ServiceMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([inquiryId, createdAt])
 }
 
 model Circle {
@@ -817,4 +866,57 @@ model LeaderboardEntry {
 
   @@unique([circleId, userId, month, category])
   @@index([circleId, month])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  user1Id   String
+  user2Id   String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  user1    User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([updatedAt])
+}
+
+model Message {
+  id            String       @id @default(cuid())
+  conversationId String
+  senderId      String
+  content       String
+  createdAt     DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model FriendRequest {
+  id         String             @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([senderId, status])
 }

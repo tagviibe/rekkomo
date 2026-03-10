@@ -755,7 +755,7 @@ export default function EventsListPage() {
                             borderRadius: "100px",
                           }}
                         >
-                          {state === "Bihar" ? "🌾" : state === "Uttar Pradesh" ? "🏛️" : "📍"}{" "}
+                          {state === "Odisha" ? "🌊" : state === "Uttar Pradesh" ? "🏛️" : "📍"}{" "}
                           {event.communityName || state || "Community"}
                         </span>
                       )}

@@ -3,6 +3,7 @@ import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
+import ServiceProviderEntryBanner from "@/components/ServiceProviderEntryBanner";
 
 export default async function MyProfilePage() {
   const session = await getAuthSession();
@@ -95,7 +96,7 @@ export default async function MyProfilePage() {
 
   // Get state emoji
   const getStateEmoji = (state: string) => {
-    if (state === "Bihar") return "🌾";
+    if (state === "Odisha") return "🌊";
     if (state === "Uttar Pradesh" || state === "UP") return "🏛️";
     if (state === "Odisha") return "🌊";
     if (state === "West Bengal" || state === "Bengal") return "🐯";
@@ -106,17 +107,14 @@ export default async function MyProfilePage() {
     <div className="min-h-screen" style={{ background: "var(--paper)" }}>
       <Navbar />
       <main
-        className="mx-auto"
+        className="mx-auto px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8"
         style={{
           maxWidth: "1400px",
           minHeight: "calc(100vh - 64px)",
         }}
       >
         <div
-          className="grid gap-0"
-          style={{
-            gridTemplateColumns: "240px 1fr 300px",
-          }}
+          className="grid gap-0 grid-cols-1 lg:grid-cols-[240px_1fr_300px]"
         >
           {/* Left Sidebar - Profile Sections */}
           <aside
@@ -214,8 +212,8 @@ export default async function MyProfilePage() {
 
           {/* Main Content */}
           <main
+            className="px-4 py-4 sm:px-6 sm:py-6 md:px-7"
             style={{
-              padding: "24px 28px",
               background: "var(--paper)",
             }}
           >
@@ -319,9 +317,8 @@ export default async function MyProfilePage() {
                 </div>
 
                 <div
-                  className="profile-name"
+                  className="profile-name text-base sm:text-lg md:text-xl"
                   style={{
-                    fontSize: "17px",
                     fontWeight: 700,
                     letterSpacing: "-0.3px",
                     color: "var(--ink)",
@@ -615,10 +612,8 @@ export default async function MyProfilePage() {
 
             {/* Stats Row */}
             <div
+              className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "12px",
                 marginBottom: "20px",
               }}
             >
@@ -661,11 +656,17 @@ export default async function MyProfilePage() {
                 </div>
               ))}
             </div>
+
+            {/* Service Provider Entry Banner */}
+            <ServiceProviderEntryBanner
+              circleName={profile?.nativePlaceState ? `${profile.nativePlaceState} Circle` : undefined}
+              variant="profile"
+            />
           </main>
 
           {/* Right Sidebar - Vouches */}
           <aside
-            className="hidden lg:block border-l"
+            className="hidden xl:block border-l"
             style={{
               padding: "24px 20px",
               borderLeft: "1px solid var(--border)",

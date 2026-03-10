@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { z } from "zod";
-import { CommunityType } from "@prisma/client";
+import { CommunityType, CommunityPostType } from "@prisma/client";
 
 const WINDOW_MS = 60_000;
 const LIMIT = 20;
@@ -197,7 +197,7 @@ export async function POST(req: Request) {
     },
   });
 
-    // Also create a CommunityPost with type MEETUP so it shows in the feed (if circle found)
+    // Also create a CommunityPost with type EVENT_SHARE so it shows in the feed (if circle found)
     if (circle) {
       try {
         const postContent = data.description || data.title;
@@ -205,13 +205,14 @@ export async function POST(req: Request) {
           data: {
             circleId: circle.id,
             authorId: session.user.id,
-            type: "MEETUP",
+            type: CommunityPostType.EVENT_SHARE,
             content: sanitizeText(postContent),
             mediaUrls: data.imageUrl ? [data.imageUrl] : [],
+            eventId: event.id,
           },
         });
 
-        // Create the Meetup entry linked to the post
+        // Create the Meetup entry linked to the post (for meetup functionality)
         await prisma.meetup.create({
           data: {
             circleId: circle.id,
@@ -222,12 +223,6 @@ export async function POST(req: Request) {
             meetupDate: new Date(data.startsAt),
             eventId: event.id, // Link to the Event
           },
-        });
-        
-        // Also update the post to link to the event
-        await prisma.communityPost.update({
-          where: { id: post.id },
-          data: { eventId: event.id },
         });
       } catch (feedError) {
         // Log error but don't fail the event creation

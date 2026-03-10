@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { updateTrustScore } from "@/lib/trust-score";
+import { CommunityPostType } from "@prisma/client";
 import { z } from "zod";
 
 const WINDOW_MS = 60_000;
@@ -84,6 +85,12 @@ export async function POST(req: Request) {
     const data = parsed.data;
     const deadline = data.deadline ? new Date(data.deadline) : undefined;
 
+    // Get user's profile to find their circle
+    const userProfile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { nativePlaceState: true, currentCity: true },
+    });
+
     const job = await prisma.jobPost.create({
       data: {
         employerId: session.user.id,
@@ -100,6 +107,70 @@ export async function POST(req: Request) {
         status: "OPEN",
       },
     });
+
+    // Create a CommunityPost with type JOB_SHARE so it shows in the feed
+    if (userProfile?.nativePlaceState && userProfile?.currentCity) {
+      try {
+        const { getOrCreateStateCircle } = await import("@/lib/circle-utils");
+        const circleId = await getOrCreateStateCircle(
+          userProfile.nativePlaceState,
+          userProfile.currentCity
+        );
+
+        // Verify user is a member of the circle
+        let membership = await prisma.circleMembership.findUnique({
+          where: {
+            circleId_userId: {
+              circleId,
+              userId: session.user.id,
+            },
+          },
+        });
+
+        if (!membership) {
+          // Auto-join user to circle
+          await prisma.circleMembership.create({
+            data: {
+              circleId,
+              userId: session.user.id,
+              joinedAt: new Date(),
+            },
+          });
+          await prisma.circle.update({
+            where: { id: circleId },
+            data: { memberCount: { increment: 1 } },
+          });
+        }
+
+        // Create post content from job details
+        const postContent = [
+          data.title,
+          data.description || "",
+          `Location: ${data.location}`,
+          data.payMin && data.payMax
+            ? `Pay: ₹${data.payMin.toLocaleString()} - ₹${data.payMax.toLocaleString()}`
+            : data.payMin
+            ? `Pay: ₹${data.payMin.toLocaleString()}+`
+            : "",
+          data.skillCategory ? `Category: ${data.skillCategory}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const post = await prisma.communityPost.create({
+          data: {
+            circleId,
+            authorId: session.user.id,
+            type: CommunityPostType.JOB_SHARE,
+            content: sanitizeText(postContent),
+            jobPostId: job.id,
+          },
+        });
+      } catch (feedError) {
+        // Log error but don't fail the job creation
+        console.error("Failed to create feed post for job:", feedError);
+      }
+    }
 
     return NextResponse.json({ job }, { status: 201 });
   } catch (error: any) {

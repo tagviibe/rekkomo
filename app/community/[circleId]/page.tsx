@@ -9,6 +9,8 @@ import CircleHealthBadge from "@/components/community/CircleHealthBadge";
 import CircleLevelBadge from "@/components/community/CircleLevelBadge";
 import { CommunityPostType } from "@prisma/client";
 import { TbPlus } from "react-icons/tb";
+import ConnectButton from "@/components/ConnectButton";
+import Link from "next/link";
 
 export default function CircleDetailPage() {
   const { data: session } = useSession();
@@ -28,13 +30,24 @@ export default function CircleDetailPage() {
   const [meetupDate, setMeetupDate] = useState("");
   const [gyaanTitle, setGyaanTitle] = useState("");
   const [gyaanCategory, setGyaanCategory] = useState("");
+  const [members, setMembers] = useState<any[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
 
   useEffect(() => {
     if (circleId) {
       fetchCircle();
       fetchFeed();
+      if (activeTab === "members") {
+        fetchMembers();
+      }
     }
   }, [circleId]);
+
+  useEffect(() => {
+    if (activeTab === "members" && circleId) {
+      fetchMembers();
+    }
+  }, [activeTab, circleId]);
 
   const fetchCircle = async () => {
     try {
@@ -85,6 +98,31 @@ export default function CircleDetailPage() {
       }
     } catch (error) {
       console.error("Failed to leave:", error);
+    }
+  };
+
+  const fetchMembers = async () => {
+    try {
+      setMembersLoading(true);
+      const res = await fetch(`/api/community/circles/${circleId}/members?limit=12`);
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Members API response (tab):", data);
+        console.log("Members count (tab):", data.members?.length || 0);
+        // API already returns members in the correct format
+        setMembers(data.members || []);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Failed to fetch members:", errorData.error || "Unknown error", "Status:", res.status);
+        if (errorData.error === "Not a member") {
+          // User is not a member, don't show members
+          setMembers([]);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch members:", error);
+    } finally {
+      setMembersLoading(false);
     }
   };
 
@@ -424,8 +462,97 @@ export default function CircleDetailPage() {
         )}
 
         {activeTab === "members" && (
-          <div className="rounded-2xl border bg-white p-6">
-            <p className="text-gray-600">Members page coming soon...</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Circle Members</h2>
+              <Link
+                href={`/community/${circleId}/members`}
+                className="text-sm font-bold text-blue-600 hover:underline"
+              >
+                View All →
+              </Link>
+            </div>
+            
+            {membersLoading ? (
+              <div className="text-center py-8">
+                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <p className="mt-4 text-sm text-gray-500">Loading members...</p>
+              </div>
+            ) : members.length === 0 ? (
+              <div className="rounded-2xl border bg-white p-8 text-center text-gray-600">
+                <p>No members found</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Link href={`/profile/${member.id}`} className="flex-shrink-0">
+                          {member.image ? (
+                            <img
+                              src={member.image}
+                              alt={member.name || "User"}
+                              className="w-12 h-12 rounded-xl object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-sm font-bold">
+                              {(member.name || "?")
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </div>
+                          )}
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <Link
+                            href={`/profile/${member.id}`}
+                            className="text-sm font-bold text-gray-900 hover:underline block truncate"
+                          >
+                            {member.name || "Unknown User"}
+                          </Link>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {member.profile?.profession && (
+                              <span>{member.profile.profession}</span>
+                            )}
+                            {member.profile?.nativePlaceState && (
+                              <>
+                                {member.profile?.profession && <span> · </span>}
+                                <span>
+                                  {member.profile.nativePlaceState === "Odisha" ? "🌊" : 
+                                   member.profile.nativePlaceState === "Uttar Pradesh" ? "🏛️" : "📍"}{" "}
+                                  {member.profile.nativePlaceState}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <div className="mt-2">
+                            <ConnectButton
+                              userId={member.id}
+                              userName={member.name}
+                              variant="member-list"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center pt-4">
+                  <Link
+                    href={`/community/${circleId}/members`}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition"
+                  >
+                    View All Members →
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         )}
 

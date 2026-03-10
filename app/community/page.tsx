@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import Image from "next/image";
 import FeedPost from "@/components/community/FeedPost";
 import PostComposerModal from "@/components/community/PostComposerModal";
+import ConnectButton from "@/components/ConnectButton";
 import { CircleLevel, CommunityPostType } from "@prisma/client";
 
 const TRUST_CIRCLE_RADIUS = 22;
@@ -19,7 +20,7 @@ export default function CommunityPage() {
   const [discoverCircles, setDiscoverCircles] = useState<any[]>([]);
   const [feed, setFeed] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
-  const [peopleFromBihar, setPeopleFromBihar] = useState<any[]>([]);
+  const [peopleFromOdisha, setPeopleFromOdisha] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
@@ -30,6 +31,10 @@ export default function CommunityPage() {
   const [followingStatus, setFollowingStatus] = useState<Record<string, boolean>>({});
   const [trustScore, setTrustScore] = useState<number | null>(null);
   const [topHelpers, setTopHelpers] = useState<any[]>([]);
+  const [activeSOS, setActiveSOS] = useState<any[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [suggestedConnections, setSuggestedConnections] = useState<any[]>([]);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -51,10 +56,13 @@ export default function CommunityPage() {
   }, [primaryCircle, activeFilter, feedMode]);
 
   useEffect(() => {
-    if (myCircles.length > 0) {
+    if (primaryCircle) {
       fetchPeople();
+      fetchActiveSOS();
+      fetchOnlineUsers();
+      fetchSuggestedConnections();
     }
-  }, [myCircles]);
+  }, [primaryCircle, session?.user?.id]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -67,6 +75,75 @@ export default function CommunityPage() {
       fetchGlobalFeed();
     } else if (primaryCircle) {
       fetchFeed(primaryCircle.id);
+    }
+  };
+
+  const handleLike = async (postId: string) => {
+    try {
+      const res = await fetch(`/api/community/posts/${postId}/like`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Update liked state
+        setLikedPosts((prev) => {
+          const newSet = new Set(prev);
+          if (data.liked) {
+            newSet.add(postId);
+          } else {
+            newSet.delete(postId);
+          }
+          return newSet;
+        });
+
+        // Update feed to reflect new like count
+        setFeed((prev) =>
+          prev.map((post) => {
+            if (post.id === postId) {
+              const currentCount = post.likeCount || post._count?.likes || 0;
+              return {
+                ...post,
+                likeCount: data.liked ? currentCount + 1 : Math.max(currentCount - 1, 0),
+                _count: {
+                  ...post._count,
+                  likes: data.liked ? currentCount + 1 : Math.max(currentCount - 1, 0),
+                },
+              };
+            }
+            return post;
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Failed to like post:", error);
+    }
+  };
+
+  const handleReply = (postId: string) => {
+    // Navigate to post detail page or open comment modal
+    router.push(`/community/post/${postId}`);
+  };
+
+  const handleShare = async (postId: string) => {
+    const postUrl = `${window.location.origin}/community/post/${postId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Check out this post on REKKOMO",
+          text: "Check out this post on REKKOMO",
+          url: postUrl,
+        });
+      } catch (error) {
+        // User cancelled or error occurred, fallback to copy
+        await navigator.clipboard.writeText(postUrl);
+        alert("Link copied to clipboard!");
+      }
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(postUrl);
+      alert("Link copied to clipboard!");
     }
   };
 
@@ -117,7 +194,16 @@ export default function CommunityPage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setFeed(data.items || []);
+        const items = data.items || [];
+        setFeed(items);
+        // Initialize liked posts from feed data
+        const liked = new Set<string>();
+        items.forEach((post: any) => {
+          if (post.likes && post.likes.length > 0) {
+            liked.add(post.id);
+          }
+        });
+        setLikedPosts(liked);
       } else {
         const errorData = await res.json().catch(() => ({}));
         setError(errorData.error || "Failed to load feed");
@@ -134,7 +220,6 @@ export default function CommunityPage() {
     try {
       setLoading(true);
       setError(null);
-      // Fetch all community posts from all circles
       const type = activeFilter === "all" ? null : activeFilter;
       const url = type && type !== "all"
         ? `/api/community/feed/global?type=${type}`
@@ -142,7 +227,16 @@ export default function CommunityPage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setFeed(data.items || []);
+        const items = data.items || [];
+        setFeed(items);
+        // Initialize liked posts from feed data
+        const liked = new Set<string>();
+        items.forEach((post: any) => {
+          if (post.likes && post.likes.length > 0) {
+            liked.add(post.id);
+          }
+        });
+        setLikedPosts(liked);
       } else {
         const errorData = await res.json().catch(() => ({}));
         setError(errorData.error || "Failed to load global feed");
@@ -173,18 +267,60 @@ export default function CommunityPage() {
     }
   };
 
+  const fetchActiveSOS = async () => {
+    try {
+      if (!primaryCircle) return;
+      const res = await fetch(`/api/community/circles/${primaryCircle.id}/feed?type=SOS`);
+      if (res.ok) {
+        const data = await res.json();
+        const sosPosts = (data.items || []).slice(0, 2);
+        setActiveSOS(sosPosts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch SOS:", error);
+    }
+  };
+
+  const fetchOnlineUsers = async () => {
+    try {
+      if (!primaryCircle) return;
+      const res = await fetch(`/api/community/circles/${primaryCircle.id}/members?limit=3`);
+      if (res.ok) {
+        const data = await res.json();
+        setOnlineUsers(data.members || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch online users:", error);
+    }
+  };
+
+  const fetchSuggestedConnections = async () => {
+    try {
+      if (!primaryCircle) return;
+      const res = await fetch(`/api/community/circles/${primaryCircle.id}/members?limit=2`);
+      if (res.ok) {
+        const data = await res.json();
+        const suggested = (data.members || []).filter((m: any) => {
+          const userId = m.user?.id || m.id;
+          return userId && userId !== session?.user?.id;
+        }).slice(0, 2);
+        setSuggestedConnections(suggested);
+      }
+    } catch (error) {
+      console.error("Failed to fetch suggested connections:", error);
+    }
+  };
+
   const fetchTopHelpers = async (circleId: string) => {
     try {
-      const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+      const month = new Date().toISOString().slice(0, 7);
       const res = await fetch(`/api/community/circles/${circleId}/leaderboard?month=${month}`);
       if (res.ok) {
         const data = await res.json();
         const leaderboard = data.leaderboard || {};
         
-        // Combine top entries from all categories, prioritizing most_helpful
         const allEntries: any[] = [];
         
-        // Get top from most_helpful
         if (leaderboard.most_helpful?.length > 0) {
           const entry = leaderboard.most_helpful[0];
           allEntries.push({
@@ -197,7 +333,6 @@ export default function CommunityPage() {
           });
         }
         
-        // Get top from job_connector
         if (leaderboard.job_connector?.length > 0 && allEntries.length < 3) {
           const entry = leaderboard.job_connector[0];
           allEntries.push({
@@ -210,7 +345,6 @@ export default function CommunityPage() {
           });
         }
         
-        // Get top from organizer
         if (leaderboard.organizer?.length > 0 && allEntries.length < 3) {
           const entry = leaderboard.organizer[0];
           allEntries.push({
@@ -235,89 +369,61 @@ export default function CommunityPage() {
 
   const fetchPeople = async () => {
     try {
-      // Fetch members from all connected circles
-      const allMembers: any[] = [];
-      const memberIds = new Set<string>(); // To avoid duplicates
-      
-      // Fetch from all circles the user is a member of
-      for (const circle of myCircles) {
-        try {
-          const res = await fetch(`/api/community/circles/${circle.id}/members?limit=5`);
-          if (res.ok) {
-            const data = await res.json();
-            const members = data.members || [];
-            
-            // Add members that haven't been added yet (avoid duplicates)
-            for (const member of members) {
-              const userId = member.user?.id;
-              if (userId && !memberIds.has(userId) && userId !== session?.user?.id) {
-                memberIds.add(userId);
-                allMembers.push(member);
-              }
-            }
-          }
-        } catch (err) {
-          console.error(`Failed to fetch members from circle ${circle.id}:`, err);
-        }
+      if (!primaryCircle) {
+        setPeopleFromOdisha([]);
+        return;
       }
       
-      // Limit to top 3 for display
-      const topMembers = allMembers.slice(0, 3);
-      setPeopleFromBihar(topMembers);
-      
-      // Fetch follow status for each member
-      if (session?.user?.id && topMembers.length > 0) {
-        const statusPromises = topMembers.map(async (member: any) => {
-          if (member.user?.id && member.user.id !== session.user.id) {
-            try {
-              const statusRes = await fetch(`/api/follow/status/${member.user.id}`);
-              if (statusRes.ok) {
-                const statusData = await statusRes.json();
-                return { userId: member.user.id, isFollowing: statusData.isFollowing };
+      try {
+        const res = await fetch(`/api/community/circles/${primaryCircle.id}/members?limit=5`);
+        if (res.ok) {
+          const data = await res.json();
+          const members = data.members || [];
+          
+          const filteredMembers = members
+            .filter((member: any) => {
+              const userId = member.user?.id || member.id;
+              return userId && userId !== session?.user?.id;
+            })
+            .slice(0, 5);
+          
+          setPeopleFromOdisha(filteredMembers);
+          
+          if (session?.user?.id && filteredMembers.length > 0) {
+            const statusPromises = filteredMembers.map(async (member: any) => {
+              if (member.user?.id && member.user.id !== session.user.id) {
+                try {
+                  const statusRes = await fetch(`/api/follow/status/${member.user.id}`);
+                  if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    return { userId: member.user.id, isFollowing: statusData.isFollowing };
+                  }
+                } catch (err) {
+                  console.error(`Failed to fetch follow status for ${member.user.id}:`, err);
+                }
               }
-            } catch (err) {
-              console.error(`Failed to fetch follow status for ${member.user.id}:`, err);
-            }
+              return null;
+            });
+            
+            const statuses = await Promise.all(statusPromises);
+            const statusMap: Record<string, boolean> = {};
+            statuses.forEach((status) => {
+              if (status) {
+                statusMap[status.userId] = status.isFollowing;
+              }
+            });
+            setFollowingStatus((prev) => ({ ...prev, ...statusMap }));
           }
-          return null;
-        });
-        
-        const statuses = await Promise.all(statusPromises);
-        const statusMap: Record<string, boolean> = {};
-        statuses.forEach((status) => {
-          if (status) {
-            statusMap[status.userId] = status.isFollowing;
-          }
-        });
-        setFollowingStatus((prev) => ({ ...prev, ...statusMap }));
+        } else {
+          setPeopleFromOdisha([]);
+        }
+      } catch (err) {
+        console.error(`Failed to fetch members from primary circle:`, err);
+        setPeopleFromOdisha([]);
       }
     } catch (error) {
       console.error("Failed to fetch people:", error);
-    }
-  };
-
-  const handleConnect = async (userId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!session?.user?.id || userId === session.user.id) return;
-
-    const isCurrentlyFollowing = followingStatus[userId];
-    
-    try {
-      const res = await fetch(`/api/follow/${userId}`, {
-        method: isCurrentlyFollowing ? "DELETE" : "POST",
-      });
-      
-      if (res.ok) {
-        setFollowingStatus((prev) => ({
-          ...prev,
-          [userId]: !isCurrentlyFollowing,
-        }));
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        console.error("Failed to connect:", errorData.error);
-      }
-    } catch (error) {
-      console.error("Failed to connect:", error);
+      setPeopleFromOdisha([]);
     }
   };
 
@@ -342,7 +448,7 @@ export default function CommunityPage() {
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     const day = d.getDate();
-    const month = d.toLocaleDateString("en-US", { month: "short" });
+    const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
     return { day, month };
   };
 
@@ -359,11 +465,36 @@ export default function CommunityPage() {
     return "🌱 New Member";
   };
 
+  const getUserInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  };
+
+  const getStateEmoji = (state: string | null | undefined) => {
+    if (!state) return "🌊";
+    const stateMap: Record<string, string> = {
+      Odisha: "🌊",
+      "Uttar Pradesh": "🏛️",
+      Bihar: "🌾",
+      Jharkhand: "🐯",
+    };
+    return stateMap[state] || "🌊";
+  };
+
+  const userProfile = session?.user;
+  const userName = userProfile?.name || "User";
+  const userImage = userProfile?.image;
+  const userInitials = getUserInitials(userName);
+
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen" style={{ background: "var(--paper)" }}>
-        <Navbar />
-        <main className="mx-auto max-w-[1380px] px-6 py-8">
+        <main className="mx-auto max-w-screen-xl px-4 py-8 md:px-6 lg:px-8">
           <p style={{ color: "var(--muted)" }}>Loading...</p>
         </main>
       </div>
@@ -371,1181 +502,1617 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--paper)" }}>
-      <Navbar />
-      <main
-        className="mx-auto"
+    <div className="min-h-screen" style={{ background: "var(--paper)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {/* Top Navbar */}
+      <div
         style={{
-          maxWidth: "1380px",
-          minHeight: "calc(100vh - 64px)",
+          height: "58px",
+          background: "var(--white)",
+          borderBottom: "1px solid var(--border)",
+          boxShadow: "0 1px 12px rgba(13,19,64,.06)",
+          position: "sticky",
+          top: 0,
+          zIndex: 200,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 24px",
+          gap: "16px",
         }}
       >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "256px", flexShrink: 0 }}>
+          <div
+            style={{
+              width: "34px",
+              height: "34px",
+              borderRadius: "9px",
+              background: "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "15px",
+              fontWeight: 900,
+              color: "white",
+            }}
+          >
+            R
+          </div>
+          <div>
+            <div style={{ fontSize: "16px", fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.4px" }}>
+              REKKOMO
+            </div>
+            <div style={{ fontSize: "9px", color: "var(--muted)", fontWeight: 600, marginTop: "1px" }}>
+              Apna Sheher · Apna Circle
+            </div>
+          </div>
+        </div>
+
         <div
-          className="grid gap-0"
           style={{
-            gridTemplateColumns: "232px 1fr 272px",
+            flex: 1,
+            maxWidth: "420px",
+            background: "var(--cream)",
+            border: "1.5px solid var(--border)",
+            borderRadius: "10px",
+            padding: "8px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "9px",
+            transition: "all 0.2s",
+            cursor: "text",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "rgba(232,98,26,.3)";
+            e.currentTarget.style.background = "white";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,98,26,.07)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.background = "var(--cream)";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
-          {/* Left Sidebar */}
-          <aside
-            className="hidden lg:block border-r sticky"
+          <div style={{ fontSize: "14px", color: "var(--muted)" }}>🔍</div>
+          <input
+            type="text"
+            placeholder="Search people, jobs, services, posts..."
             style={{
-              padding: "20px 14px",
-              background: "white",
-              borderRight: "1px solid var(--border)",
-              top: "64px",
-              height: "calc(100vh - 64px)",
-              overflowY: "auto",
+              flex: 1,
+              fontSize: "13px",
+              color: "var(--ink)",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}
+          />
+          <div
+            style={{
+              fontSize: "10px",
+              fontWeight: 700,
+              color: "var(--muted)",
+              background: "var(--border)",
+              padding: "2px 6px",
+              borderRadius: "4px",
             }}
           >
-            {/* Circle Card */}
-            {primaryCircle && (
-              <div
-                className="rounded-2xl p-4 mb-3 relative overflow-hidden"
-                style={{
-                  background: "linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 100%)",
-                  color: "white",
-                  marginBottom: "12px",
-                }}
-              >
-                <div
-                  className="absolute right-[-20px] top-[-20px] w-20 h-20 rounded-full opacity-60"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                  }}
-                />
-                <div
-                  style={{
-                    fontSize: "9px",
-                    fontWeight: 700,
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                    opacity: 0.55,
-                  }}
-                >
-                  MY PRIMARY CIRCLE
-                </div>
-                <div
-                  className="font-devanagari"
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: 800,
-                    margin: "3px 0 2px",
-                    letterSpacing: "-0.3px",
-                  }}
-                >
-                  {primaryCircle.name} · {primaryCircle.name}
-                </div>
-                <div
-                  style={{
-                    fontSize: "11px",
-                    opacity: 0.6,
-                  }}
-                >
-                  📍 {primaryCircle.city || "Pune"}, {primaryCircle.state || "Maharashtra"}
-                </div>
-                <div
-                  style={{
-                    fontSize: "26px",
-                    fontWeight: 800,
-                    letterSpacing: "-1px",
-                    marginTop: "12px",
-                    lineHeight: 1,
-                  }}
-                >
-                  {primaryCircle.memberCount?.toLocaleString() || "0"}
-                </div>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    opacity: 0.55,
-                    marginTop: "1px",
-                  }}
-                >
-                  members nearby
-                </div>
-                <div className="flex items-center gap-1.5 mt-2.5">
-                  <div
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{
-                      background: "#34D399",
-                      animation: "pulse 2s ease-in-out infinite",
-                    }}
-                  />
-                  <div
-                    style={{
-                      fontSize: "10px",
-                      opacity: 0.7,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Very Active — 47 posts this week
-                  </div>
-                </div>
-              </div>
-            )}
+            ⌘K
+          </div>
+        </div>
 
-            {/* Navigate Section */}
-            <div style={{ marginBottom: "24px" }}>
-              <div
-                style={{
-                  fontSize: "10px",
-                  fontWeight: 800,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color: "var(--muted)",
-                  padding: "0 8px",
-                  marginBottom: "6px",
-                }}
-              >
-                NAVIGATE
-              </div>
-              <nav
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1px",
-                }}
-              >
-                {[
-                  { icon: "📰", label: "Community Feed", href: "/community", active: true },
-                  { icon: "💼", label: "Jobs", href: "/jobs", badge: "12" },
-                  { icon: "🔧", label: "Services", href: "/services" },
-                  { icon: "🎉", label: "Events", href: "/events" },
-                  { icon: "👥", label: "My Circles", href: primaryCircle ? `/community/${primaryCircle.id}` : "/community" },
-                  { icon: "🚨", label: "SOS", href: "/community", badge: "2", badgeColor: "coral" },
-                  { icon: "💬", label: "Messages", href: "/messages", badge: "3" },
-                  { icon: "💡", label: "Apna Gyaan", href: primaryCircle ? `/community/${primaryCircle.id}/gyaan` : "/community" },
-                ].map((link, index) => (
-                  <Link
-                    key={`nav-${link.label}-${index}`}
-                    href={link.href}
-                    className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-semibold transition-all no-underline relative"
-                    style={{
-                      background: link.active ? "var(--saffron-light)" : "transparent",
-                      color: link.active ? "var(--saffron)" : "var(--muted)",
-                      fontWeight: link.active ? 600 : 500,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!link.active) {
-                        e.currentTarget.style.background = "var(--cream)";
-                        e.currentTarget.style.color = "var(--ink)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!link.active) {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.color = "var(--muted)";
-                      }
-                    }}
-                  >
-                    {link.active && (
-                      <div
-                        className="absolute left-0 top-1/2 -translate-y-1/2"
-                        style={{
-                          width: "3px",
-                          height: "18px",
-                          background: "var(--saffron)",
-                          borderRadius: "0 2px 2px 0",
-                        }}
-                      />
-                    )}
-                    <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>
-                      {link.icon}
-                    </span>
-                    <span className="flex-1">{link.label}</span>
-                    {link.badge && (
-                      <span
-                        style={{
-                          background: link.badgeColor === "coral" ? "var(--color-danger)" : "var(--saffron)",
-                          color: "white",
-                          fontSize: "10px",
-                          fontWeight: 800,
-                          padding: "2px 7px",
-                          borderRadius: "100px",
-                        }}
-                      >
-                        {link.badge}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            {/* Other Circles - Secondary */}
-            {myCircles.filter((c: any) => c.level !== CircleLevel.STATE).length > 0 && (
-              <div style={{ marginTop: "24px" }}>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: "var(--muted)",
-                    padding: "0 8px",
-                    marginBottom: "6px",
-                    opacity: 0.7,
-                  }}
-                >
-                  OTHER CIRCLES
-                </div>
-                <nav
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1px",
-                  }}
-                >
-                  {myCircles
-                    .filter((c: any) => c.level !== CircleLevel.STATE)
-                    .slice(0, 3)
-                    .map((circle) => (
-                      <Link
-                        key={circle.id}
-                        href={`/community/${circle.id}`}
-                        className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-semibold transition-all no-underline"
-                        style={{
-                          color: "var(--muted)",
-                          opacity: 0.8,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "var(--cream)";
-                          e.currentTarget.style.color = "var(--ink)";
-                          e.currentTarget.style.opacity = "1";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "transparent";
-                          e.currentTarget.style.color = "var(--muted)";
-                          e.currentTarget.style.opacity = "0.8";
-                        }}
-                      >
-                        <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>
-                          {circle.level === CircleLevel.DISTRICT ? "🌊" : "🐯"}
-                        </span>
-                        <span className="flex-1">
-                          {circle.name} · {(circle.memberCount || 0).toLocaleString()}
-                        </span>
-                      </Link>
-                    ))}
-                </nav>
-              </div>
-            )}
-            
-            {/* Discover Circles - Secondary */}
-            {discoverCircles.length > 0 && (
-              <div style={{ marginTop: "24px" }}>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: "var(--muted)",
-                    padding: "0 8px",
-                    marginBottom: "6px",
-                    opacity: 0.7,
-                  }}
-                >
-                  DISCOVER
-                </div>
-                <nav
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1px",
-                  }}
-                >
-                  {discoverCircles.slice(0, 3).map((circle) => (
-                    <Link
-                      key={circle.id}
-                      href={`/community/${circle.id}`}
-                      className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-semibold transition-all no-underline"
-                      style={{
-                        color: "var(--muted)",
-                        opacity: 0.8,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "var(--cream)";
-                        e.currentTarget.style.color = "var(--ink)";
-                        e.currentTarget.style.opacity = "1";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.color = "var(--muted)";
-                        e.currentTarget.style.opacity = "0.8";
-                      }}
-                    >
-                      <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>
-                        {circle.level === CircleLevel.STATE ? "🏛️" : circle.level === CircleLevel.DISTRICT ? "🌊" : "🐯"}
-                      </span>
-                      <span className="flex-1">
-                        {circle.name} · {(circle.memberCount || 0).toLocaleString()}
-                      </span>
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-            )}
-          </aside>
-
-          {/* Main Content */}
-          <main
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            onClick={() => {
+              setComposerType(undefined);
+              setIsComposerOpen(true);
+            }}
             style={{
-              padding: "20px 24px",
-              background: "var(--paper)",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "7px 14px",
+              borderRadius: "100px",
+              background: "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+              color: "var(--ink)",
+              fontSize: "12px",
+              fontWeight: 800,
+              cursor: "pointer",
+              border: "none",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 2px 10px rgba(232,98,26,.3)",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(232,98,26,.38)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 2px 10px rgba(232,98,26,.3)";
             }}
           >
-            {/* Page Header */}
+            ✏️ Post Update
+          </button>
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
+              background: "var(--cream)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "16px",
+              cursor: "pointer",
+              position: "relative",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--saffron-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--cream)";
+            }}
+            onClick={() => router.push("/messages")}
+          >
+            💬
             <div
-              className="flex items-start justify-between mb-4.5"
-              style={{ marginBottom: "18px" }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: "20px",
-                    fontWeight: 800,
-                    color: "var(--ink)",
-                    letterSpacing: "-0.5px",
-                  }}
-                >
-                  {feedMode === "global" ? "Global Feed" : "Community Feed"}
-                </div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--muted)",
-                    marginTop: "2px",
-                  }}
-                >
-                  {feedMode === "global" 
-                    ? "All jobs, services and events in the application" 
-                    : `${primaryCircle?.name || "Bihar Circle"} · ${primaryCircle?.city || "Pune"} · 47 posts this week`}
-                </div>
-              </div>
-              {primaryCircle && (
-                <button
-                  onClick={() => {
-                    setComposerType(undefined);
-                    setIsComposerOpen(true);
-                  }}
-                  className="btn-primary"
-                  style={{
-                    fontSize: "13px",
-                    padding: "9px 18px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  ✏️ Post Update
-                </button>
-              )}
-            </div>
-
-            {/* Feed Toggle */}
-            <div
-              className="flex gap-1 mb-4.5 rounded-2xl p-1 border"
               style={{
-                background: "var(--cream)",
-                borderRadius: "14px",
-                padding: "4px",
-                border: "1px solid var(--border)",
-                marginBottom: "18px",
+                position: "absolute",
+                top: "5px",
+                right: "5px",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "var(--color-danger)",
+                border: "2px solid white",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
+              background: "var(--cream)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "16px",
+              cursor: "pointer",
+              position: "relative",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--saffron-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--cream)";
+            }}
+            onClick={() => router.push("/notifications")}
+          >
+            🔔
+            <div
+              style={{
+                position: "absolute",
+                top: "5px",
+                right: "5px",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "var(--color-danger)",
+                border: "2px solid white",
+              }}
+            />
+          </div>
+          <Link href="/profile/me">
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "10px",
+                background: userImage
+                  ? "transparent"
+                  : "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+                fontWeight: 800,
+                color: "white",
+                cursor: "pointer",
+                border: "2px solid transparent",
+                transition: "all 0.15s",
+                overflow: "hidden",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--saffron)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "transparent";
               }}
             >
-              <button
-                onClick={() => setFeedMode("community")}
-                className="flex-1 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all border-none flex items-center justify-center gap-2"
+              {userImage ? (
+                <Image src={userImage} alt={userName} width={36} height={36} style={{ borderRadius: "8px" }} />
+              ) : (
+                userInitials
+              )}
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* 3-Column Layout */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "256px 1fr 300px",
+          gap: 0,
+          maxWidth: "1280px",
+          margin: "0 auto",
+          padding: 0,
+          minHeight: "calc(100vh - 58px)",
+          alignItems: "start",
+        }}
+      >
+        {/* LEFT SIDEBAR */}
+        <div
+          style={{
+            width: "256px",
+            padding: "20px 16px",
+            position: "sticky",
+            top: "58px",
+            height: "calc(100vh - 58px)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            borderRight: "1px solid var(--border)",
+            background: "var(--white)",
+          }}
+        >
+          {/* Profile Card */}
+          <div
+            style={{
+              background: "linear-gradient(150deg, var(--saffron-dark), var(--saffron))",
+              borderRadius: "14px",
+              padding: "16px 14px",
+              marginBottom: "8px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                width: "120px",
+                height: "120px",
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(255,255,255,.1), transparent 70%)",
+                top: "-30px",
+                right: "-30px",
+              }}
+            />
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "13px",
+                background: "linear-gradient(135deg, rgba(255,255,255,.25), rgba(255,255,255,.1))",
+                border: "2px solid rgba(255,255,255,.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "18px",
+                fontWeight: 900,
+                color: "white",
+                marginBottom: "10px",
+              }}
+            >
+              {userImage ? (
+                <Image src={userImage} alt={userName} width={48} height={48} style={{ borderRadius: "11px" }} />
+              ) : (
+                userInitials
+              )}
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: 800, color: "white", letterSpacing: "-0.3px" }}>
+              {userName}
+            </div>
+            <div style={{ fontSize: "10px", color: "rgba(255,255,255,.6)", marginTop: "2px" }}>
+              {userProfile?.profile?.profession || "Worker"} · {userProfile?.profile?.currentCity || "City"}
+            </div>
+            <div style={{ display: "flex", gap: "5px", marginTop: "8px", flexWrap: "wrap" }}>
+              <div
                 style={{
-                  background: feedMode === "community" ? "var(--blue)" : "transparent",
-                  color: feedMode === "community" ? "white" : "var(--muted)",
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  background: "rgba(255,255,255,.12)",
+                  color: "rgba(255,255,255,.85)",
+                }}
+              >
+                {getStateEmoji(userProfile?.profile?.nativePlaceState)} {userProfile?.profile?.nativePlaceState || "State"}
+              </div>
+              <div
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  background: "rgba(255,255,255,.12)",
+                  color: "rgba(255,255,255,.85)",
+                }}
+              >
+                💬 Hindi
+              </div>
+              <div
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  background: "rgba(255,255,255,.12)",
+                  color: "rgba(255,255,255,.85)",
+                }}
+              >
+                ⭐ {safeTrustScore} Trust
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: 0,
+                marginTop: "12px",
+                background: "rgba(255,255,255,.08)",
+                borderRadius: "10px",
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ padding: "8px 4px", textAlign: "center", borderRight: "1px solid rgba(255,255,255,.1)" }}>
+                <div style={{ fontSize: "15px", fontWeight: 900, color: "white" }}>14</div>
+                <div style={{ fontSize: "8px", fontWeight: 600, color: "rgba(255,255,255,.5)", marginTop: "1px" }}>
+                  Connections
+                </div>
+              </div>
+              <div style={{ padding: "8px 4px", textAlign: "center", borderRight: "1px solid rgba(255,255,255,.1)" }}>
+                <div style={{ fontSize: "15px", fontWeight: 900, color: "white" }}>3</div>
+                <div style={{ fontSize: "8px", fontWeight: 600, color: "rgba(255,255,255,.5)", marginTop: "1px" }}>
+                  Vouches
+                </div>
+              </div>
+              <div style={{ padding: "8px 4px", textAlign: "center" }}>
+                <div style={{ fontSize: "15px", fontWeight: 900, color: "white" }}>{safeTrustScore}</div>
+                <div style={{ fontSize: "8px", fontWeight: 600, color: "rgba(255,255,255,.5)", marginTop: "1px" }}>
+                  Trust
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* MY CIRCLES */}
+          <div
+            style={{
+              fontSize: "9px",
+              fontWeight: 800,
+              color: "var(--muted)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              padding: "8px 10px 4px",
+            }}
+          >
+            MY CIRCLES
+          </div>
+          {primaryCircle && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                borderRadius: "11px",
+                background: "var(--cream)",
+                border: "1.5px solid var(--border)",
+                cursor: "pointer",
+                transition: "all 0.15s",
+                marginBottom: "4px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--saffron)";
+                e.currentTarget.style.background = "var(--saffron-light)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.background = "var(--cream)";
+              }}
+            >
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "8px",
+                  background: "var(--saffron-light)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "14px",
+                  flexShrink: 0,
+                }}
+              >
+                {getStateEmoji(primaryCircle.state)}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--ink)" }}>
+                  {primaryCircle.name}
+                </div>
+                <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "1px" }}>
+                  {primaryCircle.memberCount || 0} members · 47 posts/week
+                </div>
+              </div>
+              <div
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: "var(--green)",
+                  marginLeft: "auto",
+                  flexShrink: 0,
+                }}
+              />
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "10px 12px",
+              borderRadius: "11px",
+              background: feedMode === "global" ? "var(--saffron-light)" : "var(--cream)",
+              border: `1.5px solid ${feedMode === "global" ? "var(--saffron)" : "var(--border)"}`,
+              cursor: "pointer",
+              transition: "all 0.15s",
+              marginBottom: "4px",
+            }}
+            onClick={() => setFeedMode("global")}
+            onMouseEnter={(e) => {
+              if (feedMode !== "global") {
+                e.currentTarget.style.borderColor = "var(--saffron)";
+                e.currentTarget.style.background = "var(--saffron-light)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (feedMode !== "global") {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.background = "var(--cream)";
+              }
+            }}
+          >
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                background: "var(--saffron-light)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+                flexShrink: 0,
+              }}
+            >
+              🌐
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--ink)" }}>Global Feed</div>
+              <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "1px" }}>All Circles</div>
+            </div>
+          </div>
+
+          <div style={{ height: "1px", background: "var(--border)", margin: "6px 0" }} />
+
+          {/* Navigate */}
+          <div
+            style={{
+              fontSize: "9px",
+              fontWeight: 800,
+              color: "var(--muted)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              padding: "8px 10px 4px",
+            }}
+          >
+            Navigate
+          </div>
+          {[
+            { icon: "👥", label: "Community Feed", href: "/community", active: true, count: feed.length },
+            { icon: "💼", label: "Jobs", href: "/jobs", count: 12 },
+            { icon: "🔧", label: "Services", href: "/services" },
+            { icon: "💬", label: "Messages", href: "/messages", count: 3, countColor: "red" },
+            { icon: "🔔", label: "Notifications", href: "/notifications", count: 7, countColor: "red" },
+            { icon: "🔖", label: "Saved Posts", href: "/saved" },
+            { icon: "👤", label: "My Profile", href: "/profile/me" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              style={{ textDecoration: "none" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "11px",
+                  padding: "9px 12px",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                  fontSize: "13px",
+                  fontWeight: item.active ? 700 : 600,
+                  color: item.active ? "var(--saffron)" : "var(--muted)",
+                  background: item.active ? "var(--saffron-light)" : "transparent",
+                  position: "relative",
                 }}
                 onMouseEnter={(e) => {
-                  if (feedMode !== "community") {
+                  if (!item.active) {
+                    e.currentTarget.style.background = "var(--cream)";
                     e.currentTarget.style.color = "var(--ink)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.6)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (feedMode !== "community") {
-                    e.currentTarget.style.color = "var(--muted)";
+                  if (!item.active) {
                     e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "var(--muted)";
                   }
                 }}
               >
-                <span style={{ fontSize: "15px" }}>👥</span>
-                {primaryCircle?.name?.replace(" Circle", "") || "Bihar"} Circle
-                {feedMode === "community" && (
-                  <span
+                <div style={{ fontSize: "18px", width: "22px", textAlign: "center", flexShrink: 0 }}>
+                  {item.icon}
+                </div>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.count !== undefined && (
+                  <div
                     style={{
-                      background: "rgba(255,255,255,0.3)",
+                      marginLeft: "auto",
+                      minWidth: "18px",
+                      height: "18px",
+                      borderRadius: "9px",
+                      background: item.countColor === "red" ? "var(--color-danger)" : "var(--saffron)",
                       color: "white",
-                      fontSize: "10px",
+                      fontSize: "9px",
                       fontWeight: 800,
-                      padding: "1px 6px",
-                      borderRadius: "100px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 4px",
                     }}
                   >
-                    4
-                  </span>
+                    {item.count}
+                  </div>
                 )}
-              </button>
-              <button
-                onClick={() => setFeedMode("global")}
-                className="flex-1 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all border-none flex items-center justify-center gap-2"
-                style={{
-                  background: feedMode === "global" ? "var(--saffron)" : "transparent",
-                  color: feedMode === "global" ? "white" : "var(--muted)",
-                }}
-                onMouseEnter={(e) => {
-                  if (feedMode !== "global") {
-                    e.currentTarget.style.color = "var(--ink)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.6)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (feedMode !== "global") {
-                    e.currentTarget.style.color = "var(--muted)";
-                    e.currentTarget.style.background = "transparent";
-                  }
-                }}
-              >
-                <span style={{ fontSize: "15px" }}>🌐</span>
-                Global Feed
-              </button>
-            </div>
+              </div>
+            </Link>
+          ))}
 
-            {/* Composer */}
-            {feedMode === "community" && primaryCircle && (
+          <div style={{ height: "1px", background: "var(--border)", margin: "6px 0" }} />
+
+          {/* My Activity */}
+          <div
+            style={{
+              fontSize: "9px",
+              fontWeight: 800,
+              color: "var(--muted)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              padding: "8px 10px 4px",
+            }}
+          >
+            My Activity
+          </div>
+          {[
+            { icon: "📝", label: "My Posts", href: "/profile/me?tab=posts" },
+            { icon: "🤝", label: "Connections", href: "/profile/me?tab=connections" },
+            { icon: "⚙️", label: "Settings", href: "/settings" },
+          ].map((item) => (
+            <Link key={item.label} href={item.href} style={{ textDecoration: "none" }}>
               <div
-                className="bg-white rounded-2xl border p-3.5 mb-3.5 flex items-center gap-3 cursor-text transition-all"
                 style={{
-                  border: "1.5px solid var(--border)",
-                  borderRadius: "14px",
-                  padding: "14px 16px",
-                  marginBottom: "14px",
-                  boxShadow: "var(--shadow-sm)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "11px",
+                  padding: "9px 12px",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "var(--muted)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "var(--saffron)";
+                  e.currentTarget.style.background = "var(--cream)";
+                  e.currentTarget.style.color = "var(--ink)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                }}
-                onClick={() => {
-                  setComposerType(undefined);
-                  setIsComposerOpen(true);
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--muted)";
                 }}
               >
+                <div style={{ fontSize: "18px", width: "22px", textAlign: "center", flexShrink: 0 }}>
+                  {item.icon}
+                </div>
+                <span>{item.label}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* CENTER FEED */}
+        <div
+          style={{
+            padding: "20px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 0,
+            minWidth: 0,
+            background: "var(--paper)",
+            borderRight: "1px solid var(--border)",
+          }}
+        >
+          {/* Circle Tabs */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            <button
+              onClick={() => setFeedMode("community")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+                padding: "9px 20px",
+                borderRadius: "12px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s",
+                border: "1.5px solid transparent",
+                background: feedMode === "community" ? "var(--saffron)" : "var(--white)",
+                color: feedMode === "community" ? "white" : "var(--muted)",
+                borderColor: feedMode === "community" ? "var(--saffron)" : "var(--border)",
+                boxShadow: feedMode === "community" ? "0 4px 14px rgba(232,98,26,.25)" : "var(--shadow-sm)",
+              }}
+              onMouseEnter={(e) => {
+                if (feedMode !== "community") {
+                  e.currentTarget.style.borderColor = "var(--saffron)";
+                  e.currentTarget.style.color = "var(--saffron)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (feedMode !== "community") {
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.color = "var(--muted)";
+                }
+              }}
+            >
+              👥 {primaryCircle?.name?.replace(" Circle", "") || "Odisha"} — {primaryCircle?.city || "Hyderabad"}
+              {feedMode === "community" && (
                 <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+                    minWidth: "18px",
+                    height: "18px",
+                    borderRadius: "9px",
+                    background: "var(--gold)",
+                    color: "var(--ink)",
+                    fontSize: "9px",
+                    fontWeight: 900,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0 4px",
                   }}
                 >
-                  {session?.user?.name?.[0]?.toUpperCase() || "U"}
+                  {feed.length}
+                </div>
+              )}
+            </button>
+            <button
+              onClick={() => setFeedMode("global")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+                padding: "9px 20px",
+                borderRadius: "12px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s",
+                border: "1.5px solid transparent",
+                background: feedMode === "global" ? "var(--saffron)" : "var(--white)",
+                color: feedMode === "global" ? "white" : "var(--muted)",
+                borderColor: feedMode === "global" ? "var(--saffron)" : "var(--border)",
+                boxShadow: feedMode === "global" ? "0 4px 14px rgba(232,98,26,.25)" : "var(--shadow-sm)",
+              }}
+              onMouseEnter={(e) => {
+                if (feedMode !== "global") {
+                  e.currentTarget.style.borderColor = "var(--saffron)";
+                  e.currentTarget.style.color = "var(--saffron)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (feedMode !== "global") {
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.color = "var(--muted)";
+                }
+              }}
+            >
+              🌐 Global Feed
+            </button>
+          </div>
+
+          {/* Compose Box */}
+          {feedMode === "community" && primaryCircle && (
+            <div
+              style={{
+                background: "var(--white)",
+                borderRadius: "16px",
+                border: "1.5px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+                overflow: "hidden",
+                marginBottom: "16px",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(27,79,138,.2)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px" }}>
+                <div
+                  style={{
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "10px",
+                    flexShrink: 0,
+                    background: userImage
+                      ? "transparent"
+                      : "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "15px",
+                    fontWeight: 800,
+                    color: "white",
+                    overflow: "hidden",
+                  }}
+                >
+                  {userImage ? (
+                    <Image src={userImage} alt={userName} width={38} height={38} style={{ borderRadius: "8px" }} />
+                  ) : (
+                    userInitials
+                  )}
                 </div>
                 <div
                   style={{
                     flex: 1,
-                    fontSize: "14px",
+                    background: "var(--cream)",
+                    border: "1.5px solid var(--border)",
+                    borderRadius: "10px",
+                    padding: "10px 16px",
+                    fontSize: "13px",
                     color: "var(--muted)",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  onClick={() => {
+                    setComposerType(undefined);
+                    setIsComposerOpen(true);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(232,98,26,.25)";
+                    e.currentTarget.style.background = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.background = "var(--cream)";
                   }}
                 >
                   Share something with {primaryCircle.name}...
                 </div>
-                <div className="flex gap-1.5">
-                  {[
-                    { icon: "📍", label: "Meetup" },
-                    { icon: "💡", label: "Tip" },
-                    { icon: "🚨", label: "SOS", sos: true },
-                  ].map((action) => (
-                    <button
-                      key={action.label}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-none"
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: "8px",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        background: action.sos ? "var(--color-danger-light)" : "var(--cream)",
-                        color: action.sos ? "var(--color-danger)" : "var(--muted)",
-                        border: "1px solid var(--border)",
-                        whiteSpace: "nowrap",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (action.sos) {
-                          e.currentTarget.style.background = "var(--color-danger)";
-                          e.currentTarget.style.color = "white";
-                        } else {
-                          e.currentTarget.style.background = "var(--saffron-light)";
-                          e.currentTarget.style.color = "var(--saffron)";
-                          e.currentTarget.style.borderColor = "rgba(232,98,26,0.25)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (action.sos) {
-                          e.currentTarget.style.background = "var(--color-danger-light)";
-                          e.currentTarget.style.color = "var(--color-danger)";
-                        } else {
-                          e.currentTarget.style.background = "var(--cream)";
-                          e.currentTarget.style.color = "var(--muted)";
-                          e.currentTarget.style.borderColor = "var(--border)";
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const typeMap: Record<string, CommunityPostType> = {
-                          Meetup: CommunityPostType.MEETUP,
-                          Tip: CommunityPostType.GYAAN,
-                          SOS: CommunityPostType.SOS,
-                        };
-                        setComposerType(typeMap[action.label] || CommunityPostType.GENERAL);
-                        setIsComposerOpen(true);
-                      }}
-                    >
-                      {action.icon} {action.label}
-                    </button>
-                  ))}
-                </div>
               </div>
-            )}
-
-            {/* Filter Bar */}
-            <div
-              className="flex gap-1.5 items-center mb-4 flex-wrap"
-              style={{
-                marginBottom: "16px",
-              }}
-            >
-              {[
-                { id: "all", label: "🔥 All" },
-                { id: "SOS", label: "🚨 SOS" },
-                { id: "EVENT_SHARE", label: "🎉 Events" },
-                { id: "MEETUP", label: "📍 Meetups" },
-                { id: "GYAAN", label: "💡 Gyaan" },
-              ].map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => {
-                    setActiveFilter(filter.id);
-                  }}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border-none"
-                  style={{
-                    padding: "6px 13px",
-                    borderRadius: "100px",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    background: activeFilter === filter.id ? "var(--saffron)" : "white",
-                    border: "1.5px solid",
-                    borderColor: activeFilter === filter.id ? "var(--saffron)" : "var(--border)",
-                    color: activeFilter === filter.id ? "white" : "var(--muted)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (activeFilter !== filter.id) {
-                      e.currentTarget.style.borderColor = "var(--saffron)";
-                      e.currentTarget.style.color = "var(--saffron)";
-                      e.currentTarget.style.background = "var(--saffron-light)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeFilter !== filter.id) {
-                      e.currentTarget.style.borderColor = "var(--border)";
-                      e.currentTarget.style.color = "var(--muted)";
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  padding: "0 16px 12px",
+                  borderTop: "1px solid var(--border)",
+                  paddingTop: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                {[
+                  { icon: "📷", label: "Photo", color: "var(--green)", hoverBg: "var(--green-light)" },
+                  { icon: "📍", label: "Meetup", color: "var(--saffron)", hoverBg: "var(--saffron-light)" },
+                  { icon: "💡", label: "Tip", color: "var(--saffron-dark)", hoverBg: "var(--saffron-light)" },
+                  { icon: "🔧", label: "Service", color: "var(--saffron)", hoverBg: "var(--saffron-light)" },
+                  { icon: "🚨", label: "SOS", color: "var(--color-danger)", hoverBg: "var(--color-danger-light)", sos: true },
+                ].map((action) => (
+                  <button
+                    key={action.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      padding: "7px 14px",
+                      borderRadius: "100px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      border: "1.5px solid var(--border)",
+                      background: "white",
+                      transition: "all 0.15s",
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      color: action.color,
+                      borderColor: action.sos ? "rgba(239,68,68,.2)" : action.color === "var(--saffron)" || action.color === "var(--saffron-dark)" ? "rgba(232,98,26,.2)" : "var(--border)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                      e.currentTarget.style.background = action.hoverBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
                       e.currentTarget.style.background = "white";
-                    }
-                  }}
-                >
-                  {filter.label}
-                </button>
-              ))}
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const typeMap: Record<string, CommunityPostType> = {
+                        Photo: CommunityPostType.GENERAL,
+                        Meetup: CommunityPostType.MEETUP,
+                        Tip: CommunityPostType.GYAAN,
+                        Service: CommunityPostType.JOB_SHARE,
+                        SOS: CommunityPostType.SOS,
+                      };
+                      setComposerType(typeMap[action.label] || CommunityPostType.GENERAL);
+                      setIsComposerOpen(true);
+                    }}
+                  >
+                    {action.icon} {action.label}
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Feed Posts */}
+          {/* Filter Pills */}
+          <div
+            style={{
+              display: "flex",
+              gap: "7px",
+              marginBottom: "16px",
+              flexWrap: "nowrap",
+              overflowX: "auto",
+            }}
+          >
+            {[
+              { id: "all", label: "🔥 All" },
+              { id: "SOS", label: "🚨 SOS" },
+              { id: "EVENT_SHARE", label: "🎉 Events" },
+              { id: "MEETUP", label: "📍 Meetups" },
+              { id: "GYAAN", label: "💡 Gyaan" },
+              { id: "JOB_SHARE", label: "🔧 Services" },
+            ].map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setActiveFilter(filter.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "7px 14px",
+                  borderRadius: "100px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  transition: "all 0.18s",
+                  border: "1.5px solid var(--border)",
+                  background: activeFilter === filter.id ? "var(--saffron)" : "white",
+                  color: activeFilter === filter.id ? "white" : "var(--muted)",
+                  borderColor: activeFilter === filter.id ? "var(--saffron)" : "var(--border)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeFilter !== filter.id) {
+                    e.currentTarget.style.borderColor = "var(--saffron)";
+                    e.currentTarget.style.color = "var(--saffron)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeFilter !== filter.id) {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.color = "var(--muted)";
+                  }
+                }}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Feed Posts */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {error && (
               <div
-                className="rounded-2xl border p-4 mb-3"
                 style={{
-                  borderColor: "var(--color-danger)",
+                  borderRadius: "16px",
+                  border: "1px solid var(--color-danger)",
                   background: "var(--color-danger-light)",
                   color: "var(--color-danger)",
                   fontSize: "12px",
                   fontWeight: 600,
+                  padding: "12px 16px",
                 }}
               >
                 {error}
               </div>
             )}
 
+            {loading && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "white",
+                      borderRadius: "16px",
+                      border: "1.5px solid var(--border)",
+                      padding: "18px",
+                      height: "200px",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
             {feed.length === 0 && !loading ? (
               <div
-                className="rounded-2xl border p-8 text-center"
                 style={{
+                  borderRadius: "16px",
+                  border: "1px solid var(--border)",
+                  padding: "32px",
+                  textAlign: "center",
                   background: "white",
-                  borderColor: "var(--border)",
                   color: "var(--muted)",
                 }}
               >
                 No posts yet. Be the first to share!
               </div>
             ) : (
-              <div className="space-y-3">
-                {feed.map((post) => (
-                  <FeedPost key={post.id} post={post} />
-                ))}
-              </div>
+              feed.map((post) => (
+                <FeedPost
+                  key={post.id}
+                  post={post}
+                  onLike={handleLike}
+                  onReply={handleReply}
+                  onShare={handleShare}
+                  isLiked={likedPosts.has(post.id) || (post.likes && post.likes.length > 0)}
+                />
+              ))
             )}
-          </main>
+          </div>
+        </div>
 
-          {/* Right Panel */}
-          <aside
-            className="hidden lg:block border-l sticky"
-            style={{
-              padding: "20px 18px",
-              borderLeft: "1px solid var(--border)",
-              background: "white",
-              top: "64px",
-              height: "calc(100vh - 64px)",
-              overflowY: "auto",
-            }}
-          >
-            {/* Trust Score Widget */}
-            <div className="rp-section" style={{ marginBottom: "24px" }}>
+        {/* RIGHT SIDEBAR */}
+        <div
+          style={{
+            width: "300px",
+            padding: "20px 16px",
+            position: "sticky",
+            top: "58px",
+            height: "calc(100vh - 58px)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+            background: "var(--white)",
+          }}
+        >
+          {/* Active SOS Widget */}
+          {activeSOS.length > 0 && (
+            <div
+              style={{
+                background: "var(--white)",
+                borderRadius: "14px",
+                border: "1.5px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+                overflow: "hidden",
+              }}
+            >
               <div
-                className="bg-[var(--cream)] rounded-xl p-3.5 flex items-center gap-3.5"
                 style={{
-                  background: "var(--cream)",
-                  borderRadius: "12px",
-                  padding: "14px",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  marginBottom: "16px",
+                  justifyContent: "space-between",
+                  padding: "12px 14px 8px",
+                  borderBottom: "1px solid var(--border)",
                 }}
               >
-                <svg width="56" height="56" viewBox="0 0 56 56" style={{ flexShrink: 0 }}>
-                  <defs>
-                    <linearGradient id="trustGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" style={{ stopColor: "var(--saffron)" }} />
-                      <stop offset="100%" style={{ stopColor: "var(--gold)" }} />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="28" cy="28" r="22" fill="none" stroke="var(--border)" strokeWidth="4" />
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    fill="none"
-                    stroke="url(#trustGradient)"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={TRUST_CIRCLE_CIRCUMFERENCE}
-                    strokeDashoffset={trustStrokeDashoffset}
-                    transform="rotate(-90 28 28)"
-                  />
-                  <text
-                    x="28"
-                    y="33"
-                    textAnchor="middle"
-                    fontSize="13"
-                    fontWeight="800"
-                    fill="var(--ink)"
-                    fontFamily="Sora, sans-serif"
-                  >
-                    {safeTrustScore}
-                  </text>
-                </svg>
-                <div style={{ flex: 1 }}>
-                  <div
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: "7px" }}>
+                  🚨 Active SOS{" "}
+                  <span
                     style={{
+                      background: "var(--color-danger)",
+                      color: "white",
                       fontSize: "9px",
                       fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.12em",
-                      color: "var(--muted)",
+                      padding: "2px 6px",
+                      borderRadius: "10px",
+                      marginLeft: "4px",
                     }}
                   >
-                    Trust Score
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "24px",
-                      fontWeight: 800,
-                      color: "var(--ink)",
-                      letterSpacing: "-1px",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {safeTrustScore}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--saffron)",
-                      fontWeight: 700,
-                      marginTop: "2px",
-                    }}
-                  >
-                    {getTrustLabel(safeTrustScore)}
-                  </div>
-                  <div
-                    style={{
-                      height: "4px",
-                      background: "var(--border)",
-                      borderRadius: "2px",
-                      marginTop: "8px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        borderRadius: "2px",
-                        background: "linear-gradient(90deg, var(--saffron), var(--gold))",
-                        width: `${Math.max(0, Math.min(100, trustPercentage))}%`,
-                      }}
-                    />
-                  </div>
+                    {activeSOS.length} live
+                  </span>
                 </div>
-              </div>
-            </div>
-
-            {/* Top Helpers */}
-            <div className="rp-section" style={{ marginBottom: "24px" }}>
-              <div
-                className="flex items-center justify-between mb-3"
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 800,
-                  color: "var(--ink)",
-                  marginBottom: "12px",
-                }}
-              >
-                <span>🏆 Top Helpers This Month</span>
-                <Link
-                  href={primaryCircle ? `/community/${primaryCircle.id}/leaderboard` : "/community"}
+                <div
                   style={{
                     fontSize: "11px",
-                    color: "var(--saffron)",
                     fontWeight: 700,
-                    textDecoration: "none",
+                    color: "var(--saffron)",
+                    cursor: "pointer",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.textDecoration = "underline";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.textDecoration = "none";
-                  }}
+                  onClick={() => setActiveFilter("SOS")}
                 >
-                  See all →
-                </Link>
+                  See all
+                </div>
               </div>
-              <div className="space-y-0">
-                {topHelpers.length === 0 ? (
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--muted)",
-                      padding: "8px 0",
-                    }}
-                  >
-                    No helpers this month
-                  </div>
-                ) : (
-                  topHelpers.map((entry, idx) => {
-                    const user = entry.user || {};
-                    const profile = user.profile || {};
-                    const name = user.name || "Anonymous";
-                    const initials = name
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .slice(0, 2)
-                      .join("")
-                      .toUpperCase();
-                    
-                    // Avatar colors based on rank
-                    const bgColors = [
-                      "linear-gradient(135deg, var(--saffron), var(--saffron-dark))", // Gold for 1st
-                      "linear-gradient(135deg, var(--green), var(--green-dark))", // Green for 2nd
-                      "linear-gradient(135deg, var(--gold), var(--gold-dark))", // Amber for 3rd
-                    ];
-                    
-                    // Rank colors
-                    const rankColors = ["#F59E0B", "#94A3B8", "#B45309"]; // Gold, Silver, Bronze
-                    
-                    return (
+              <div style={{ padding: "10px 14px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {activeSOS.map((sos: any) => {
+                  const author = sos.author || {};
+                  const authorName = author.name || "Anonymous";
+                  const sosContent = sos.content || "";
+                  const createdAt = sos.createdAt ? new Date(sos.createdAt) : new Date();
+                  const timeAgo = Math.floor((Date.now() - createdAt.getTime()) / 60000);
+                  
+                  return (
+                    <div
+                      key={sos.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "9px",
+                        padding: "9px 11px",
+                        borderRadius: "10px",
+                        background: "var(--color-danger-light)",
+                        border: "1px solid rgba(239,68,68,.12)",
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "rgba(239,68,68,.3)";
+                      }}
+                      onClick={() => router.push(`/community/post/${sos.id}`)}
+                    >
                       <div
-                        key={entry.id || idx}
-                        className="flex items-center gap-2 py-1.5 border-b"
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          padding: "7px 0",
-                          borderBottom: "1px solid var(--border)",
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          background: "var(--color-danger)",
+                          flexShrink: 0,
+                          marginTop: "4px",
+                          animation: "blink 1.3s infinite",
+                        }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "11px", fontWeight: 800, color: "var(--ink)" }}>{authorName}</div>
+                        <div style={{ fontSize: "10px", color: "var(--muted)", lineHeight: 1.5, marginTop: "2px" }}>
+                          {sosContent.slice(0, 50)}...
+                        </div>
+                        <div style={{ fontSize: "9px", color: "var(--color-danger)", fontWeight: 700, marginTop: "3px" }}>
+                          ⏱ {timeAgo} min ago · 12 responding
+                        </div>
+                      </div>
+                      <button
+                        style={{
+                          padding: "5px 10px",
+                          borderRadius: "7px",
+                          background: "var(--color-danger)",
+                          color: "white",
+                          fontSize: "10px",
+                          fontWeight: 800,
+                          border: "none",
+                          cursor: "pointer",
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          flexShrink: 0,
+                          alignSelf: "center",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/community/post/${sos.id}`);
                         }}
                       >
+                        Help
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Upcoming Events Widget */}
+          {upcomingEvents.length > 0 && (
+            <div
+              style={{
+                background: "var(--white)",
+                borderRadius: "14px",
+                border: "1.5px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px 8px",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: "7px" }}>
+                  🎉 Upcoming Events
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "var(--saffron)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => router.push("/events")}
+                >
+                  See all
+                </div>
+              </div>
+              <div style={{ padding: "10px 14px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {upcomingEvents.map((event: any) => {
+                  const eventDate = event.meetup?.meetupDate ? formatDate(event.meetup.meetupDate) : null;
+                  const eventId = event.event?.id || event.eventId || event.id || event.meetup?.eventId;
+                  
+                  return (
+                    <div
+                      key={event.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        cursor: "pointer",
+                        padding: "6px 0",
+                        borderBottom: "1px solid rgba(226,232,240,.5)",
+                      }}
+                      onClick={() => {
+                        if (eventId) {
+                          router.push(`/events/${eventId}`);
+                        } else {
+                          router.push("/events");
+                        }
+                      }}
+                    >
+                      {eventDate && (
                         <div
                           style={{
-                            fontSize: "14px",
-                            fontWeight: 800,
-                            width: "20px",
-                            color: rankColors[idx] || rankColors[0],
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "9px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
                             flexShrink: 0,
+                            background: "linear-gradient(135deg, var(--saffron-dark), var(--saffron))",
                           }}
                         >
-                          {entry.rankIcon || (idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉")}
+                          <div style={{ fontSize: "8px", fontWeight: 800, textTransform: "uppercase", color: "white" }}>
+                            {eventDate.month}
+                          </div>
+                          <div style={{ fontSize: "14px", fontWeight: 900, color: "white", lineHeight: 1 }}>
+                            {eventDate.day}
+                          </div>
                         </div>
-                        <Link
-                          href={`/profile/${user.id}`}
-                          className="flex items-center gap-2 flex-1 min-w-0"
-                          style={{
-                            textDecoration: "none",
-                            flex: 1,
-                            minWidth: 0,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.closest("div")!.style.background = "var(--cream)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.closest("div")!.style.background = "transparent";
-                          }}
-                        >
-                          <div
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                            style={{
-                              background: bgColors[idx] || bgColors[0],
-                              width: "28px",
-                              height: "28px",
-                            }}
-                          >
-                            {initials}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                color: "var(--ink)",
-                              }}
-                            >
-                              {name}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "var(--muted)",
-                              }}
-                            >
-                              {entry.badgeLabel || entry.category || "Helper"}
-                            </div>
-                          </div>
-                        </Link>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                           style={{
                             fontSize: "12px",
-                            fontWeight: 800,
-                            color: "var(--saffron)",
-                            flexShrink: 0,
+                            fontWeight: 700,
+                            color: "var(--ink)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                           }}
                         >
-                          {entry.score || 0} pts
+                          {event.meetup?.title || event.content?.slice(0, 30) + "..."}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "1px" }}>
+                          {event.meetup?.location || "Location TBD"} · {event.meetup?.rsvpCount || 0} going
                         </div>
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Circle Events */}
-            <div className="rp-section" style={{ marginBottom: "24px" }}>
-              <div
-                className="flex items-center justify-between mb-3"
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 800,
-                  color: "var(--ink)",
-                  marginBottom: "12px",
-                }}
-              >
-                <span>📅 Circle Events</span>
-                <Link
-                  href="/events"
-                  style={{
-                    fontSize: "11px",
-                    color: "var(--saffron)",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.textDecoration = "underline";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.textDecoration = "none";
-                  }}
-                >
-                  See all →
-                </Link>
-              </div>
-              <div className="space-y-2">
-                {upcomingEvents.length === 0 ? (
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--muted)",
-                      padding: "10px 12px",
-                    }}
-                  >
-                    No upcoming events
-                  </div>
-                ) : (
-                  upcomingEvents.map((event: any) => {
-                    const eventDate = event.meetup?.meetupDate
-                      ? formatDate(event.meetup.meetupDate)
-                      : null;
-                    // Get event ID - could be from event.id, event.eventId, or meetup.eventId
-                    // The feed returns CommunityPost items, which have event relation
-                    const eventId = event.event?.id || event.eventId || event.id || event.meetup?.eventId;
-                    
-                    const handleEventClick = () => {
-                      if (eventId) {
-                        router.push(`/events/${eventId}`);
-                      } else {
-                        // Fallback: navigate to events page with search
-                        router.push(`/events?search=${encodeURIComponent(event.meetup?.title || event.content?.slice(0, 30) || "")}`);
-                      }
-                    };
-                    
-                    return (
                       <div
-                        key={event.id}
-                        className="bg-[var(--cream)] rounded-xl border p-2.5 cursor-pointer transition-all"
                         style={{
-                          background: "var(--cream)",
-                          borderRadius: "10px",
-                          padding: "10px 12px",
-                          marginBottom: "7px",
-                          border: "1px solid var(--border)",
+                          padding: "4px 9px",
+                          borderRadius: "6px",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          border: "1.5px solid var(--border)",
+                          background: "white",
+                          color: "var(--muted)",
+                          cursor: "pointer",
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          flexShrink: 0,
+                          transition: "all 0.15s",
                         }}
-                        onClick={handleEventClick}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = "var(--green)";
-                          e.currentTarget.style.boxShadow = "var(--shadow-sm)";
-                          e.currentTarget.style.transform = "translateY(-1px)";
+                          e.currentTarget.style.borderColor = "var(--saffron)";
+                          e.currentTarget.style.color = "var(--saffron)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.borderColor = "var(--border)";
-                          e.currentTarget.style.boxShadow = "none";
-                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.color = "var(--muted)";
                         }}
                       >
-                        <div className="flex items-start justify-between mb-1">
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              color: "var(--ink)",
-                            }}
-                          >
-                            {event.meetup?.title || event.content?.slice(0, 30) + "..."}
-                          </div>
-                          {eventDate && (
-                            <div
-                              className="text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap flex-shrink-0"
-                              style={{
-                                background: "var(--green-light)",
-                                color: "var(--green)",
-                                fontSize: "10px",
-                                fontWeight: 700,
-                                padding: "2px 8px",
-                                borderRadius: "6px",
-                              }}
-                            >
-                              {eventDate.day}
-                              <div style={{ fontSize: "10px", textTransform: "uppercase" }}>
-                                {eventDate.month}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--muted)",
-                          }}
-                        >
-                          📍 {event.meetup?.location || "Location TBD"} · {event.meetup?.rsvpCount || 0} going
-                        </div>
+                        RSVP
                       </div>
-                    );
-                  })
-                )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            {/* People from Circle */}
-            <div className="rp-section">
+          {/* Online Now Widget */}
+          {onlineUsers.length > 0 && (
+            <div
+              style={{
+                background: "var(--white)",
+                borderRadius: "14px",
+                border: "1.5px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+                overflow: "hidden",
+              }}
+            >
               <div
-                className="flex items-center justify-between mb-3"
                 style={{
-                  marginBottom: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px 8px",
+                  borderBottom: "1px solid var(--border)",
                 }}
               >
-                <div>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: 800,
-                      color: "var(--ink)",
-                    }}
-                  >
-                    {primaryCircle?.state || primaryCircle?.name?.replace(" Circle", "") || "All"} — {primaryCircle?.city || "Communities"}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--muted)",
-                      fontWeight: 500,
-                      marginTop: "2px",
-                    }}
-                  >
-                    Members Nearby
-                  </div>
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: "7px" }}>
+                  🟢 Online Now{" "}
+                  <span style={{ fontSize: "10px", fontWeight: 600, color: "var(--muted)", marginLeft: "4px" }}>
+                    {onlineUsers.length} active
+                  </span>
                 </div>
-                <Link
-                  href={primaryCircle ? `/community/${primaryCircle.id}/members` : "/people"}
+                <div
                   style={{
                     fontSize: "11px",
-                    color: "var(--saffron)",
                     fontWeight: 700,
-                    textDecoration: "none",
+                    color: "var(--saffron)",
+                    cursor: "pointer",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.textDecoration = "underline";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.textDecoration = "none";
-                  }}
+                  onClick={() => router.push(primaryCircle ? `/community/${primaryCircle.id}/members` : "/people")}
                 >
-                  See all →
-                </Link>
+                  See all
+                </div>
               </div>
-              <div className="space-y-0">
-                {peopleFromBihar.length === 0 ? (
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--muted)",
-                      padding: "8px 0",
-                    }}
-                  >
-                    No members found
-                  </div>
-                ) : (
-                  peopleFromBihar.map((member: any) => {
-                    const user = member.user || {};
-                    const profile = user.profile || {};
-                    const initials = (user.name || "U")
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .slice(0, 2)
-                      .join("")
-                      .toUpperCase();
-                    const isFollowing = followingStatus[user.id] || false;
-                    const isCurrentUser = user.id === session?.user?.id;
-                    
-                    return (
+              <div style={{ padding: "10px 14px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {onlineUsers.map((user: any) => {
+                  const userId = user.user?.id || user.id;
+                  const userName = user.user?.name || user.name || "Anonymous";
+                  const userImage = user.user?.image || user.image;
+                  const profile = user.user?.profile || user.profile || {};
+                  const initials = getUserInitials(userName);
+                  
+                  if (userId === session?.user?.id) return null;
+                  
+                  return (
+                    <div
+                      key={userId}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "9px",
+                        cursor: "pointer",
+                        padding: "4px 0",
+                      }}
+                      onClick={() => router.push(`/profile/${userId}`)}
+                    >
                       <div
-                        key={member.id}
-                        className="flex items-center gap-2.5 py-2 border-b"
                         style={{
-                          borderBottom: "1px solid var(--border)",
-                          padding: "8px 0",
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "9px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "12px",
+                          fontWeight: 800,
+                          color: "white",
+                          flexShrink: 0,
+                          position: "relative",
+                          background: userImage
+                            ? "transparent"
+                            : "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+                          overflow: "hidden",
                         }}
                       >
-                        <Link
-                          href={`/profile/${user.id}`}
-                          className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
-                          style={{ textDecoration: "none" }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.closest("div")!.style.background = "var(--cream)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.closest("div")!.style.background = "transparent";
-                          }}
-                        >
-                          <div
-                            className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                            style={{
-                              width: "34px",
-                              height: "34px",
-                              background: "linear-gradient(135deg, var(--blue-mid), var(--blue))",
-                            }}
-                          >
-                            {initials}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div
-                              style={{
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                color: "var(--ink)",
-                              }}
-                            >
-                              {user.name || user.username || "Anonymous"}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "var(--muted)",
-                              }}
-                            >
-                              {profile.profession || "Member"} · {profile.currentCity || "Unknown"}
-                            </div>
-                          </div>
-                        </Link>
-                        {!isCurrentUser && (
-                          <button
-                            onClick={(e) => handleConnect(user.id, e)}
-                            className="text-xs font-semibold border rounded-md px-2.5 py-1 whitespace-nowrap"
-                            style={{
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              color: isFollowing ? "var(--green)" : "var(--saffron)",
-                              border: isFollowing 
-                                ? "1px solid rgba(27,107,69,0.25)" 
-                                : "1px solid rgba(232,98,26,0.25)",
-                              background: isFollowing ? "var(--green-light)" : "var(--saffron-light)",
-                              borderRadius: "7px",
-                              padding: "4px 10px",
-                              marginLeft: "auto",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isFollowing) {
-                                e.currentTarget.style.background = "var(--saffron)";
-                                e.currentTarget.style.color = "white";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isFollowing) {
-                                e.currentTarget.style.background = "var(--saffron-light)";
-                                e.currentTarget.style.color = "var(--saffron)";
-                              }
-                            }}
-                          >
-                            {isFollowing ? "✓ Connected" : "+ Connect"}
-                          </button>
+                        {userImage ? (
+                          <Image src={userImage} alt={userName} width={32} height={32} style={{ borderRadius: "7px" }} />
+                        ) : (
+                          initials
                         )}
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "1px",
+                            right: "1px",
+                            width: "9px",
+                            height: "9px",
+                            borderRadius: "50%",
+                            background: "var(--green)",
+                            border: "2px solid white",
+                          }}
+                        />
                       </div>
-                    );
-                  })
-                )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--ink)" }}>{userName}</div>
+                        <div style={{ fontSize: "10px", color: "var(--muted)" }}>
+                          {profile.profession || "Helper"} · {getStateEmoji(profile.nativePlaceState)} {profile.nativePlaceState || "State"}
+                        </div>
+                      </div>
+                      <div style={{ flexShrink: 0 }}>
+                        <ConnectButton userId={userId} userName={userName} variant="member-list" />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </aside>
+          )}
+
+          {/* Top Helpers Widget */}
+          {topHelpers.length > 0 && (
+            <div
+              style={{
+                background: "var(--white)",
+                borderRadius: "14px",
+                border: "1.5px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px 8px",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: "7px" }}>
+                  ⭐ Top Helpers This Week
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "var(--saffron)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => router.push(primaryCircle ? `/community/${primaryCircle.id}/leaderboard` : "/community")}
+                >
+                  View all
+                </div>
+              </div>
+              <div style={{ padding: "10px 14px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {topHelpers.map((entry, idx) => {
+                  const user = entry.user || {};
+                  const userName = user.name || "Anonymous";
+                  const initials = getUserInitials(userName);
+                  const rankColors = ["var(--saffron)", "var(--muted)", "var(--gold)"];
+                  
+                  return (
+                    <div
+                      key={entry.id || idx}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "9px",
+                        padding: "5px 0",
+                        borderBottom: "1px solid rgba(226,232,240,.4)",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => router.push(`/profile/${user.id}`)}
+                    >
+                      <div
+                        style={{
+                          width: "18px",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          color: rankColors[idx] || rankColors[0],
+                          textAlign: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {entry.rankIcon || (idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉")}
+                      </div>
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "9px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "12px",
+                          fontWeight: 800,
+                          color: "white",
+                          flexShrink: 0,
+                          background: "linear-gradient(135deg, var(--saffron), var(--saffron-dark))",
+                        }}
+                      >
+                        {initials}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--ink)" }}>{userName}</div>
+                        <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "1px" }}>
+                          {entry.score || 0} helps · {getStateEmoji(user.profile?.nativePlaceState)} {user.profile?.nativePlaceState || "State"}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          padding: "2px 7px",
+                          borderRadius: "4px",
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          background: "var(--saffron-light)",
+                          color: "var(--saffron-dark)",
+                        }}
+                      >
+                        {entry.badgeLabel || entry.category || "Helper"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Suggested Connections Widget */}
+          {suggestedConnections.length > 0 && (
+            <div
+              style={{
+                background: "var(--white)",
+                borderRadius: "14px",
+                border: "1.5px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px 8px",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: "7px" }}>
+                  🤝 People You May Know
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "var(--saffron)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => router.push(primaryCircle ? `/community/${primaryCircle.id}/members` : "/people")}
+                >
+                  See all
+                </div>
+              </div>
+              <div style={{ padding: "10px 14px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {suggestedConnections.map((user: any) => {
+                  const userId = user.user?.id || user.id;
+                  const userName = user.user?.name || user.name || "Anonymous";
+                  const userImage = user.user?.image || user.image;
+                  const profile = user.user?.profile || user.profile || {};
+                  const initials = getUserInitials(userName);
+                  
+                  if (userId === session?.user?.id) return null;
+                  
+                  return (
+                    <div
+                      key={userId}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "9px",
+                        padding: "5px 0",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "34px",
+                          height: "34px",
+                          borderRadius: "9px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "13px",
+                          fontWeight: 800,
+                          color: "white",
+                          flexShrink: 0,
+                          background: userImage
+                            ? "transparent"
+                            : "linear-gradient(135deg, var(--green), var(--green-dark))",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {userImage ? (
+                          <Image src={userImage} alt={userName} width={34} height={34} style={{ borderRadius: "7px" }} />
+                        ) : (
+                          initials
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--ink)" }}>{userName}</div>
+                        <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "1px" }}>
+                          {profile.profession || "Member"} · {getStateEmoji(profile.nativePlaceState)} {profile.nativePlaceState || "State"} · {profile.currentCity || "City"}
+                        </div>
+                        <div style={{ fontSize: "9px", fontWeight: 700, color: "var(--saffron)", marginTop: "2px" }}>
+                          3 mutual connections
+                        </div>
+                      </div>
+                      <button
+                        style={{
+                          padding: "5px 10px",
+                          borderRadius: "7px",
+                          fontSize: "10px",
+                          fontWeight: 800,
+                          border: "none",
+                          cursor: "pointer",
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          background: "var(--saffron)",
+                          color: "white",
+                          flexShrink: 0,
+                          transition: "all 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "var(--saffron-dark)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "var(--saffron)";
+                        }}
+                      >
+                        + Connect
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
 
       {/* Post Composer Modal */}
       {primaryCircle && (
@@ -1562,6 +2129,13 @@ export default function CommunityPage() {
           allowGlobal={true}
         />
       )}
+
+      <style jsx>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+      `}</style>
     </div>
   );
 }

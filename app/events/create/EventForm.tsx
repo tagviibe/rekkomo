@@ -111,7 +111,146 @@ export default function EventForm() {
 
   const progress = ((currentStep - 1) / 3) * 100;
 
+  const validateStep1 = (): string | null => {
+    // Validate event type
+    if (!eventType) {
+      return "Please select an event type";
+    }
+
+    // Validate title
+    if (!title || !title.trim()) {
+      return "Event name is required";
+    }
+
+    if (title.trim().length < 5) {
+      return "Event name must be at least 5 characters long";
+    }
+
+    if (title.trim().length > 100) {
+      return "Event name must be less than 100 characters";
+    }
+
+    // Validate description
+    if (!description || !description.trim()) {
+      return "Event description is required";
+    }
+
+    if (description.trim().length < 20) {
+      return "Event description must be at least 20 characters long";
+    }
+
+    if (description.length > 600) {
+      return "Event description must be less than 600 characters";
+    }
+
+    // Validate date
+    if (!date) {
+      return "Event date is required";
+    }
+
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      return "Event date cannot be in the past";
+    }
+
+    // Validate start time
+    if (!startTime) {
+      return "Start time is required";
+    }
+
+    // Validate end time if provided
+    if (endTime) {
+      const startDateTime = new Date(`${date}T${startTime}`);
+      const endDateTime = new Date(`${date}T${endTime}`);
+
+      if (endDateTime <= startDateTime) {
+        return "End time must be after start time";
+      }
+    }
+
+    // Validate location for in-person events
+    if (isInPerson) {
+      if (!location || !location.trim()) {
+        return "Venue/location is required for in-person events";
+      }
+
+      if (location.trim().length < 3) {
+        return "Location must be at least 3 characters long";
+      }
+    }
+
+    // Validate capacity if provided
+    if (capacity) {
+      const capacityNum = parseInt(capacity);
+      if (isNaN(capacityNum) || capacityNum < 1) {
+        return "Capacity must be a positive number";
+      }
+
+      if (capacityNum > 100000) {
+        return "Capacity cannot exceed 100,000";
+      }
+    }
+
+    // Validate organizer
+    if (!organizer || !organizer.trim()) {
+      return "Organizer name is required";
+    }
+
+    if (organizer.trim().length < 2) {
+      return "Organizer name must be at least 2 characters long";
+    }
+
+    // Validate contact if provided
+    if (contact && contact.trim()) {
+      const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+      if (!phoneRegex.test(contact.trim())) {
+        return "Please enter a valid phone number";
+      }
+    }
+
+    return null;
+  };
+
+  const validateStep2 = (): string | null => {
+    // Validate ticket price if paid event
+    if (entryType === "paid") {
+      if (!ticketPrice || !ticketPrice.trim()) {
+        return "Ticket price is required for paid events";
+      }
+
+      const price = parseFloat(ticketPrice);
+      if (isNaN(price) || price < 0) {
+        return "Ticket price must be a valid positive number";
+      }
+
+      if (price > 100000) {
+        return "Ticket price cannot exceed ₹100,000";
+      }
+    }
+
+    return null;
+  };
+
   const handleNext = () => {
+    if (currentStep === 1) {
+      const validationError = validateStep1();
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setError(null);
+    } else if (currentStep === 2) {
+      const validationError = validateStep2();
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setError(null);
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -126,9 +265,25 @@ export default function EventForm() {
   const handleSubmit = async () => {
     const targetCommunity = postTo === "community" ? primaryCommunity : null;
 
-    // Validate required fields
-    if (!title || !date || !startTime) {
-      setError("Please fill in all required fields (Title, Date, and Start Time)");
+    // Validate all steps
+    const step1Error = validateStep1();
+    if (step1Error) {
+      setError(step1Error);
+      setCurrentStep(1);
+      return;
+    }
+
+    const step2Error = validateStep2();
+    if (step2Error) {
+      setError(step2Error);
+      setCurrentStep(2);
+      return;
+    }
+
+    // Validate step 3
+    if (!postTo) {
+      setError("Please select where to post the event");
+      setCurrentStep(3);
       return;
     }
 
@@ -155,9 +310,23 @@ export default function EventForm() {
 
       const startsAt = new Date(`${date}T${startTime}`);
       
-      // Validate date
+      // Validate date/time again (double check)
       if (isNaN(startsAt.getTime())) {
         throw new Error("Invalid date or time. Please check your inputs.");
+      }
+
+      // Validate date is not in the past
+      const now = new Date();
+      if (startsAt < now) {
+        throw new Error("Event date and time cannot be in the past");
+      }
+
+      // Validate end time if provided
+      if (endTime) {
+        const endsAt = new Date(`${date}T${endTime}`);
+        if (endsAt <= startsAt) {
+          throw new Error("End time must be after start time");
+        }
       }
 
       console.log("Creating event with:", {
@@ -289,10 +458,25 @@ export default function EventForm() {
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="e.g. Chhath Puja 2025 — Bihar Community Pune"
+                      placeholder="e.g. Chhath Puja 2025 — Odisha Community Pune"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (error && error.includes("Event name")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: title && (title.trim().length < 5 || title.trim().length > 100)
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     />
+                    {title && (title.trim().length < 5 || title.trim().length > 100) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        {title.trim().length < 5 ? "Event name must be at least 5 characters" : "Event name must be less than 100 characters"}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="field-row cols-1">
@@ -306,9 +490,32 @@ export default function EventForm() {
                       rows={4}
                       maxLength={600}
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        if (error && error.includes("description")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: description && (description.trim().length < 20 || description.length > 600)
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     />
-                    <div className="char-count">{description.length}/600 chars</div>
+                    <div
+                      className="char-count"
+                      style={{
+                        color: description.length > 600 || (description.trim().length < 20 && description.length > 0)
+                          ? "var(--color-danger)"
+                          : undefined,
+                        fontWeight: description.length > 600 || (description.trim().length < 20 && description.length > 0)
+                          ? 600
+                          : undefined,
+                      }}
+                    >
+                      {description.length}/600 chars
+                      {description.trim().length < 20 && description.length > 0 && " (minimum 20)"}
+                    </div>
                   </div>
                 </div>
                 <div className="field-row cols-1">
@@ -379,18 +586,45 @@ export default function EventForm() {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
+                              // Validate file type
+                              if (!file.type.startsWith("image/")) {
+                                setError("Please select an image file (JPG, PNG, etc.)");
+                                return;
+                              }
+
+                              // Validate file size (max 5MB)
                               if (file.size > 5 * 1024 * 1024) {
                                 setError("Image size must be less than 5MB");
                                 return;
                               }
-                              if (!file.type.startsWith("image/")) {
-                                setError("Please select an image file");
+
+                              // Validate minimum file size (at least 1KB)
+                              if (file.size < 1024) {
+                                setError("Image file is too small");
                                 return;
                               }
+
+                              // Validate image dimensions (optional - can be done after load)
                               setImageFile(file);
                               const reader = new FileReader();
                               reader.onloadend = () => {
-                                setImagePreview(reader.result as string);
+                                const img = new Image();
+                                img.onload = () => {
+                                  // Optional: Validate dimensions
+                                  if (img.width < 100 || img.height < 100) {
+                                    setError("Image dimensions should be at least 100x100 pixels");
+                                    setImageFile(null);
+                                    setImagePreview(null);
+                                    return;
+                                  }
+                                  setImagePreview(reader.result as string);
+                                };
+                                img.onerror = () => {
+                                  setError("Invalid image file. Please try another image.");
+                                  setImageFile(null);
+                                  setImagePreview(null);
+                                };
+                                img.src = reader.result as string;
                               };
                               reader.readAsDataURL(file);
                             }
@@ -415,9 +649,24 @@ export default function EventForm() {
                         type="date"
                         className="form-input"
                         value={date}
-                        onChange={(e) => setDate(e.target.value)}
+                        onChange={(e) => {
+                          setDate(e.target.value);
+                          if (error && error.includes("date")) {
+                            setError(null);
+                          }
+                        }}
                         min={new Date().toISOString().split("T")[0]}
+                        style={{
+                          borderColor: date && new Date(date) < new Date(new Date().setHours(0, 0, 0, 0))
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
+                      {date && new Date(date) < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                        <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                          Event date cannot be in the past
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="field">
@@ -444,8 +693,23 @@ export default function EventForm() {
                         type="time"
                         className="form-input"
                         value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
+                        onChange={(e) => {
+                          setEndTime(e.target.value);
+                          if (error && error.includes("End time")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: endTime && date && startTime && new Date(`${date}T${endTime}`) <= new Date(`${date}T${startTime}`)
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
+                      {endTime && date && startTime && new Date(`${date}T${endTime}`) <= new Date(`${date}T${startTime}`) && (
+                        <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                          End time must be after start time
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -478,8 +742,23 @@ export default function EventForm() {
                               className="form-input"
                               placeholder="e.g. Khadakwasla Lake, Pune"
                               value={location}
-                              onChange={(e) => setLocation(e.target.value)}
+                              onChange={(e) => {
+                                setLocation(e.target.value);
+                                if (error && error.includes("location")) {
+                                  setError(null);
+                                }
+                              }}
+                              style={{
+                                borderColor: location && location.trim().length < 3
+                                  ? "var(--color-danger)"
+                                  : undefined,
+                              }}
                             />
+                            {location && location.trim().length < 3 && (
+                              <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                                Location must be at least 3 characters
+                              </div>
+                            )}
                           </div>
                           <button
                             type="button"
@@ -544,8 +823,27 @@ export default function EventForm() {
                             className="form-input"
                             placeholder="500 (leave blank for unlimited)"
                             value={capacity}
-                            onChange={(e) => setCapacity(e.target.value)}
+                            onChange={(e) => {
+                              setCapacity(e.target.value);
+                              if (error && error.includes("Capacity")) {
+                                setError(null);
+                              }
+                            }}
+                            min="1"
+                            max="100000"
+                            style={{
+                              borderColor: capacity && (isNaN(parseInt(capacity)) || parseInt(capacity) < 1 || parseInt(capacity) > 100000)
+                                ? "var(--color-danger)"
+                                : undefined,
+                            }}
                           />
+                          {capacity && (isNaN(parseInt(capacity)) || parseInt(capacity) < 1 || parseInt(capacity) > 100000) && (
+                            <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                              {isNaN(parseInt(capacity)) || parseInt(capacity) < 1
+                                ? "Capacity must be a positive number"
+                                : "Capacity cannot exceed 100,000"}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -567,9 +865,24 @@ export default function EventForm() {
                         className="form-input"
                         placeholder="Your name or organisation"
                         value={organizer}
-                        onChange={(e) => setOrganizer(e.target.value)}
+                        onChange={(e) => {
+                          setOrganizer(e.target.value);
+                          if (error && error.includes("Organizer")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: organizer && organizer.trim().length < 2
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
                     </div>
+                    {organizer && organizer.trim().length < 2 && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Organizer name must be at least 2 characters long
+                      </div>
+                    )}
                   </div>
                   <div className="field">
                     <div className="field-label">
@@ -582,9 +895,24 @@ export default function EventForm() {
                         className="form-input"
                         placeholder="+91 98765 43210"
                         value={contact}
-                        onChange={(e) => setContact(e.target.value)}
+                        onChange={(e) => {
+                          setContact(e.target.value);
+                          if (error && error.includes("phone")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: contact && contact.trim() && !/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(contact.trim())
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
                     </div>
+                    {contact && contact.trim() && !/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(contact.trim()) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Please enter a valid phone number
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -642,8 +970,28 @@ export default function EventForm() {
                           className="form-input"
                           placeholder="99"
                           value={ticketPrice}
-                          onChange={(e) => setTicketPrice(e.target.value)}
+                          onChange={(e) => {
+                            setTicketPrice(e.target.value);
+                            if (error && error.includes("Ticket price")) {
+                              setError(null);
+                            }
+                          }}
+                          min="0"
+                          max="100000"
+                          step="0.01"
+                          style={{
+                            borderColor: ticketPrice && (isNaN(parseFloat(ticketPrice)) || parseFloat(ticketPrice) < 0 || parseFloat(ticketPrice) > 100000)
+                              ? "var(--color-danger)"
+                              : undefined,
+                          }}
                         />
+                        {ticketPrice && (isNaN(parseFloat(ticketPrice)) || parseFloat(ticketPrice) < 0 || parseFloat(ticketPrice) > 100000) && (
+                          <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                            {isNaN(parseFloat(ticketPrice)) || parseFloat(ticketPrice) < 0
+                              ? "Ticket price must be a valid positive number"
+                              : "Ticket price cannot exceed ₹100,000"}
+                          </div>
+                        )}
                         <span className="input-suffix">per person</span>
                       </div>
                     </div>
@@ -884,7 +1232,15 @@ export default function EventForm() {
               type="button"
               className="btn-next"
               onClick={handleNext}
-              disabled={!title || !description || !date || !startTime || (isInPerson && !location)}
+              disabled={
+                !title?.trim() ||
+                !description?.trim() ||
+                !date ||
+                !startTime ||
+                (isInPerson && !location?.trim()) ||
+                !eventType ||
+                !organizer?.trim()
+              }
             >
               Next Step →
             </button>

@@ -108,6 +108,14 @@ export async function GET(
           replies: true,
         },
       },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -163,6 +171,14 @@ export async function GET(
         select: {
           likes: true,
           replies: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
         },
       },
     },
@@ -223,6 +239,14 @@ export async function GET(
         select: {
           likes: true,
           replies: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
         },
       },
     },
@@ -289,6 +313,14 @@ export async function GET(
         select: {
           likes: true,
           replies: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
         },
       },
     },

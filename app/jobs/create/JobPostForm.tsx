@@ -107,7 +107,138 @@ export default function JobPostForm() {
 
   const progress = ((currentStep - 1) / 3) * 100;
 
+  // Validation functions
+  const validateStep1 = (): string | null => {
+    // Validate title
+    if (!title || !title.trim()) {
+      return "Job title is required";
+    }
+    if (title.trim().length < 3) {
+      return "Job title must be at least 3 characters long";
+    }
+    if (title.trim().length > 100) {
+      return "Job title must be less than 100 characters";
+    }
+
+    // Validate category
+    if (!category) {
+      return "Job category is required";
+    }
+
+    // Validate job type
+    if (!jobType) {
+      return "Job type is required";
+    }
+
+    // Validate description
+    if (!description || !description.trim()) {
+      return "Job description is required";
+    }
+    if (description.trim().length < 20) {
+      return "Job description must be at least 20 characters long";
+    }
+    if (description.length > 500) {
+      return "Job description must be less than 500 characters";
+    }
+
+    // Validate pay
+    if (!payMin || !payMin.trim()) {
+      return "Minimum pay is required";
+    }
+    const payMinNum = parseInt(payMin);
+    if (isNaN(payMinNum) || payMinNum < 0) {
+      return "Minimum pay must be a valid positive number";
+    }
+    if (payMax && payMax.trim()) {
+      const payMaxNum = parseInt(payMax);
+      if (isNaN(payMaxNum) || payMaxNum < payMinNum) {
+        return "Maximum pay must be greater than minimum pay";
+      }
+    }
+
+    // Validate vacancies
+    if (!vacancies || !vacancies.trim()) {
+      return "Number of vacancies is required";
+    }
+    const vacanciesNum = parseInt(vacancies);
+    if (isNaN(vacanciesNum) || vacanciesNum < 1) {
+      return "Number of vacancies must be at least 1";
+    }
+
+    // Validate location
+    if (!location || !location.trim()) {
+      return "Work location is required";
+    }
+    if (location.trim().length < 3) {
+      return "Location must be at least 3 characters long";
+    }
+
+    return null;
+  };
+
+  const validateStep2 = (): string | null => {
+    // Validate languages
+    if (!languages || languages.length === 0) {
+      return "Please select at least one language";
+    }
+
+    // Validate apply method
+    if (!applyMethod || !applyMethod.trim()) {
+      return "Please select how applicants should apply";
+    }
+
+    // Step 2 fields are mostly optional, but validate if provided
+    if (ageMin && ageMin.trim()) {
+      const ageMinNum = parseInt(ageMin);
+      if (isNaN(ageMinNum) || ageMinNum < 18 || ageMinNum > 100) {
+        return "Minimum age must be between 18 and 100";
+      }
+    }
+    if (ageMax && ageMax.trim()) {
+      const ageMaxNum = parseInt(ageMax);
+      if (isNaN(ageMaxNum) || ageMaxNum < 18 || ageMaxNum > 100) {
+        return "Maximum age must be between 18 and 100";
+      }
+      if (ageMin && ageMin.trim()) {
+        const ageMinNum = parseInt(ageMin);
+        if (!isNaN(ageMinNum) && ageMaxNum < ageMinNum) {
+          return "Maximum age must be greater than minimum age";
+        }
+      }
+    }
+    if (deadline && deadline.trim()) {
+      const deadlineDate = new Date(deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (deadlineDate < today) {
+        return "Deadline cannot be in the past";
+      }
+    }
+    return null;
+  };
+
+  const validateStep3 = (): string | null => {
+    // Step 3 validation (if needed)
+    return null;
+  };
+
   const handleNext = () => {
+    if (currentStep === 1) {
+      const validationError = validateStep1();
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setError(null);
+    } else if (currentStep === 2) {
+      const validationError = validateStep2();
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setError(null);
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -239,6 +370,28 @@ export default function JobPostForm() {
   }, []);
 
   const handleSubmit = async () => {
+    // Validate all steps before submitting
+    const step1Error = validateStep1();
+    if (step1Error) {
+      setError(step1Error);
+      setCurrentStep(1);
+      return;
+    }
+
+    const step2Error = validateStep2();
+    if (step2Error) {
+      setError(step2Error);
+      setCurrentStep(2);
+      return;
+    }
+
+    const step3Error = validateStep3();
+    if (step3Error) {
+      setError(step3Error);
+      setCurrentStep(3);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -364,6 +517,14 @@ export default function JobPostForm() {
         </div>
       </div>
 
+      {/* Error Display */}
+      {error && (
+        <div className="error-message" style={{ gridColumn: "1/-1", marginBottom: "20px" }}>
+          <span style={{ fontSize: "18px" }}>⚠️</span>
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* Main Form */}
       <div style={{ gridColumn: "1" }}>
         {/* Step 1: Job Details */}
@@ -389,8 +550,23 @@ export default function JobPostForm() {
                       className="form-input"
                       placeholder="e.g. Senior Mason, Machine Operator, Cook"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (error && error.includes("title")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: title && (title.trim().length < 3 || title.trim().length > 100)
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     />
+                    {title && (title.trim().length < 3 || title.trim().length > 100) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        {title.trim().length < 3 ? "Job title must be at least 3 characters" : "Job title must be less than 100 characters"}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="field-row cols-2">
@@ -401,7 +577,17 @@ export default function JobPostForm() {
                     <select
                       className="form-select"
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      onChange={(e) => {
+                        setCategory(e.target.value);
+                        if (error && error.includes("category")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: error && error.includes("category")
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     >
                       <option value="">Select category...</option>
                       {JOB_CATEGORIES.map((cat) => (
@@ -418,7 +604,17 @@ export default function JobPostForm() {
                     <select
                       className="form-select"
                       value={jobType}
-                      onChange={(e) => setJobType(e.target.value)}
+                      onChange={(e) => {
+                        setJobType(e.target.value);
+                        if (error && error.includes("type")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: error && error.includes("type")
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     >
                       <option value="">Select type...</option>
                       {JOB_TYPES.map((type) => (
@@ -440,9 +636,32 @@ export default function JobPostForm() {
                       rows={4}
                       maxLength={500}
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        if (error && error.includes("description")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: description && (description.trim().length < 20 || description.length > 500)
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     />
-                    <div className="char-count">{description.length}/500 chars</div>
+                    <div
+                      className="char-count"
+                      style={{
+                        color: description.length > 500 || (description.trim().length < 20 && description.length > 0)
+                          ? "var(--color-danger)"
+                          : undefined,
+                        fontWeight: description.length > 500 || (description.trim().length < 20 && description.length > 0)
+                          ? 600
+                          : undefined,
+                      }}
+                    >
+                      {description.length}/500 chars
+                      {description.trim().length < 20 && description.length > 0 && " (minimum 20)"}
+                    </div>
                   </div>
                 </div>
                 <div className="field-row cols-1">
@@ -548,12 +767,27 @@ export default function JobPostForm() {
                         className="form-input"
                         placeholder="12,000"
                         value={payMin}
-                        onChange={(e) => setPayMin(e.target.value)}
+                        onChange={(e) => {
+                          setPayMin(e.target.value);
+                          if (error && error.includes("pay")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: payMin && (isNaN(parseInt(payMin)) || parseInt(payMin) < 0)
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
                       <span className="input-suffix">
                         {PAY_TYPES.find((pt) => pt.value === payType)?.suffix || "/mo"}
                       </span>
                     </div>
+                    {payMin && (isNaN(parseInt(payMin)) || parseInt(payMin) < 0) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Minimum pay must be a valid positive number
+                      </div>
+                    )}
                   </div>
                   <div className="field">
                     <div className="field-label">
@@ -566,12 +800,32 @@ export default function JobPostForm() {
                         className="form-input"
                         placeholder="18,000"
                         value={payMax}
-                        onChange={(e) => setPayMax(e.target.value)}
+                        onChange={(e) => {
+                          setPayMax(e.target.value);
+                          if (error && error.includes("pay")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: payMax && payMin && (
+                            isNaN(parseInt(payMax)) || 
+                            parseInt(payMax) < parseInt(payMin)
+                          )
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
                       <span className="input-suffix">
                         {PAY_TYPES.find((pt) => pt.value === payType)?.suffix || "/mo"}
                       </span>
                     </div>
+                    {payMax && payMin && (
+                      isNaN(parseInt(payMax)) || parseInt(payMax) < parseInt(payMin)
+                    ) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Maximum pay must be greater than minimum pay
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="field-row cols-2">
@@ -605,9 +859,24 @@ export default function JobPostForm() {
                         placeholder="2"
                         min="1"
                         value={vacancies}
-                        onChange={(e) => setVacancies(e.target.value)}
+                        onChange={(e) => {
+                          setVacancies(e.target.value);
+                          if (error && error.includes("vacancies")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: vacancies && (isNaN(parseInt(vacancies)) || parseInt(vacancies) < 1)
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
                     </div>
+                    {vacancies && (isNaN(parseInt(vacancies)) || parseInt(vacancies) < 1) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Number of vacancies must be at least 1
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -622,13 +891,28 @@ export default function JobPostForm() {
                     <div className="location-row">
                       <div className="input-wrap" style={{ flex: 1 }}>
                         <span className="input-prefix">📍</span>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="Area, Neighborhood — e.g. Hadapsar, Pune"
-                          value={location}
-                          onChange={(e) => setLocation(e.target.value)}
-                        />
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Area, Neighborhood — e.g. Hadapsar, Pune"
+                        value={location}
+                        onChange={(e) => {
+                          setLocation(e.target.value);
+                          if (error && error.includes("location")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: location && location.trim().length < 3
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
+                      />
+                    {location && location.trim().length < 3 && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Location must be at least 3 characters long
+                      </div>
+                    )}
                       </div>
                       <button
                         type="button"
@@ -805,6 +1089,110 @@ export default function JobPostForm() {
                         </div>
                       ))}
                     </div>
+                    {error && error.includes("language") && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "8px" }}>
+                        Please select at least one language
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <div className="section-title">Demographics (Optional)</div>
+                <div className="field-row cols-3">
+                  <div className="field">
+                    <div className="field-label">
+                      Gender Preference <span className="optional">(optional)</span>
+                    </div>
+                    <select
+                      className="form-select"
+                      value={genderPref}
+                      onChange={(e) => setGenderPref(e.target.value)}
+                    >
+                      <option value="">Any</option>
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Any</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <div className="field-label">
+                      Min Age <span className="optional">(optional)</span>
+                    </div>
+                    <div className="input-wrap">
+                      <span className="input-prefix">👤</span>
+                      <input
+                        type="number"
+                        className="form-input"
+                        placeholder="18"
+                        min="18"
+                        max="100"
+                        value={ageMin}
+                        onChange={(e) => {
+                          setAgeMin(e.target.value);
+                          if (error && error.includes("age")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: ageMin && (isNaN(parseInt(ageMin)) || parseInt(ageMin) < 18 || parseInt(ageMin) > 100)
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
+                      />
+                    </div>
+                    {ageMin && (isNaN(parseInt(ageMin)) || parseInt(ageMin) < 18 || parseInt(ageMin) > 100) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Age must be between 18 and 100
+                      </div>
+                    )}
+                  </div>
+                  <div className="field">
+                    <div className="field-label">
+                      Max Age <span className="optional">(optional)</span>
+                    </div>
+                    <div className="input-wrap">
+                      <span className="input-prefix">👤</span>
+                      <input
+                        type="number"
+                        className="form-input"
+                        placeholder="65"
+                        min="18"
+                        max="100"
+                        value={ageMax}
+                        onChange={(e) => {
+                          setAgeMax(e.target.value);
+                          if (error && error.includes("age")) {
+                            setError(null);
+                          }
+                        }}
+                        style={{
+                          borderColor: ageMax && (
+                            isNaN(parseInt(ageMax)) || 
+                            parseInt(ageMax) < 18 || 
+                            parseInt(ageMax) > 100 ||
+                            (ageMin && !isNaN(parseInt(ageMin)) && parseInt(ageMax) < parseInt(ageMin))
+                          )
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
+                      />
+                    </div>
+                    {ageMax && (
+                      <>
+                        {(isNaN(parseInt(ageMax)) || parseInt(ageMax) < 18 || parseInt(ageMax) > 100) && (
+                          <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                            Age must be between 18 and 100
+                          </div>
+                        )}
+                        {ageMin && !isNaN(parseInt(ageMin)) && !isNaN(parseInt(ageMax)) && parseInt(ageMax) < parseInt(ageMin) && (
+                          <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                            Maximum age must be greater than minimum age
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -819,7 +1207,17 @@ export default function JobPostForm() {
                     <select
                       className="form-select"
                       value={applyMethod}
-                      onChange={(e) => setApplyMethod(e.target.value)}
+                      onChange={(e) => {
+                        setApplyMethod(e.target.value);
+                        if (error && error.includes("apply")) {
+                          setError(null);
+                        }
+                      }}
+                      style={{
+                        borderColor: error && error.includes("apply")
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                     >
                       <option value="">Select method...</option>
                       <option>Apply on Platform</option>
@@ -837,9 +1235,25 @@ export default function JobPostForm() {
                         type="date"
                         className="form-input"
                         value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
+                        onChange={(e) => {
+                          setDeadline(e.target.value);
+                          if (error && error.includes("deadline")) {
+                            setError(null);
+                          }
+                        }}
+                        min={new Date().toISOString().split("T")[0]}
+                        style={{
+                          borderColor: deadline && new Date(deadline) < new Date(new Date().setHours(0, 0, 0, 0))
+                            ? "var(--color-danger)"
+                            : undefined,
+                        }}
                       />
                     </div>
+                    {deadline && new Date(deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                      <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
+                        Deadline cannot be in the past
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -914,7 +1328,7 @@ export default function JobPostForm() {
                           <div className="field">
                             <div className="field-label">Target States</div>
                             <div className="boost-state-picker">
-                              {["Bihar", "UP", "Odisha", "Bengal", "Rajasthan", "Jharkhand"].map(
+                              {["Odisha", "UP", "Bihar", "Bengal", "Rajasthan", "Jharkhand"].map(
                                 (state) => (
                                   <div
                                     key={state}
