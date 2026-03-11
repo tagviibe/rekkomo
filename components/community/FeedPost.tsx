@@ -583,67 +583,70 @@ export default function FeedPost({
       )}
 
       {/* Image Grid - Matching Design */}
-      {post.mediaUrls && post.mediaUrls.length > 0 && (
-        <div
-          style={{
-            margin: "0 0 0",
-            display: "grid",
-            gap: "3px",
-            gridTemplateColumns:
-              post.mediaUrls.length === 1
-                ? "1fr"
-                : post.mediaUrls.length === 2
-                ? "1fr 1fr"
-                : "1fr 1fr",
-            gridTemplateRows: post.mediaUrls.length === 3 ? "auto auto" : "auto",
-          }}
-        >
-          {post.mediaUrls.slice(0, 3).map((url, index) => (
-            <div
-              key={index}
-              style={{
-                background: "var(--cloud)",
-                overflow: "hidden",
-                position: "relative",
-                height: post.mediaUrls.length === 1 ? "200px" : index === 0 && post.mediaUrls.length === 3 ? "160px" : "110px",
-                cursor: "pointer",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                window.open(url, "_blank");
-              }}
-            >
-              <img
-                src={url}
-                alt={`Post image ${index + 1}`}
+      {post.mediaUrls && post.mediaUrls.length > 0 && (() => {
+        const mediaUrls = post.mediaUrls;
+        return (
+          <div
+            style={{
+              margin: "0 0 0",
+              display: "grid",
+              gap: "3px",
+              gridTemplateColumns:
+                mediaUrls.length === 1
+                  ? "1fr"
+                  : mediaUrls.length === 2
+                  ? "1fr 1fr"
+                  : "1fr 1fr",
+              gridTemplateRows: mediaUrls.length === 3 ? "auto auto" : "auto",
+            }}
+          >
+            {mediaUrls.slice(0, 3).map((url, index) => (
+              <div
+                key={index}
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
+                  background: "var(--cloud)",
+                  overflow: "hidden",
+                  position: "relative",
+                  height: mediaUrls.length === 1 ? "200px" : index === 0 && mediaUrls.length === 3 ? "160px" : "110px",
+                  cursor: "pointer",
                 }}
-              />
-              {post.mediaUrls.length > 3 && index === 2 && (
-                <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(url, "_blank");
+                }}
+              >
+                <img
+                  src={url}
+                  alt={`Post image ${index + 1}`}
                   style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "rgba(13,19,64,.55)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "18px",
-                    fontWeight: 900,
-                    color: "white",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
                   }}
-                >
-                  +{post.mediaUrls.length - 3}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+                />
+                {mediaUrls.length > 3 && index === 2 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "rgba(13,19,64,.55)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "18px",
+                      fontWeight: 900,
+                      color: "white",
+                    }}
+                  >
+                    +{mediaUrls.length - 3}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Job Details Section */}
       {post.type === CommunityPostType.JOB_SHARE && jobDetails && (

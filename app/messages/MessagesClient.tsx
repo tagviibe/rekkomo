@@ -182,7 +182,7 @@ export default function MessagesClient({ currentUserId }: MessagesClientProps) {
     return (
       conv.otherUser.name?.toLowerCase().includes(query) ||
       conv.latestMessage?.content.toLowerCase().includes(query) ||
-      conv.provider.category?.toLowerCase().includes(query)
+      (conv.provider?.category?.toLowerCase().includes(query) ?? false)
     );
   });
 

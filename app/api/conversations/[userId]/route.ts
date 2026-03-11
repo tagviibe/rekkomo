@@ -71,6 +71,7 @@ export async function POST(
             profile: {
               select: {
                 currentCity: true,
+                nativePlaceState: true,
               },
             },
           },
@@ -83,6 +84,7 @@ export async function POST(
             profile: {
               select: {
                 currentCity: true,
+                nativePlaceState: true,
               },
             },
           },
@@ -142,7 +144,20 @@ export async function POST(
               },
             },
           },
-          messages: [],
+          messages: {
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
         },
       });
     }
@@ -234,6 +249,7 @@ export async function GET(
             profile: {
               select: {
                 currentCity: true,
+                nativePlaceState: true,
               },
             },
           },
@@ -246,6 +262,7 @@ export async function GET(
             profile: {
               select: {
                 currentCity: true,
+                nativePlaceState: true,
               },
             },
           },

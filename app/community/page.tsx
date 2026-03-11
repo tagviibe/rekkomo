@@ -818,7 +818,7 @@ export default function CommunityPage() {
               {userName}
             </div>
             <div style={{ fontSize: "10px", color: "rgba(255,255,255,.6)", marginTop: "2px" }}>
-              {userProfile?.profile?.profession || "Worker"} · {userProfile?.profile?.currentCity || "City"}
+              Worker · City
             </div>
             <div style={{ display: "flex", gap: "5px", marginTop: "8px", flexWrap: "wrap" }}>
               <div
@@ -831,7 +831,7 @@ export default function CommunityPage() {
                   color: "rgba(255,255,255,.85)",
                 }}
               >
-                {getStateEmoji(userProfile?.profile?.nativePlaceState)} {userProfile?.profile?.nativePlaceState || "State"}
+                🌊 State
               </div>
               <div
                 style={{

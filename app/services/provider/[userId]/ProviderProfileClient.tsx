@@ -93,7 +93,6 @@ export default function ProviderProfileClient({
       Odisha: "Odisha",
       "Uttar Pradesh": "UP",
       "West Bengal": "Bengal",
-      Odisha: "Odisha",
       Jharkhand: "Jharkhand",
     };
     return stateMap[state] || state;

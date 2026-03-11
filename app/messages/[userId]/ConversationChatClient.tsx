@@ -517,7 +517,7 @@ export default function ConversationChatClient({
           </button>
           <button
             onClick={() => {
-              const state = conversation.otherUser.profile?.nativePlaceState || "Odisha";
+              const state = (conversation.otherUser.profile as any)?.nativePlaceState || "Odisha";
               setMessage(`🌾 ${state} se hun`);
             }}
             className="px-3 py-1.5 rounded-full border border-blue-200 bg-white text-blue-600 text-xs font-bold whitespace-nowrap"

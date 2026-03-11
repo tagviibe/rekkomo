@@ -91,7 +91,20 @@ export async function POST(
         status: "NEW",
       },
       include: {
-        messages: true,
+        messages: {
+          include: {
+            sender: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
       },
     });
 
@@ -101,7 +114,7 @@ export async function POST(
     const serviceName = firstService?.name || provider.category.replace("_", " ");
     const customerName = session.user.name || "User";
     const providerName = provider.user.name || "Provider";
-    const city = session.user.profile?.currentCity || provider.user.profile?.currentCity || "your area";
+    const city = provider.user.profile?.currentCity || "your area";
 
     // Generate Hindi message
     const prefillMessage = `Namaste ${providerName}! Mujhe ${serviceName} chahiye. Kya aap aaj available hain? Main ${city} mein hun.`;
